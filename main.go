@@ -89,12 +89,7 @@ func HandleListDashboards(c tele.Context) error {
 	var sb strings.Builder
 	sb.WriteString("<strong>Dashboards list</strong>:\n")
 	for _, dashboard := range dashboards {
-		sb.WriteString(fmt.Sprintf(
-			"- <a href='%s%s'>%s</a>\n",
-			Config.GrafanaURL,
-			dashboard.URL,
-			dashboard.Title,
-		))
+		sb.WriteString(fmt.Sprintf("- %s\n", Grafana.GetDashboardLink(dashboard)))
 	}
 
 	return c.Send(sb.String(), tele.ModeHTML)
@@ -129,21 +124,14 @@ func HandleShowDashboard(c tele.Context) error {
 	}
 
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf(
-		"<strong>Dashboard</strong> <a href='%s%s'>%s</a>\n",
-		Config.GrafanaURL,
-		dashboard.URL,
-		dashboard.Title,
-	))
+	sb.WriteString(fmt.Sprintf("<strong>Dashboard</strong> %s\n", Grafana.GetDashboardLink(*dashboard)))
 	sb.WriteString("Panels:\n")
 	for _, panel := range dashboardEnriched.Dashboard.Panels {
-		sb.WriteString(fmt.Sprintf(
-			"- <a href='%s%s?viewPanel=%d'>%s</a>\n",
-			Config.GrafanaURL,
-			dashboard.URL,
-			panel.ID,
-			panel.Title,
-		))
+		sb.WriteString(fmt.Sprintf("- %s\n", Grafana.GetPanelLink(PanelStruct{
+			DashboardURL: dashboard.URL,
+			PanelID:      panel.ID,
+			Name:         panel.Title,
+		})))
 	}
 
 	return c.Send(sb.String(), tele.ModeHTML)
@@ -162,22 +150,14 @@ func HandleRenderPanel(c tele.Context) error {
 		return c.Send("Usage: /render <panel name>")
 	}
 
-	var panel *PanelStruct
-	for _, p := range Config.Panels {
-		if p.Name == args[0] {
-			panel = &p
-			break
-		}
+	panels, err := Grafana.GetAllPanels()
+	if err != nil {
+		return c.Send(fmt.Sprintf("Error querying for panels: %s", err))
 	}
 
-	if panel == nil {
-		var sb strings.Builder
-		sb.WriteString("Could not find this panel. Available panels are:\n")
-		for _, p := range Config.Panels {
-			sb.WriteString("- " + p.Name + "\n")
-		}
-
-		return c.Send(sb.String())
+	panel, found := FindPanelByName(panels, args[0])
+	if !found {
+		return c.Send("Could not find a panel. See /dashboards for dashboards list, and /dashboard <dashboard name> for its panels.")
 	}
 
 	image, err := Grafana.RenderPanel(panel)
@@ -187,8 +167,11 @@ func HandleRenderPanel(c tele.Context) error {
 
 	defer image.Close()
 
-	fileToSend := &tele.Photo{File: tele.FromReader(image)}
-	return c.Send(fileToSend)
+	fileToSend := &tele.Photo{
+		File:    tele.FromReader(image),
+		Caption: fmt.Sprintf("Panel: %s", Grafana.GetPanelLink(*panel)),
+	}
+	return c.Send(fileToSend, tele.ModeHTML)
 }
 
 func main() {

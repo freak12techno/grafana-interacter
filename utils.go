@@ -21,3 +21,15 @@ func FindDashboardByName(dashboards []GrafanaDashboardInfo, name string) (*Grafa
 
 	return nil, false
 }
+
+func FindPanelByName(panels []PanelStruct, name string) (*PanelStruct, bool) {
+	normalizedName := NormalizeString(name)
+
+	for _, panel := range panels {
+		if NormalizeString(panel.Name) == normalizedName {
+			return &panel, true
+		}
+	}
+
+	return nil, false
+}

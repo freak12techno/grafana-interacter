@@ -27,12 +27,17 @@ type GrafanaDashboardInfo struct {
 
 type GrafanaDashboardResponse struct {
 	Dashboard GrafanaSingleDashboard `json:"dashboard"`
+	Meta      GrafanaDashboardMeta   `json:"meta"`
 }
 
 type GrafanaSingleDashboard struct {
 	Title  string         `json:"title"`
 	UID    string         `json:"uid"`
 	Panels []GrafanaPanel `json:"panels"`
+}
+
+type GrafanaDashboardMeta struct {
+	URL string `json:"url"`
 }
 
 type GrafanaPanel struct {
@@ -184,6 +189,7 @@ func (g *GrafanaStruct) GetAllPanels() ([]PanelStruct, error) {
 				Name:          p.Title,
 				DashboardName: d.Dashboard.Title,
 				DashboardID:   d.Dashboard.UID,
+				DashboardURL:  d.Meta.URL,
 				PanelID:       p.ID,
 			}
 
@@ -192,4 +198,18 @@ func (g *GrafanaStruct) GetAllPanels() ([]PanelStruct, error) {
 	}
 
 	return panels, nil
+}
+
+func (g *GrafanaStruct) GetDashboardLink(dashboard GrafanaDashboardInfo) string {
+	return fmt.Sprintf("<a href='%s%s'>%s</a>", g.URL, dashboard.URL, dashboard.Title)
+}
+
+func (g *GrafanaStruct) GetPanelLink(panel PanelStruct) string {
+	return fmt.Sprintf(
+		"<a href='%s%s?viewPanel=%d'>%s</a>",
+		Config.GrafanaURL,
+		panel.DashboardURL,
+		panel.PanelID,
+		panel.Name,
+	)
 }
