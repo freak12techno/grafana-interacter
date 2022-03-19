@@ -15,7 +15,7 @@ First of all, you need to download the latest release from [the releases page](h
 ```sh
 wget <the link from the releases page>
 tar xvfz grafana-interacter-*
-./grafana-interacter
+./grafana-interacter --config <path to config>
 ```
 
 That's not really interesting, what you probably want to do is to have it running in the background. For that, first of all, we have to copy the file to the system apps folder:
@@ -68,11 +68,11 @@ sudo journalctl -u grafana-interacter -f --output cat
 
 ## How does it work?
 
-It queries 
+It queries Grafana via its API and returns the data as a Telegram message.
 
 ## How can I configure it?
 
-All configuration is executed via a `.yml` config, which is passed to
+All configuration is executed via a `.yml` config, which is passed as a `--config` variable. Check out `config.example.yml` for reference.
 
 ## How can I contribute?
 
