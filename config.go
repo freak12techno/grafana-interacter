@@ -15,7 +15,8 @@ type AuthStruct struct {
 }
 
 type PanelStruct struct {
-	Name        string `yaml:"name"`
-	DashboardID string `yaml:"dashboard_id"`
-	PanelID     string `yaml:"panel_id"`
+	Name          string `yaml:"name"`
+	DashboardName string `yaml:"dashboard_name"`
+	DashboardID   string `yaml:"dashboard_id"`
+	PanelID       int    `yaml:"panel_id"`
 }

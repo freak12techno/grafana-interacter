@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -66,28 +67,103 @@ func Execute(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	b.Handle("/dashboard", HandleDashboard)
+	b.Handle("/dashboards", HandleListDashboards)
+	b.Handle("/dashboard", HandleShowDashboard)
+	b.Handle("/render", HandleRenderPanel)
 	b.Start()
 
 	log.Info().Msg("Telegram bot listening")
 }
 
-func HandleDashboard(c tele.Context) error {
+func HandleListDashboards(c tele.Context) error {
+	log.Info().
+		Str("sender", c.Sender().Username).
+		Str("text", c.Text()).
+		Msg("Got dashboards query")
+
+	dashboards, err := Grafana.GetAllDashboards()
+	if err != nil {
+		return c.Send(fmt.Sprintf("Error querying for dashboards: %s", err))
+	}
+
+	var sb strings.Builder
+	sb.WriteString("<strong>Dashboards list</strong>:\n")
+	for _, dashboard := range dashboards {
+		sb.WriteString(fmt.Sprintf(
+			"- <a href='%s%s'>%s</a>\n",
+			Config.GrafanaURL,
+			dashboard.URL,
+			dashboard.Title,
+		))
+	}
+
+	return c.Send(sb.String(), tele.ModeHTML)
+}
+
+func HandleShowDashboard(c tele.Context) error {
 	log.Info().
 		Str("sender", c.Sender().Username).
 		Str("text", c.Text()).
 		Msg("Got dashboard query")
 
 	args := strings.SplitAfterN(c.Text(), " ", 2)
-	_, args = args[0], args[1:] // removing first argument as it's always /dashboard
+	_, args = args[0], args[1:] // removing first argument as it's always /render
 
 	if len(args) != 1 {
-		return c.Send("Usage: /dashboard <dashboard ID>")
+		return c.Send("Usage: /dashboard <dashboard>")
+	}
+
+	dashboards, err := Grafana.GetAllDashboards()
+	if err != nil {
+		return c.Send(fmt.Sprintf("Error querying for dashboards: %s", err))
+	}
+
+	dashboard, found := FindDashboardByName(dashboards, args[0])
+	if !found {
+		return c.Send("Could not find dashboard. See /dashboards for dashboards list.")
+	}
+
+	dashboardEnriched, err := Grafana.GetDashboard(dashboard.UID)
+	if err != nil {
+		return c.Send(fmt.Sprintf("Could not get dashboard: %s", err))
+	}
+
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf(
+		"<strong>Dashboard</strong> <a href='%s%s'>%s</a>\n",
+		Config.GrafanaURL,
+		dashboard.URL,
+		dashboard.Title,
+	))
+	sb.WriteString("Panels:\n")
+	for _, panel := range dashboardEnriched.Dashboard.Panels {
+		sb.WriteString(fmt.Sprintf(
+			"- <a href='%s%s?viewPanel=%d'>%s</a>\n",
+			Config.GrafanaURL,
+			dashboard.URL,
+			panel.ID,
+			panel.Title,
+		))
+	}
+
+	return c.Send(sb.String(), tele.ModeHTML)
+}
+
+func HandleRenderPanel(c tele.Context) error {
+	log.Info().
+		Str("sender", c.Sender().Username).
+		Str("text", c.Text()).
+		Msg("Got render query")
+
+	args := strings.SplitAfterN(c.Text(), " ", 2)
+	_, args = args[0], args[1:] // removing first argument as it's always /render
+
+	if len(args) != 1 {
+		return c.Send("Usage: /render <panel name>")
 	}
 
 	var panel *PanelStruct
 	for _, p := range Config.Panels {
-		log.Trace().Str("name", p.Name).Msg("Iterating over panel")
 		if p.Name == args[0] {
 			panel = &p
 			break
