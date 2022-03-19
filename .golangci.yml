@@ -42,3 +42,4 @@ linters:
     - gochecknoglobals
     - gosec
     - exportloopref
+    - stylecheck

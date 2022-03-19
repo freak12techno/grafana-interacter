@@ -1,9 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -18,6 +16,7 @@ import (
 var (
 	ConfigPath string
 	Config     ConfigStruct
+	Grafana    *GrafanaStruct
 )
 
 var log = zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout}).With().Timestamp().Logger()
@@ -55,6 +54,9 @@ func Execute(cmd *cobra.Command, args []string) {
 	}
 
 	zerolog.SetGlobalLevel(logLevel)
+
+	Grafana = InitGrafana(Config.GrafanaURL, &Config.Auth, &log)
+
 	b, err := tele.NewBot(tele.Settings{
 		Token:  Config.TelegramToken,
 		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
@@ -102,40 +104,14 @@ func HandleDashboard(c tele.Context) error {
 		return c.Send(sb.String())
 	}
 
-	from := time.Now().Unix() * 1000
-	to := time.Now().Add(-30*time.Minute).Unix() * 1000
-
-	dashboardID := panel.DashboardID
-	panelID := panel.PanelID
-
-	url := fmt.Sprintf(
-		"%s/render/d-solo/%s/dashboard?orgId=1&from=%d&to=%d&panelId=%s&width=1000&height=500&tz=Europe/Moscow",
-		Config.GrafanaURL,
-		dashboardID,
-		from,
-		to,
-		panelID,
-	)
-
-	client := &http.Client{}
-	req, _ := http.NewRequest("GET", url, nil)
-
-	if Config.Auth.User != "" && Config.Auth.Password != "" {
-		log.Trace().Msg("Using basic auth")
-		req.SetBasicAuth(Config.Auth.User, Config.Auth.Password)
-	}
-
-	resp, err := client.Do(req)
+	image, err := Grafana.RenderPanel(panel)
 	if err != nil {
-		return c.Send(fmt.Sprintf("Could not query dashboard: %s", err))
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 400 {
-		return c.Send(fmt.Sprintf("Could not fetch rendered image. Status code: %d", resp.StatusCode))
+		return c.Send(err)
 	}
 
-	fileToSend := &tele.Photo{File: tele.FromReader(resp.Body)}
+	defer image.Close()
+
+	fileToSend := &tele.Photo{File: tele.FromReader(image)}
 	return c.Send(fileToSend)
 }
 
