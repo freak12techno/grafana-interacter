@@ -1,0 +1,17 @@
+log_level: info # Log level. Defaults to "info"
+json: false # Output logs as JSON. Useful if you are using logging aggregation solutions such as ELK. Defaults to false.
+telegram_token: xxx:yyy # Telegram bot token, you can create a Telegam bot with @BotFather bot on Telegram
+auth: # Grafana credentials.
+  user: admin
+  password: admin
+grafana_url: http:/localhost:3000 # URL of the remote Grafana to do queries against.
+panels: # Array of panels and their aliases.
+  - name: "version mismatch"
+    dashboard_id: 9nXvbXO7z
+    panel_id: 3
+  - name: "blocks diff"
+    dashboard_id: 9nXvbXO7z
+    panel_id: 4
+  - name: "voting power"
+    dashboard_id: 9nXvbXO7z
+    panel_id: 6
