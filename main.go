@@ -70,6 +70,7 @@ func Execute(cmd *cobra.Command, args []string) {
 	b.Handle("/dashboards", HandleListDashboards)
 	b.Handle("/dashboard", HandleShowDashboard)
 	b.Handle("/render", HandleRenderPanel)
+	b.Handle("/datasources", HandleListDatasources)
 	b.Start()
 
 	log.Info().Msg("Telegram bot listening")
@@ -172,6 +173,26 @@ func HandleRenderPanel(c tele.Context) error {
 		Caption: fmt.Sprintf("Panel: %s", Grafana.GetPanelLink(*panel)),
 	}
 	return c.Send(fileToSend, tele.ModeHTML)
+}
+
+func HandleListDatasources(c tele.Context) error {
+	log.Info().
+		Str("sender", c.Sender().Username).
+		Str("text", c.Text()).
+		Msg("Got alerts query")
+
+	datasources, err := Grafana.GetDatasources()
+	if err != nil {
+		return c.Send(fmt.Sprintf("Error querying alerts: %s", err))
+	}
+
+	var sb strings.Builder
+	sb.WriteString("<strong>Datasources</strong>\n")
+	for _, ds := range datasources {
+		sb.WriteString(fmt.Sprintf("- %s\n", Grafana.GetDatasourceLink(ds)))
+	}
+
+	return c.Send(sb.String(), tele.ModeHTML)
 }
 
 func main() {

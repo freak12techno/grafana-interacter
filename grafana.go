@@ -45,6 +45,13 @@ type GrafanaPanel struct {
 	Title string `json:"title"`
 }
 
+type GrafanaDatasource struct {
+	ID   int    `json:"id"`
+	UID  string `json:"uid"`
+	Name string `json:"name"`
+	Type string `json:"type"`
+}
+
 func InitGrafana(url string, auth *AuthStruct, logger *zerolog.Logger) *GrafanaStruct {
 	return &GrafanaStruct{
 		URL:    url,
@@ -212,4 +219,34 @@ func (g *GrafanaStruct) GetPanelLink(panel PanelStruct) string {
 		panel.PanelID,
 		panel.Name,
 	)
+}
+
+func (g *GrafanaStruct) GetDatasourceLink(ds GrafanaDatasource) string {
+	return fmt.Sprintf("<a href='%s/datasources/edit/%s'>%s</a>", g.URL, ds.UID, ds.Name)
+}
+
+func (g *GrafanaStruct) GetDatasources() ([]GrafanaDatasource, error) {
+	datasources := []GrafanaDatasource{}
+	url := fmt.Sprintf("%s/api/datasources", g.URL)
+	err := g.QueryAndDecode(url, &datasources)
+	return datasources, err
+}
+
+func (g *GrafanaStruct) QueryAndDecode(url string, output interface{}) error {
+	client := &http.Client{}
+	req, _ := http.NewRequest("GET", url, nil)
+
+	g.Logger.Trace().Str("url", url).Msg("Doing a Grafana API query")
+
+	if g.UseAuth() {
+		g.Logger.Trace().Msg("Using basic auth")
+		req.SetBasicAuth(g.Auth.User, g.Auth.Password)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	return json.NewDecoder(resp.Body).Decode(&output)
 }
