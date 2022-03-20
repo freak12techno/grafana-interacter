@@ -99,54 +99,16 @@ func (g *GrafanaStruct) RenderPanel(panel *PanelStruct) (io.ReadCloser, error) {
 
 func (g *GrafanaStruct) GetAllDashboards() ([]GrafanaDashboardInfo, error) {
 	url := fmt.Sprintf("%s/api/search?type=dash-db", g.URL)
-	client := &http.Client{}
-	req, _ := http.NewRequest("GET", url, nil)
-
-	if g.UseAuth() {
-		g.Logger.Trace().Msg("Using basic auth")
-		req.SetBasicAuth(g.Auth.User, g.Auth.Password)
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
 	dashboards := []GrafanaDashboardInfo{}
-
-	err = json.NewDecoder(resp.Body).Decode(&dashboards)
-	if err != nil {
-		return nil, err
-	}
-
-	return dashboards, nil
+	err := g.QueryAndDecode(url, &dashboards)
+	return dashboards, err
 }
 
 func (g *GrafanaStruct) GetDashboard(dashboardUID string) (*GrafanaDashboardResponse, error) {
 	url := fmt.Sprintf("%s/api/dashboards/uid/%s", g.URL, dashboardUID)
-	client := &http.Client{}
-	req, _ := http.NewRequest("GET", url, nil)
-
-	if g.UseAuth() {
-		g.Logger.Trace().Msg("Using basic auth")
-		req.SetBasicAuth(g.Auth.User, g.Auth.Password)
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
 	dashboards := &GrafanaDashboardResponse{}
-
-	err = json.NewDecoder(resp.Body).Decode(&dashboards)
-	if err != nil {
-		return nil, err
-	}
-
-	return dashboards, nil
+	err := g.QueryAndDecode(url, &dashboards)
+	return dashboards, err
 }
 
 func (g *GrafanaStruct) GetAllPanels() ([]PanelStruct, error) {
