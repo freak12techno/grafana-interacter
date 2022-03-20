@@ -124,21 +124,15 @@ func (g *GrafanaStruct) GetAllPanels() ([]PanelStruct, error) {
 		index := i
 		dashboard := d
 
-		g.Logger.Info().Int("index", index).Msg("Rendering dashboard")
-
 		group.Go(func() error {
 			enrichedDashboard, err := g.GetDashboard(dashboard.UID)
-			g.Logger.Info().Int("index", index).Msg("Rendering dashboard")
 			if err == nil {
 				dashboardsEnriched[index] = *enrichedDashboard
-				g.Logger.Info().Int("len", len(enrichedDashboard.Dashboard.Panels)).Msg("Panels length")
 			}
 
 			return err
 		})
 	}
-
-	g.Logger.Info().Int("len", len(dashboards)).Msg("Dashboard length")
 
 	if err := group.Wait(); err != nil {
 		return nil, err
