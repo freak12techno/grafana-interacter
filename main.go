@@ -71,6 +71,7 @@ func Execute(cmd *cobra.Command, args []string) {
 	b.Handle("/dashboard", HandleShowDashboard)
 	b.Handle("/render", HandleRenderPanel)
 	b.Handle("/datasources", HandleListDatasources)
+	b.Handle("/alerts", HandleListAlerts)
 	b.Start()
 
 	log.Info().Msg("Telegram bot listening")
@@ -190,6 +191,68 @@ func HandleListDatasources(c tele.Context) error {
 	sb.WriteString("<strong>Datasources</strong>\n")
 	for _, ds := range datasources {
 		sb.WriteString(fmt.Sprintf("- %s\n", Grafana.GetDatasourceLink(ds)))
+	}
+
+	return c.Send(sb.String(), tele.ModeHTML)
+}
+
+func HandleListAlerts(c tele.Context) error {
+	log.Info().
+		Str("sender", c.Sender().Username).
+		Str("text", c.Text()).
+		Msg("Got alerts query")
+
+	grafanaGroups, err := Grafana.GetGrafanaAlertingRules()
+	if err != nil {
+		return c.Send(fmt.Sprintf("Error querying alerts: %s", err))
+	}
+
+	prometheusGroups, err := Grafana.GetPrometheusAlertingRules()
+	if err != nil {
+		return c.Send(fmt.Sprintf("Error querying alerts: %s", err))
+	}
+
+	var sb strings.Builder
+	if len(grafanaGroups) > 0 {
+		sb.WriteString("<strong>Grafana alerts</strong>\n")
+		for _, group := range grafanaGroups {
+			for _, rule := range group.Rules {
+				switch rule.State {
+				case "inactive":
+					sb.WriteString(fmt.Sprintf("- 🟢 %s -> %s\n", group.Name, rule.Name))
+				case "pending":
+					sb.WriteString(fmt.Sprintf("- 🟡 %s -> %s\n", group.Name, rule.Name))
+				case "firing":
+					sb.WriteString(fmt.Sprintf("- 🔴 %s -> %s\n", group.Name, rule.Name))
+				default:
+					sb.WriteString(fmt.Sprintf("- [%s] %s -> %s\n", rule.State, group.Name, rule.Name))
+				}
+
+			}
+		}
+	} else {
+		sb.WriteString("<strong>No Grafana alerts</strong>\n")
+	}
+
+	if len(prometheusGroups) > 0 {
+		sb.WriteString("<strong>Prometheus alerts</strong>\n")
+		for _, group := range prometheusGroups {
+			for _, rule := range group.Rules {
+				switch rule.State {
+				case "inactive":
+					sb.WriteString(fmt.Sprintf("- 🟢 %s -> %s\n", group.Name, rule.Name))
+				case "pending":
+					sb.WriteString(fmt.Sprintf("- 🟡 %s -> %s\n", group.Name, rule.Name))
+				case "firing":
+					sb.WriteString(fmt.Sprintf("- 🔴 %s -> %s\n", group.Name, rule.Name))
+				default:
+					sb.WriteString(fmt.Sprintf("- [%s] %s -> %s\n", rule.State, group.Name, rule.Name))
+				}
+
+			}
+		}
+	} else {
+		sb.WriteString("<strong>No Prometheus alerts</strong>\n")
 	}
 
 	return c.Send(sb.String(), tele.ModeHTML)

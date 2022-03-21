@@ -52,6 +52,31 @@ type GrafanaDatasource struct {
 	Type string `json:"type"`
 }
 
+type GrafanaAlertRulesResponse struct {
+	Data GrafanaAlertRulesData `json:"data"`
+}
+
+type GrafanaAlertRulesData struct {
+	Groups []GrafanaAlertGroup `json:"groups"`
+}
+
+type GrafanaAlertGroup struct {
+	Name  string             `json:"name"`
+	File  string             `json:"file"`
+	Rules []GrafanaAlertRule `json:"rules"`
+}
+
+type GrafanaAlertRule struct {
+	State  string         `json:"state"`
+	Name   string         `json:"name"`
+	Alerts []GrafanaAlert `json:"alerts"`
+}
+
+type GrafanaAlert struct {
+	Labels map[string]string `json:"labels"`
+	State  string            `json:"string"`
+}
+
 func InitGrafana(url string, auth *AuthStruct, logger *zerolog.Logger) *GrafanaStruct {
 	return &GrafanaStruct{
 		URL:    url,
@@ -186,6 +211,49 @@ func (g *GrafanaStruct) GetDatasources() ([]GrafanaDatasource, error) {
 	url := fmt.Sprintf("%s/api/datasources", g.URL)
 	err := g.QueryAndDecode(url, &datasources)
 	return datasources, err
+}
+
+func (g *GrafanaStruct) GetGrafanaAlertingRules() ([]GrafanaAlertGroup, error) {
+	rules := GrafanaAlertRulesResponse{}
+	url := fmt.Sprintf("%s/api/prometheus/grafana/api/v1/rules", g.URL)
+	err := g.QueryAndDecode(url, &rules)
+	if err != nil {
+		return nil, err
+	}
+
+	return rules.Data.Groups, nil
+}
+
+func (g *GrafanaStruct) GetDatasourceAlertingRules(datasourceID int) ([]GrafanaAlertGroup, error) {
+	rules := GrafanaAlertRulesResponse{}
+	url := fmt.Sprintf("%s/api/prometheus/%d/api/v1/rules", g.URL, datasourceID)
+	err := g.QueryAndDecode(url, &rules)
+	if err != nil {
+		return nil, err
+	}
+
+	return rules.Data.Groups, nil
+}
+
+func (g *GrafanaStruct) GetPrometheusAlertingRules() ([]GrafanaAlertGroup, error) {
+	datasources, err := g.GetDatasources()
+	if err != nil {
+		return nil, err
+	}
+
+	groups := []GrafanaAlertGroup{}
+	for _, ds := range datasources {
+		if ds.Type == "prometheus" {
+			resp, err := g.GetDatasourceAlertingRules(ds.ID)
+			if err != nil {
+				return nil, err
+			}
+
+			groups = append(groups, resp...)
+		}
+	}
+
+	return groups, err
 }
 
 func (g *GrafanaStruct) QueryAndDecode(url string, output interface{}) error {
