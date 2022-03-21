@@ -145,11 +145,10 @@ func HandleRenderPanel(c tele.Context) error {
 		Str("text", c.Text()).
 		Msg("Got render query")
 
-	args := strings.SplitAfterN(c.Text(), " ", 2)
-	_, args = args[0], args[1:] // removing first argument as it's always /render
+	opts, valid := ParseRenderOptions(c.Text())
 
-	if len(args) != 1 {
-		return c.Send("Usage: /render <panel name>")
+	if !valid {
+		return c.Send("Usage: /render <opts> <panel name>")
 	}
 
 	panels, err := Grafana.GetAllPanels()
@@ -157,12 +156,12 @@ func HandleRenderPanel(c tele.Context) error {
 		return c.Send(fmt.Sprintf("Error querying for panels: %s", err))
 	}
 
-	panel, found := FindPanelByName(panels, args[0])
+	panel, found := FindPanelByName(panels, opts.Query)
 	if !found {
 		return c.Send("Could not find a panel. See /dashboards for dashboards list, and /dashboard <dashboard name> for its panels.")
 	}
 
-	image, err := Grafana.RenderPanel(panel)
+	image, err := Grafana.RenderPanel(panel, opts.Params)
 	if err != nil {
 		return c.Send(err)
 	}

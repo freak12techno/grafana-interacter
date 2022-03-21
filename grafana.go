@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"time"
 
 	"github.com/rs/zerolog"
 	"golang.org/x/sync/errgroup"
@@ -16,65 +15,6 @@ type GrafanaStruct struct {
 	URL    string
 	Auth   *AuthStruct
 	Logger zerolog.Logger
-}
-
-type GrafanaDashboardInfo struct {
-	ID    int    `json:"id"`
-	UID   string `json:"uid"`
-	Title string `json:"title"`
-	URL   string `json:"url"`
-}
-
-type GrafanaDashboardResponse struct {
-	Dashboard GrafanaSingleDashboard `json:"dashboard"`
-	Meta      GrafanaDashboardMeta   `json:"meta"`
-}
-
-type GrafanaSingleDashboard struct {
-	Title  string         `json:"title"`
-	UID    string         `json:"uid"`
-	Panels []GrafanaPanel `json:"panels"`
-}
-
-type GrafanaDashboardMeta struct {
-	URL string `json:"url"`
-}
-
-type GrafanaPanel struct {
-	ID    int    `json:"id"`
-	Title string `json:"title"`
-}
-
-type GrafanaDatasource struct {
-	ID   int    `json:"id"`
-	UID  string `json:"uid"`
-	Name string `json:"name"`
-	Type string `json:"type"`
-}
-
-type GrafanaAlertRulesResponse struct {
-	Data GrafanaAlertRulesData `json:"data"`
-}
-
-type GrafanaAlertRulesData struct {
-	Groups []GrafanaAlertGroup `json:"groups"`
-}
-
-type GrafanaAlertGroup struct {
-	Name  string             `json:"name"`
-	File  string             `json:"file"`
-	Rules []GrafanaAlertRule `json:"rules"`
-}
-
-type GrafanaAlertRule struct {
-	State  string         `json:"state"`
-	Name   string         `json:"name"`
-	Alerts []GrafanaAlert `json:"alerts"`
-}
-
-type GrafanaAlert struct {
-	Labels map[string]string `json:"labels"`
-	State  string            `json:"string"`
 }
 
 func InitGrafana(url string, auth *AuthStruct, logger *zerolog.Logger) *GrafanaStruct {
@@ -89,37 +29,25 @@ func (g *GrafanaStruct) UseAuth() bool {
 	return g.Auth != nil && g.Auth.User != "" && g.Auth.Password != ""
 }
 
-func (g *GrafanaStruct) RenderPanel(panel *PanelStruct) (io.ReadCloser, error) {
-	from := time.Now().Unix() * 1000
-	to := time.Now().Add(-30*time.Minute).Unix() * 1000
+func (g *GrafanaStruct) RenderPanel(panel *PanelStruct, qs map[string]string) (io.ReadCloser, error) {
+	baseParams := map[string]string{
+		"orgId":   "1",
+		"from":    "now",
+		"to":      "now-30m",
+		"panelId": fmt.Sprintf("%d", panel.PanelID),
+		"width":   "1000",
+		"height":  "500",
+		"tz":      "Europe/Moscow",
+	}
 
 	url := fmt.Sprintf(
-		"%s/render/d-solo/%s/dashboard?orgId=1&from=%d&to=%d&panelId=%d&width=1000&height=500&tz=Europe/Moscow",
+		"%s/render/d-solo/%s/dashboard?%s",
 		g.URL,
 		panel.DashboardID,
-		from,
-		to,
-		panel.PanelID,
+		SerializeQueryString(MergeMaps(baseParams, qs)),
 	)
 
-	client := &http.Client{}
-	req, _ := http.NewRequest("GET", url, nil)
-
-	if g.UseAuth() {
-		g.Logger.Trace().Msg("Using basic auth")
-		req.SetBasicAuth(g.Auth.User, g.Auth.Password)
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("Could not query dashboard: %s", err)
-	}
-
-	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("Could not fetch rendered image. Status code: %d", resp.StatusCode)
-	}
-
-	return resp.Body, nil
+	return g.Query(url)
 }
 
 func (g *GrafanaStruct) GetAllDashboards() ([]GrafanaDashboardInfo, error) {
@@ -256,7 +184,7 @@ func (g *GrafanaStruct) GetPrometheusAlertingRules() ([]GrafanaAlertGroup, error
 	return groups, err
 }
 
-func (g *GrafanaStruct) QueryAndDecode(url string, output interface{}) error {
+func (g *GrafanaStruct) Query(url string) (io.ReadCloser, error) {
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", url, nil)
 
@@ -269,8 +197,22 @@ func (g *GrafanaStruct) QueryAndDecode(url string, output interface{}) error {
 
 	resp, err := client.Do(req)
 	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("Could not fetch request. Status code: %d", resp.StatusCode)
+	}
+
+	return resp.Body, nil
+}
+
+func (g *GrafanaStruct) QueryAndDecode(url string, output interface{}) error {
+	body, err := g.Query(url)
+	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
-	return json.NewDecoder(resp.Body).Decode(&output)
+
+	defer body.Close()
+	return json.NewDecoder(body).Decode(&output)
 }
