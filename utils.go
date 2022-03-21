@@ -1,13 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 )
 
 func NormalizeString(input string) string {
-	reg, _ := regexp.Compile("[^a-zA-Z0-9]+")
+	reg := regexp.MustCompile("[^a-zA-Z0-9]+")
 	return strings.ToLower(reg.ReplaceAllString(input, ""))
 }
 
@@ -45,13 +44,11 @@ func ParseRenderOptions(query string) (RenderOptions, bool) {
 
 	_, args = args[0], args[1:] // removing first argument as it's always /render
 	for len(args) > 0 {
-		fmt.Printf("len: %d, args: %v\n", len(args), args)
 		if !strings.Contains(args[0], "=") {
 			break
 		}
 
 		paramSplit := strings.SplitN(args[0], "=", 2)
-		fmt.Printf("param1: %s, param2: %s\n", paramSplit[0], paramSplit[1])
 		params[paramSplit[0]] = paramSplit[1]
 
 		_, args = args[0], args[1:]

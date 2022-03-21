@@ -226,7 +226,6 @@ func HandleListAlerts(c tele.Context) error {
 				default:
 					sb.WriteString(fmt.Sprintf("- [%s] %s -> %s\n", rule.State, group.Name, rule.Name))
 				}
-
 			}
 		}
 	} else {
@@ -247,7 +246,6 @@ func HandleListAlerts(c tele.Context) error {
 				default:
 					sb.WriteString(fmt.Sprintf("- [%s] %s -> %s\n", rule.State, group.Name, rule.Name))
 				}
-
 			}
 		}
 	} else {
