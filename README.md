@@ -3,8 +3,12 @@
 ![Latest release](https://img.shields.io/github/v/release/Freak12techno/grafana-interacter)
 [![Actions Status](https://github.com/Freak12techno/grafana-interacter/workflows/test/badge.svg)](https://github.com/Freak12techno/grafana-interacter/actions)
 
-grafana-interacter is a tool to interact with your Grafana instance via a Telegram bot. Here's what you can currently do with it:
-- Render dashboards panels and receive them as images
+grafana-interacter is a tool to interact with your Grafana instance via a Telegram bot. Here's the list of currently supported commands:
+- `/render [<opts>] <panel name>` - renders the panel and sends it as image. If there are multiple panels with the same name (for example, you have a `dashboard1` and `dashboard2` both containing panel with name `panel`), it will render the first panel it will find. For specifying it, you may add the dashboard name as a prefix to your query (like `/render dashboard1 panel`). You can also provide options in a `key=value` format, which will be internally passed to a `/render` query to Grafana. Some examples are `from`, `to`, `width`, `height` (the command would look something like `/render from=now-14d to=now-7d width=100 height=100 dashboard1 panel`). By default, the params are: `width=1000&height=500&from=now-30m&to=now&tz=Europe/Moscow`.
+- `/dashboards` - will list Grafana dashboards and links to them
+- `/dashboard <name>` - will return a link to a dashboard and its panels
+- `/datasources` - will return Grafana datasources
+- `/alerts` - will list both Grafana alerts and Prometheus alerts from all Prometheus datasources, if any
 
 ## How can I set it up?
 
