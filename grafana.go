@@ -191,7 +191,6 @@ func (g *GrafanaStruct) Query(url string) (io.ReadCloser, error) {
 	g.Logger.Trace().Str("url", url).Msg("Doing a Grafana API query")
 
 	if g.UseAuth() {
-		g.Logger.Trace().Msg("Using basic auth")
 		req.SetBasicAuth(g.Auth.User, g.Auth.Password)
 	}
 

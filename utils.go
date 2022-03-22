@@ -14,7 +14,7 @@ func FindDashboardByName(dashboards []GrafanaDashboardInfo, name string) (*Grafa
 	normalizedName := NormalizeString(name)
 
 	for _, dashboard := range dashboards {
-		if NormalizeString(dashboard.Title) == normalizedName {
+		if strings.Contains(NormalizeString(dashboard.Title), normalizedName) {
 			return &dashboard, true
 		}
 	}
@@ -26,7 +26,9 @@ func FindPanelByName(panels []PanelStruct, name string) (*PanelStruct, bool) {
 	normalizedName := NormalizeString(name)
 
 	for _, panel := range panels {
-		if NormalizeString(panel.Name) == normalizedName {
+		panelNameWithDashboardName := NormalizeString(panel.DashboardName + panel.Name)
+
+		if strings.Contains(panelNameWithDashboardName, normalizedName) {
 			return &panel, true
 		}
 	}
