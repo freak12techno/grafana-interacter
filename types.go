@@ -1,14 +1,14 @@
 package main
 
 type ConfigStruct struct {
-	LogLevel      string     `yaml:"log_level" default:"info"`
-	JSONOutput    bool       `yaml:"json" default:"false"`
-	TelegramToken string     `yaml:"telegram_token" default:""`
-	Auth          AuthStruct `yaml:"auth"`
-	GrafanaURL    string     `yaml:"grafana_url" default:"http://localhost:3000"`
+	LogLevel      string        `yaml:"log_level" default:"info"`
+	JSONOutput    bool          `yaml:"json" default:"false"`
+	TelegramToken string        `yaml:"telegram_token" default:""`
+	Grafana       GrafanaConfig `yaml:"grafana"`
 }
 
-type AuthStruct struct {
+type GrafanaConfig struct {
+	URL      string `yaml:"url" default:"http://localhost:3000"`
 	User     string `yaml:"user"`
 	Password string `yaml:"password"`
 }

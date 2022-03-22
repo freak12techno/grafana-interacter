@@ -56,11 +56,12 @@ func Execute(cmd *cobra.Command, args []string) {
 
 	zerolog.SetGlobalLevel(logLevel)
 
-	Grafana = InitGrafana(Config.GrafanaURL, &Config.Auth, &log)
+	Grafana = InitGrafana(&Config.Grafana, &log)
 
 	b, err := tele.NewBot(tele.Settings{
-		Token:  Config.TelegramToken,
-		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
+		Token:   Config.TelegramToken,
+		Poller:  &tele.LongPoller{Timeout: 10 * time.Second},
+		OnError: HandleError,
 	})
 	if err != nil {
 		log.Fatal().Err(err).Msg("Could not start Telegram bot")
@@ -72,9 +73,14 @@ func Execute(cmd *cobra.Command, args []string) {
 	b.Handle("/render", HandleRenderPanel)
 	b.Handle("/datasources", HandleListDatasources)
 	b.Handle("/alerts", HandleListAlerts)
+	b.Handle("/alert", HandleListAlerts)
 	b.Start()
 
 	log.Info().Msg("Telegram bot listening")
+}
+
+func HandleError(err error, c tele.Context) {
+	log.Error().Err(err).Msg("Telebot error")
 }
 
 func HandleListDashboards(c tele.Context) error {

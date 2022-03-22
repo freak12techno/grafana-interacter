@@ -1,7 +1,7 @@
 log_level: info # Log level. Defaults to "info"
 json: false # Output logs as JSON. Useful if you are using logging aggregation solutions such as ELK. Defaults to false.
 telegram_token: xxx:yyy # Telegram bot token, you can create a Telegam bot with @BotFather bot on Telegram
-auth: # Grafana credentials.
+grafana: # Grafana credentials.
+  url: http:/localhost:3000 # URL of the remote Grafana to do queries against.
   user: admin
   password: admin
-grafana_url: http:/localhost:3000 # URL of the remote Grafana to do queries against.

@@ -12,21 +12,19 @@ import (
 )
 
 type GrafanaStruct struct {
-	URL    string
-	Auth   *AuthStruct
+	Config *GrafanaConfig
 	Logger zerolog.Logger
 }
 
-func InitGrafana(url string, auth *AuthStruct, logger *zerolog.Logger) *GrafanaStruct {
+func InitGrafana(config *GrafanaConfig, logger *zerolog.Logger) *GrafanaStruct {
 	return &GrafanaStruct{
-		URL:    url,
-		Auth:   auth,
+		Config: config,
 		Logger: logger.With().Str("component", "grafanaStruct").Logger(),
 	}
 }
 
 func (g *GrafanaStruct) UseAuth() bool {
-	return g.Auth != nil && g.Auth.User != "" && g.Auth.Password != ""
+	return g.Config != nil && g.Config.User != "" && g.Config.Password != ""
 }
 
 func (g *GrafanaStruct) RenderPanel(panel *PanelStruct, qs map[string]string) (io.ReadCloser, error) {
@@ -40,25 +38,24 @@ func (g *GrafanaStruct) RenderPanel(panel *PanelStruct, qs map[string]string) (i
 		"tz":      "Europe/Moscow",
 	}
 
-	url := fmt.Sprintf(
-		"%s/render/d-solo/%s/dashboard?%s",
-		g.URL,
+	url := g.RelativeLink(fmt.Sprintf(
+		"/render/d-solo/%s/dashboard?%s",
 		panel.DashboardID,
 		SerializeQueryString(MergeMaps(baseParams, qs)),
-	)
+	))
 
 	return g.Query(url)
 }
 
 func (g *GrafanaStruct) GetAllDashboards() ([]GrafanaDashboardInfo, error) {
-	url := fmt.Sprintf("%s/api/search?type=dash-db", g.URL)
+	url := g.RelativeLink("/api/search?type=dash-db")
 	dashboards := []GrafanaDashboardInfo{}
 	err := g.QueryAndDecode(url, &dashboards)
 	return dashboards, err
 }
 
 func (g *GrafanaStruct) GetDashboard(dashboardUID string) (*GrafanaDashboardResponse, error) {
-	url := fmt.Sprintf("%s/api/dashboards/uid/%s", g.URL, dashboardUID)
+	url := g.RelativeLink(fmt.Sprintf("/api/dashboards/uid/%s", dashboardUID))
 	dashboards := &GrafanaDashboardResponse{}
 	err := g.QueryAndDecode(url, &dashboards)
 	return dashboards, err
@@ -116,34 +113,37 @@ func (g *GrafanaStruct) GetAllPanels() ([]PanelStruct, error) {
 	return panels, nil
 }
 
+func (g *GrafanaStruct) RelativeLink(url string) string {
+	return fmt.Sprintf("%s%s", g.Config.URL, url)
+}
+
 func (g *GrafanaStruct) GetDashboardLink(dashboard GrafanaDashboardInfo) string {
-	return fmt.Sprintf("<a href='%s%s'>%s</a>", g.URL, dashboard.URL, dashboard.Title)
+	return fmt.Sprintf("<a href='%s%s'>%s</a>", g.Config.URL, dashboard.URL, dashboard.Title)
 }
 
 func (g *GrafanaStruct) GetPanelLink(panel PanelStruct) string {
 	return fmt.Sprintf(
-		"<a href='%s%s?viewPanel=%d'>%s</a>",
-		Config.GrafanaURL,
-		panel.DashboardURL,
+		"<a href='%s?viewPanel=%d'>%s</a>",
+		g.RelativeLink(panel.DashboardURL),
 		panel.PanelID,
 		panel.Name,
 	)
 }
 
 func (g *GrafanaStruct) GetDatasourceLink(ds GrafanaDatasource) string {
-	return fmt.Sprintf("<a href='%s/datasources/edit/%s'>%s</a>", g.URL, ds.UID, ds.Name)
+	return fmt.Sprintf("<a href='%s/datasources/edit/%s'>%s</a>", g.Config.URL, ds.UID, ds.Name)
 }
 
 func (g *GrafanaStruct) GetDatasources() ([]GrafanaDatasource, error) {
 	datasources := []GrafanaDatasource{}
-	url := fmt.Sprintf("%s/api/datasources", g.URL)
+	url := g.RelativeLink("/api/datasources")
 	err := g.QueryAndDecode(url, &datasources)
 	return datasources, err
 }
 
 func (g *GrafanaStruct) GetGrafanaAlertingRules() ([]GrafanaAlertGroup, error) {
 	rules := GrafanaAlertRulesResponse{}
-	url := fmt.Sprintf("%s/api/prometheus/grafana/api/v1/rules", g.URL)
+	url := g.RelativeLink("/api/prometheus/grafana/api/v1/rules")
 	err := g.QueryAndDecode(url, &rules)
 	if err != nil {
 		return nil, err
@@ -154,7 +154,7 @@ func (g *GrafanaStruct) GetGrafanaAlertingRules() ([]GrafanaAlertGroup, error) {
 
 func (g *GrafanaStruct) GetDatasourceAlertingRules(datasourceID int) ([]GrafanaAlertGroup, error) {
 	rules := GrafanaAlertRulesResponse{}
-	url := fmt.Sprintf("%s/api/prometheus/%d/api/v1/rules", g.URL, datasourceID)
+	url := g.RelativeLink(fmt.Sprintf("/api/prometheus/%d/api/v1/rules", datasourceID))
 	err := g.QueryAndDecode(url, &rules)
 	if err != nil {
 		return nil, err
@@ -191,7 +191,7 @@ func (g *GrafanaStruct) Query(url string) (io.ReadCloser, error) {
 	g.Logger.Trace().Str("url", url).Msg("Doing a Grafana API query")
 
 	if g.UseAuth() {
-		req.SetBasicAuth(g.Auth.User, g.Auth.Password)
+		req.SetBasicAuth(g.Config.User, g.Config.Password)
 	}
 
 	resp, err := client.Do(req)
