@@ -85,7 +85,7 @@ func HandleListDashboards(c tele.Context) error {
 
 	dashboards, err := Grafana.GetAllDashboards()
 	if err != nil {
-		return c.Send(fmt.Sprintf("Error querying for dashboards: %s", err))
+		return c.Reply(fmt.Sprintf("Error querying for dashboards: %s", err))
 	}
 
 	var sb strings.Builder
@@ -94,7 +94,7 @@ func HandleListDashboards(c tele.Context) error {
 		sb.WriteString(fmt.Sprintf("- %s\n", Grafana.GetDashboardLink(dashboard)))
 	}
 
-	return c.Send(sb.String(), tele.ModeHTML)
+	return c.Reply(sb.String(), tele.ModeHTML)
 }
 
 func HandleShowDashboard(c tele.Context) error {
@@ -107,22 +107,22 @@ func HandleShowDashboard(c tele.Context) error {
 	_, args = args[0], args[1:] // removing first argument as it's always /render
 
 	if len(args) != 1 {
-		return c.Send("Usage: /dashboard <dashboard>")
+		return c.Reply("Usage: /dashboard <dashboard>")
 	}
 
 	dashboards, err := Grafana.GetAllDashboards()
 	if err != nil {
-		return c.Send(fmt.Sprintf("Error querying for dashboards: %s", err))
+		return c.Reply(fmt.Sprintf("Error querying for dashboards: %s", err))
 	}
 
 	dashboard, found := FindDashboardByName(dashboards, args[0])
 	if !found {
-		return c.Send("Could not find dashboard. See /dashboards for dashboards list.")
+		return c.Reply("Could not find dashboard. See /dashboards for dashboards list.")
 	}
 
 	dashboardEnriched, err := Grafana.GetDashboard(dashboard.UID)
 	if err != nil {
-		return c.Send(fmt.Sprintf("Could not get dashboard: %s", err))
+		return c.Reply(fmt.Sprintf("Could not get dashboard: %s", err))
 	}
 
 	var sb strings.Builder
@@ -136,7 +136,7 @@ func HandleShowDashboard(c tele.Context) error {
 		})))
 	}
 
-	return c.Send(sb.String(), tele.ModeHTML)
+	return c.Reply(sb.String(), tele.ModeHTML)
 }
 
 func HandleRenderPanel(c tele.Context) error {
@@ -148,22 +148,22 @@ func HandleRenderPanel(c tele.Context) error {
 	opts, valid := ParseRenderOptions(c.Text())
 
 	if !valid {
-		return c.Send("Usage: /render <opts> <panel name>")
+		return c.Reply("Usage: /render <opts> <panel name>")
 	}
 
 	panels, err := Grafana.GetAllPanels()
 	if err != nil {
-		return c.Send(fmt.Sprintf("Error querying for panels: %s", err))
+		return c.Reply(fmt.Sprintf("Error querying for panels: %s", err))
 	}
 
 	panel, found := FindPanelByName(panels, opts.Query)
 	if !found {
-		return c.Send("Could not find a panel. See /dashboards for dashboards list, and /dashboard <dashboard name> for its panels.")
+		return c.Reply("Could not find a panel. See /dashboards for dashboards list, and /dashboard <dashboard name> for its panels.")
 	}
 
 	image, err := Grafana.RenderPanel(panel, opts.Params)
 	if err != nil {
-		return c.Send(err)
+		return c.Reply(err)
 	}
 
 	defer image.Close()
@@ -172,7 +172,7 @@ func HandleRenderPanel(c tele.Context) error {
 		File:    tele.FromReader(image),
 		Caption: fmt.Sprintf("Panel: %s", Grafana.GetPanelLink(*panel)),
 	}
-	return c.Send(fileToSend, tele.ModeHTML)
+	return c.Reply(fileToSend, tele.ModeHTML)
 }
 
 func HandleListDatasources(c tele.Context) error {
@@ -183,7 +183,7 @@ func HandleListDatasources(c tele.Context) error {
 
 	datasources, err := Grafana.GetDatasources()
 	if err != nil {
-		return c.Send(fmt.Sprintf("Error querying alerts: %s", err))
+		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
 	}
 
 	var sb strings.Builder
@@ -192,7 +192,7 @@ func HandleListDatasources(c tele.Context) error {
 		sb.WriteString(fmt.Sprintf("- %s\n", Grafana.GetDatasourceLink(ds)))
 	}
 
-	return c.Send(sb.String(), tele.ModeHTML)
+	return c.Reply(sb.String(), tele.ModeHTML)
 }
 
 func HandleListAlerts(c tele.Context) error {
@@ -203,12 +203,12 @@ func HandleListAlerts(c tele.Context) error {
 
 	grafanaGroups, err := Grafana.GetGrafanaAlertingRules()
 	if err != nil {
-		return c.Send(fmt.Sprintf("Error querying alerts: %s", err))
+		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
 	}
 
 	prometheusGroups, err := Grafana.GetPrometheusAlertingRules()
 	if err != nil {
-		return c.Send(fmt.Sprintf("Error querying alerts: %s", err))
+		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
 	}
 
 	var sb strings.Builder
@@ -252,7 +252,7 @@ func HandleListAlerts(c tele.Context) error {
 		sb.WriteString("<strong>No Prometheus alerts</strong>\n")
 	}
 
-	return c.Send(sb.String(), tele.ModeHTML)
+	return c.Reply(sb.String(), tele.ModeHTML)
 }
 
 func main() {
