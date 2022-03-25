@@ -15,3 +15,5 @@ grafana:
    # Grafana credentials.
   user: admin
   password: admin
+  # Timezone for rendering graphs
+  timezone: Europe/Moscow

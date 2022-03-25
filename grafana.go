@@ -35,7 +35,7 @@ func (g *GrafanaStruct) RenderPanel(panel *PanelStruct, qs map[string]string) (i
 		"panelId": fmt.Sprintf("%d", panel.PanelID),
 		"width":   "1000",
 		"height":  "500",
-		"tz":      "Europe/Moscow",
+		"tz":      g.Config.Timezone,
 	}
 
 	url := g.RelativeLink(fmt.Sprintf(

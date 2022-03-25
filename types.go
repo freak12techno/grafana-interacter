@@ -18,6 +18,7 @@ type GrafanaConfig struct {
 	URL      string `yaml:"url" default:"http://localhost:3000"`
 	User     string `yaml:"user"`
 	Password string `yaml:"password"`
+	Timezone string `yaml:"timezone" default:"Europe/Moscow"`
 }
 
 type PanelStruct struct {
