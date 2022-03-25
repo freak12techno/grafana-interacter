@@ -36,6 +36,21 @@ func FindPanelByName(panels []PanelStruct, name string) (*PanelStruct, bool) {
 	return nil, false
 }
 
+func FindAlertRuleByName(groups []GrafanaAlertGroup, name string) (*GrafanaAlertRule, bool) {
+	normalizedName := NormalizeString(name)
+
+	for _, group := range groups {
+		for _, rule := range group.Rules {
+			ruleName := NormalizeString(group.Name + rule.Name)
+			if strings.Contains(ruleName, normalizedName) {
+				return &rule, true
+			}
+		}
+	}
+
+	return nil, false
+}
+
 func ParseRenderOptions(query string) (RenderOptions, bool) {
 	args := strings.Split(query, " ")
 	if len(args) <= 1 {
@@ -80,4 +95,32 @@ func MergeMaps(first, second map[string]string) map[string]string {
 	}
 
 	return first
+}
+
+func GetEmojiByStatus(state string) string {
+	switch strings.ToLower(state) {
+	case "inactive", "ok", "normal":
+		return "🟢"
+	case "pending":
+		return "🟡"
+	case "firing", "alerting":
+		return "🔴"
+	default:
+		return "[" + state + "]"
+	}
+}
+
+func SerializeAlertLabels(qs map[string]string) string {
+	tmp := make([]string, len(qs))
+	counter := 0
+
+	for key, value := range qs {
+		if strings.HasPrefix(key, "__") && strings.HasSuffix(key, "__") {
+			continue
+		}
+		tmp[counter] = key + "=" + value + "\n"
+		counter++
+	}
+
+	return strings.Join(tmp, " ")
 }

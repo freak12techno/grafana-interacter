@@ -184,6 +184,20 @@ func (g *GrafanaStruct) GetPrometheusAlertingRules() ([]GrafanaAlertGroup, error
 	return groups, err
 }
 
+func (g *GrafanaStruct) GetAllAlertingRules() ([]GrafanaAlertGroup, error) {
+	grafanaRules, err := g.GetGrafanaAlertingRules()
+	if err != nil {
+		return nil, err
+	}
+
+	prometheusRules, err := g.GetPrometheusAlertingRules()
+	if err != nil {
+		return nil, err
+	}
+
+	return append(grafanaRules, prometheusRules...), nil
+}
+
 func (g *GrafanaStruct) Query(url string) (io.ReadCloser, error) {
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", url, nil)

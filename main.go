@@ -11,6 +11,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 	tele "gopkg.in/telebot.v3"
+	"gopkg.in/telebot.v3/middleware"
 	"gopkg.in/yaml.v2"
 )
 
@@ -59,7 +60,7 @@ func Execute(cmd *cobra.Command, args []string) {
 	Grafana = InitGrafana(&Config.Grafana, &log)
 
 	b, err := tele.NewBot(tele.Settings{
-		Token:   Config.TelegramToken,
+		Token:   Config.Telegram.Token,
 		Poller:  &tele.LongPoller{Timeout: 10 * time.Second},
 		OnError: HandleError,
 	})
@@ -68,15 +69,21 @@ func Execute(cmd *cobra.Command, args []string) {
 		return
 	}
 
+	if len(Config.Telegram.Admins) > 0 {
+		log.Debug().Msg("Using admins whitelist")
+		b.Use(middleware.Whitelist(Config.Telegram.Admins...))
+	}
+
 	b.Handle("/dashboards", HandleListDashboards)
 	b.Handle("/dashboard", HandleShowDashboard)
 	b.Handle("/render", HandleRenderPanel)
 	b.Handle("/datasources", HandleListDatasources)
 	b.Handle("/alerts", HandleListAlerts)
-	b.Handle("/alert", HandleListAlerts)
-	b.Start()
+	b.Handle("/alert", HandleSingleAlert)
 
 	log.Info().Msg("Telegram bot listening")
+
+	b.Start()
 }
 
 func HandleError(err error, c tele.Context) {
@@ -109,7 +116,7 @@ func HandleShowDashboard(c tele.Context) error {
 		Str("text", c.Text()).
 		Msg("Got dashboard query")
 
-	args := strings.SplitAfterN(c.Text(), " ", 2)
+	args := strings.SplitN(c.Text(), " ", 2)
 	_, args = args[0], args[1:] // removing first argument as it's always /render
 
 	if len(args) != 1 {
@@ -222,16 +229,7 @@ func HandleListAlerts(c tele.Context) error {
 		sb.WriteString("<strong>Grafana alerts</strong>\n")
 		for _, group := range grafanaGroups {
 			for _, rule := range group.Rules {
-				switch rule.State {
-				case "inactive":
-					sb.WriteString(fmt.Sprintf("- 🟢 %s -> %s\n", group.Name, rule.Name))
-				case "pending":
-					sb.WriteString(fmt.Sprintf("- 🟡 %s -> %s\n", group.Name, rule.Name))
-				case "firing":
-					sb.WriteString(fmt.Sprintf("- 🔴 %s -> %s\n", group.Name, rule.Name))
-				default:
-					sb.WriteString(fmt.Sprintf("- [%s] %s -> %s\n", rule.State, group.Name, rule.Name))
-				}
+				sb.WriteString(rule.Serialize(group.Name))
 			}
 		}
 	} else {
@@ -242,20 +240,45 @@ func HandleListAlerts(c tele.Context) error {
 		sb.WriteString("<strong>Prometheus alerts</strong>\n")
 		for _, group := range prometheusGroups {
 			for _, rule := range group.Rules {
-				switch rule.State {
-				case "inactive":
-					sb.WriteString(fmt.Sprintf("- 🟢 %s -> %s\n", group.Name, rule.Name))
-				case "pending":
-					sb.WriteString(fmt.Sprintf("- 🟡 %s -> %s\n", group.Name, rule.Name))
-				case "firing":
-					sb.WriteString(fmt.Sprintf("- 🔴 %s -> %s\n", group.Name, rule.Name))
-				default:
-					sb.WriteString(fmt.Sprintf("- [%s] %s -> %s\n", rule.State, group.Name, rule.Name))
-				}
+				sb.WriteString(rule.Serialize(group.Name))
 			}
 		}
 	} else {
 		sb.WriteString("<strong>No Prometheus alerts</strong>\n")
+	}
+
+	return c.Reply(sb.String(), tele.ModeHTML)
+}
+
+func HandleSingleAlert(c tele.Context) error {
+	log.Info().
+		Str("sender", c.Sender().Username).
+		Str("text", c.Text()).
+		Msg("Got single alert query")
+
+	args := strings.SplitN(c.Text(), " ", 2)
+	_, args = args[0], args[1:] // removing first argument as it's always /alert
+
+	if len(args) != 1 {
+		return c.Reply("Usage: /alert <alert name>")
+	}
+
+	rules, err := Grafana.GetAllAlertingRules()
+	if err != nil {
+		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
+	}
+
+	rule, found := FindAlertRuleByName(rules, args[0])
+	if !found {
+		return c.Reply("Could not find alert. See /alert for alerting rules.")
+	}
+
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("<strong>Alert rule: </strong>%s\n", rule.Name))
+	sb.WriteString("<strong>Alerts: </strong>\n")
+
+	for _, alert := range rule.Alerts {
+		sb.WriteString(alert.Serialize())
 	}
 
 	return c.Reply(sb.String(), tele.ModeHTML)
