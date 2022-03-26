@@ -3,7 +3,11 @@ package main
 import (
 	"regexp"
 	"strings"
+
+	tele "gopkg.in/telebot.v3"
 )
+
+const MAX_MESSAGE_SIZE = 4096
 
 func NormalizeString(input string) string {
 	reg := regexp.MustCompile("[^a-zA-Z0-9]+")
@@ -118,9 +122,35 @@ func SerializeAlertLabels(qs map[string]string) string {
 		if strings.HasPrefix(key, "__") && strings.HasSuffix(key, "__") {
 			continue
 		}
-		tmp[counter] = key + "=" + value + "\n"
+		tmp[counter] = key + "=" + value
 		counter++
 	}
 
 	return strings.Join(tmp, " ")
+}
+
+func BotReply(c tele.Context, msg string) error {
+	msgsByNewline := strings.Split(msg, "\n")
+
+	var sb strings.Builder
+
+	for _, line := range msgsByNewline {
+		if sb.Len()+len(line) > MAX_MESSAGE_SIZE {
+			if err := c.Reply(sb.String(), tele.ModeHTML); err != nil {
+				log.Error().Err(err).Msg("Could not send Telegram message")
+				return err
+			}
+
+			sb.Reset()
+		}
+
+		sb.WriteString(line + "\n")
+	}
+
+	if err := c.Reply(sb.String(), tele.ModeHTML); err != nil {
+		log.Error().Err(err).Msg("Could not send Telegram message")
+		return err
+	}
+
+	return nil
 }

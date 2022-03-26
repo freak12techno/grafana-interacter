@@ -107,7 +107,7 @@ func HandleListDashboards(c tele.Context) error {
 		sb.WriteString(fmt.Sprintf("- %s\n", Grafana.GetDashboardLink(dashboard)))
 	}
 
-	return c.Reply(sb.String(), tele.ModeHTML)
+	return BotReply(c, sb.String())
 }
 
 func HandleShowDashboard(c tele.Context) error {
@@ -149,7 +149,7 @@ func HandleShowDashboard(c tele.Context) error {
 		})))
 	}
 
-	return c.Reply(sb.String(), tele.ModeHTML)
+	return BotReply(c, sb.String())
 }
 
 func HandleRenderPanel(c tele.Context) error {
@@ -205,7 +205,7 @@ func HandleListDatasources(c tele.Context) error {
 		sb.WriteString(fmt.Sprintf("- %s\n", Grafana.GetDatasourceLink(ds)))
 	}
 
-	return c.Reply(sb.String(), tele.ModeHTML)
+	return BotReply(c, sb.String())
 }
 
 func HandleListAlerts(c tele.Context) error {
@@ -247,7 +247,7 @@ func HandleListAlerts(c tele.Context) error {
 		sb.WriteString("<strong>No Prometheus alerts</strong>\n")
 	}
 
-	return c.Reply(sb.String(), tele.ModeHTML)
+	return BotReply(c, sb.String())
 }
 
 func HandleSingleAlert(c tele.Context) error {
@@ -281,7 +281,7 @@ func HandleSingleAlert(c tele.Context) error {
 		sb.WriteString(alert.Serialize())
 	}
 
-	return c.Reply(sb.String(), tele.ModeHTML)
+	return BotReply(c, sb.String())
 }
 
 func main() {
