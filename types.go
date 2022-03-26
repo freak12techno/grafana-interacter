@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -103,6 +104,7 @@ type Silence struct {
 	EndsAt    time.Time        `json:"endsAt"`
 	ID        string           `json:"id,omitempty"`
 	Matchers  []SilenceMatcher `json:"matchers"`
+	Status    SilenceStatus    `json:"status,omitempty"`
 }
 
 type SilenceMatcher struct {
@@ -112,10 +114,42 @@ type SilenceMatcher struct {
 	Value   string `json:"value"`
 }
 
+type SilenceStatus struct {
+	State string `json:"state"`
+}
+
 func (rule *GrafanaAlertRule) Serialize(groupName string) string {
 	return fmt.Sprintf("- %s %s -> %s\n", GetEmojiByStatus(rule.State), groupName, rule.Name)
 }
 
 func (alert *GrafanaAlert) Serialize() string {
 	return fmt.Sprintf("- %s <pre>%s</pre>", GetEmojiByStatus(alert.State), SerializeAlertLabels(alert.Labels))
+}
+
+func (silence *Silence) Serialize() string {
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("Starts at:  <pre>%s</pre>\n", silence.StartsAt.String()))
+	sb.WriteString(fmt.Sprintf("Ends at:    <pre>%s</pre>\n", silence.EndsAt.String()))
+	sb.WriteString(fmt.Sprintf("Created by: <pre>%s</pre>\n", silence.CreatedBy))
+	sb.WriteString(fmt.Sprintf("Comment:    <pre>%s</pre>\n", silence.Comment))
+	sb.WriteString(fmt.Sprintf("Status:     <pre>%s</pre>\n", silence.Status.State))
+	sb.WriteString("Matchers: ")
+
+	for _, matcher := range silence.Matchers {
+		sb.WriteString("<pre>" + matcher.Serialize() + "</pre> ")
+	}
+
+	return sb.String()
+}
+
+func (matcher *SilenceMatcher) Serialize() string {
+	if matcher.IsEqual && matcher.IsRegex {
+		return fmt.Sprintf("%s ~= %s", matcher.Name, matcher.Value)
+	} else if matcher.IsEqual && !matcher.IsRegex {
+		return fmt.Sprintf("%s = %s", matcher.Name, matcher.Value)
+	} else if !matcher.IsEqual && matcher.IsRegex {
+		return fmt.Sprintf("%s !~ %s", matcher.Name, matcher.Value)
+	} else {
+		return fmt.Sprintf("%s != %s", matcher.Name, matcher.Value)
+	}
 }

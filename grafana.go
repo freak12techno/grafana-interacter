@@ -206,6 +206,13 @@ func (g *GrafanaStruct) CreateSilence(silence Silence) error {
 	return err
 }
 
+func (g *GrafanaStruct) GetSilences() ([]Silence, error) {
+	silences := []Silence{}
+	url := g.RelativeLink("/api/alertmanager/grafana/api/v2/silences")
+	err := g.QueryAndDecode(url, &silences)
+	return silences, err
+}
+
 func (g *GrafanaStruct) Query(url string) (io.ReadCloser, error) {
 	client := &http.Client{}
 	req, _ := http.NewRequest("GET", url, nil)

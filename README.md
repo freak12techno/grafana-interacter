@@ -5,11 +5,12 @@
 
 grafana-interacter is a tool to interact with your Grafana instance via a Telegram bot. Here's the list of currently supported commands:
 - `/render [<opts>] <panel name>` - renders the panel and sends it as image. If there are multiple panels with the same name (for example, you have a `dashboard1` and `dashboard2` both containing panel with name `panel`), it will render the first panel it will find. For specifying it, you may add the dashboard name as a prefix to your query (like `/render dashboard1 panel`). You can also provide options in a `key=value` format, which will be internally passed to a `/render` query to Grafana. Some examples are `from`, `to`, `width`, `height` (the command would look something like `/render from=now-14d to=now-7d width=100 height=100 dashboard1 panel`). By default, the params are: `width=1000&height=500&from=now-30m&to=now&tz=Europe/Moscow`.
-- `/dashboards` - will list Grafana dashboards and links to them
-- `/dashboard <name>` - will return a link to a dashboard and its panels
-- `/datasources` - will return Grafana datasources
+- `/dashboards` - will list Grafana dashboards and links to them.
+- `/dashboard <name>` - will return a link to a dashboard and its panels.
+- `/datasources` - will return Grafana datasources.
 - `/alerts` - will list both Grafana alerts and Prometheus alerts from all Prometheus datasources, if any
 - `/silence <duration> <params>` - creates a silence for Grafana alert. You need to pass a duration (like `/silence 2h test alert`) and some params for matching alerts to silence. You may use `=` for matching the value exactly (example: `/silence 2h host=localhost`), `!=` for matching everything except this value (example: `/silence 2h host!=localhost`), `=~` for matching everything that matches the regexp (example: `/silence 2h host=~local`), , `!~` for matching everything that doesn't the regexp (example: `/silence 2h host!~local`), or just provide a string that will be treated as an alert name (example: `/silence 2h test alert`).
+- `/silences` - list silences (both active and expired).
 
 ## How can I set it up?
 

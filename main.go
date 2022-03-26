@@ -80,6 +80,7 @@ func Execute(cmd *cobra.Command, args []string) {
 	b.Handle("/datasources", HandleListDatasources)
 	b.Handle("/alerts", HandleListAlerts)
 	b.Handle("/alert", HandleSingleAlert)
+	b.Handle("/silences", HandleListSilences)
 	b.Handle("/silence", HandleNewSilence)
 
 	log.Info().Msg("Telegram bot listening")
@@ -301,7 +302,28 @@ func HandleNewSilence(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error creating silence: %s", silenceErr))
 	}
 
-	return c.Reply("Silence created.")
+	return BotReply(c, "Silence created.")
+}
+
+func HandleListSilences(c tele.Context) error {
+	log.Info().
+		Str("sender", c.Sender().Username).
+		Str("text", c.Text()).
+		Msg("Got list silence query")
+
+	silences, err := Grafana.GetSilences()
+	if err != nil {
+		return c.Reply(fmt.Sprintf("Error listing silence: %s", err))
+	}
+
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("<strong>Silences</strong>\n"))
+
+	for _, silence := range silences {
+		sb.WriteString(silence.Serialize() + "\n\n")
+	}
+
+	return BotReply(c, sb.String())
 }
 
 func main() {
