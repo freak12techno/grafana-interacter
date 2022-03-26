@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	tele "gopkg.in/telebot.v3"
 )
@@ -153,4 +155,91 @@ func BotReply(c tele.Context, msg string) error {
 	}
 
 	return nil
+}
+
+func ParseSilenceOptions(query string, c tele.Context) (*Silence, string) {
+	args := strings.Split(query, " ")
+	if len(args) <= 2 {
+		return nil, "Usage: /silence <duration> <params>"
+	}
+
+	_, args = args[0], args[1:] // removing first argument as it's always /silence
+	durationString, args := args[0], args[1:]
+
+	duration, err := time.ParseDuration(durationString)
+	if err != nil {
+		return nil, "Invalid duration provided"
+	}
+
+	silence := Silence{
+		StartsAt:  time.Now(),
+		EndsAt:    time.Now().Add(duration),
+		Matchers:  []SilenceMatcher{},
+		CreatedBy: c.Sender().FirstName,
+		Comment: fmt.Sprintf(
+			"Muted using grafana-interacter for %s by %s",
+			duration,
+			c.Sender().FirstName,
+		),
+	}
+
+	for len(args) > 0 {
+		if strings.Contains(args[0], "!=") {
+			// not equals
+			argsSplit := strings.SplitN(args[0], "!=", 2)
+			silence.Matchers = append(silence.Matchers, SilenceMatcher{
+				IsEqual: false,
+				IsRegex: false,
+				Name:    argsSplit[0],
+				Value:   argsSplit[1],
+			})
+		} else if strings.Contains(args[0], "!~") {
+			// not matches regexp
+			argsSplit := strings.SplitN(args[0], "!~", 2)
+			silence.Matchers = append(silence.Matchers, SilenceMatcher{
+				IsEqual: false,
+				IsRegex: true,
+				Name:    argsSplit[0],
+				Value:   argsSplit[1],
+			})
+		} else if strings.Contains(args[0], "=~") {
+			// matches regexp
+			argsSplit := strings.SplitN(args[0], "=~", 2)
+			silence.Matchers = append(silence.Matchers, SilenceMatcher{
+				IsEqual: true,
+				IsRegex: true,
+				Name:    argsSplit[0],
+				Value:   argsSplit[1],
+			})
+		} else if strings.Contains(args[0], "=") {
+			// equals
+			argsSplit := strings.SplitN(args[0], "=", 2)
+			silence.Matchers = append(silence.Matchers, SilenceMatcher{
+				IsEqual: true,
+				IsRegex: false,
+				Name:    argsSplit[0],
+				Value:   argsSplit[1],
+			})
+		} else {
+			break
+		}
+
+		_, args = args[0], args[1:]
+	}
+
+	if len(args) > 0 {
+		// plain string, silencing by alertname
+		silence.Matchers = append(silence.Matchers, SilenceMatcher{
+			IsEqual: true,
+			IsRegex: false,
+			Name:    "alertname",
+			Value:   strings.Join(args, " "),
+		})
+	}
+
+	if len(silence.Matchers) == 0 {
+		return nil, "Usage: /silence <duration> <params>"
+	}
+
+	return &silence, ""
 }

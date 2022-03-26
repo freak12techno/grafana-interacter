@@ -80,6 +80,7 @@ func Execute(cmd *cobra.Command, args []string) {
 	b.Handle("/datasources", HandleListDatasources)
 	b.Handle("/alerts", HandleListAlerts)
 	b.Handle("/alert", HandleSingleAlert)
+	b.Handle("/silence", HandleNewSilence)
 
 	log.Info().Msg("Telegram bot listening")
 
@@ -282,6 +283,25 @@ func HandleSingleAlert(c tele.Context) error {
 	}
 
 	return BotReply(c, sb.String())
+}
+
+func HandleNewSilence(c tele.Context) error {
+	log.Info().
+		Str("sender", c.Sender().Username).
+		Str("text", c.Text()).
+		Msg("Got new silence query")
+
+	silenceInfo, err := ParseSilenceOptions(c.Text(), c)
+	if err != "" {
+		return c.Reply(err)
+	}
+
+	silenceErr := Grafana.CreateSilence(*silenceInfo)
+	if silenceErr != nil {
+		return c.Reply(fmt.Sprintf("Error creating silence: %s", silenceErr))
+	}
+
+	return c.Reply("Silence created.")
 }
 
 func main() {

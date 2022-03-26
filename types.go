@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 type ConfigStruct struct {
 	LogLevel   string         `yaml:"log_level" default:"info"`
@@ -91,6 +94,22 @@ type GrafanaAlert struct {
 type RenderOptions struct {
 	Query  string
 	Params map[string]string
+}
+
+type Silence struct {
+	Comment   string           `json:"comment"`
+	CreatedBy string           `json:"createdBy"`
+	StartsAt  time.Time        `json:"startsAt"`
+	EndsAt    time.Time        `json:"endsAt"`
+	ID        string           `json:"id,omitempty"`
+	Matchers  []SilenceMatcher `json:"matchers"`
+}
+
+type SilenceMatcher struct {
+	IsEqual bool   `json:"isEqual"`
+	IsRegex bool   `json:"isRegex"`
+	Name    string `json:"name"`
+	Value   string `json:"value"`
 }
 
 func (rule *GrafanaAlertRule) Serialize(groupName string) string {
