@@ -11,6 +11,8 @@ grafana-interacter is a tool to interact with your Grafana instance via a Telegr
 - `/alerts` - will list both Grafana alerts and Prometheus alerts from all Prometheus datasources, if any
 - `/silence <duration> <params>` - creates a silence for Grafana alert. You need to pass a duration (like `/silence 2h test alert`) and some params for matching alerts to silence. You may use `=` for matching the value exactly (example: `/silence 2h host=localhost`), `!=` for matching everything except this value (example: `/silence 2h host!=localhost`), `=~` for matching everything that matches the regexp (example: `/silence 2h host=~local`), , `!~` for matching everything that doesn't the regexp (example: `/silence 2h host!~local`), or just provide a string that will be treated as an alert name (example: `/silence 2h test alert`).
 - `/silences` - list silences (both active and expired).
+- `/alertmanager_silences` - same as `/silences`, but using external Alertmanager.
+- `/alertmanager_silence` - same as `/silence`, but using external Alertmanager.
 
 ## How can I set it up?
 

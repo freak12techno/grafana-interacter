@@ -16,9 +16,10 @@ import (
 )
 
 var (
-	ConfigPath string
-	Config     ConfigStruct
-	Grafana    *GrafanaStruct
+	ConfigPath   string
+	Config       ConfigStruct
+	Grafana      *GrafanaStruct
+	Alertmanager *AlertmanagerStruct
 )
 
 var log = zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout}).With().Timestamp().Logger()
@@ -58,6 +59,7 @@ func Execute(cmd *cobra.Command, args []string) {
 	zerolog.SetGlobalLevel(logLevel)
 
 	Grafana = InitGrafana(&Config.Grafana, &log)
+	Alertmanager = InitAlertmanager(&Config.Alertmanager, &log)
 
 	b, err := tele.NewBot(tele.Settings{
 		Token:   Config.Telegram.Token,
@@ -82,6 +84,8 @@ func Execute(cmd *cobra.Command, args []string) {
 	b.Handle("/alert", HandleSingleAlert)
 	b.Handle("/silences", HandleListSilences)
 	b.Handle("/silence", HandleNewSilence)
+	b.Handle("/alertmanager_silences", HandleAlertmanagerListSilences)
+	b.Handle("/alertmanager_silence", HandleAlertmanagerNewSilence)
 
 	log.Info().Msg("Telegram bot listening")
 
@@ -312,6 +316,46 @@ func HandleListSilences(c tele.Context) error {
 		Msg("Got list silence query")
 
 	silences, err := Grafana.GetSilences()
+	if err != nil {
+		return c.Reply(fmt.Sprintf("Error listing silence: %s", err))
+	}
+
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("<strong>Silences</strong>\n"))
+
+	for _, silence := range silences {
+		sb.WriteString(silence.Serialize() + "\n\n")
+	}
+
+	return BotReply(c, sb.String())
+}
+
+func HandleAlertmanagerNewSilence(c tele.Context) error {
+	log.Info().
+		Str("sender", c.Sender().Username).
+		Str("text", c.Text()).
+		Msg("Got new Alertmanager silence query")
+
+	silenceInfo, err := ParseSilenceOptions(c.Text(), c)
+	if err != "" {
+		return c.Reply(err)
+	}
+
+	silenceErr := Alertmanager.CreateSilence(*silenceInfo)
+	if silenceErr != nil {
+		return c.Reply(fmt.Sprintf("Error creating silence: %s", silenceErr))
+	}
+
+	return BotReply(c, "Silence created.")
+}
+
+func HandleAlertmanagerListSilences(c tele.Context) error {
+	log.Info().
+		Str("sender", c.Sender().Username).
+		Str("text", c.Text()).
+		Msg("Got Alertmanager list silence query")
+
+	silences, err := Alertmanager.GetSilences()
 	if err != nil {
 		return c.Reply(fmt.Sprintf("Error listing silence: %s", err))
 	}

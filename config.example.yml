@@ -11,9 +11,16 @@ telegram:
   admins: [1, 2]
 grafana:
   # URL of the remote Grafana to do queries against.
-  url: http:/localhost:3000
+  url: http://localhost:3000
    # Grafana credentials.
   user: admin
   password: admin
   # Timezone for rendering graphs
   timezone: Europe/Moscow
+# Optional config if you use external Alertmanager, used for getting silences list and creating new ones.
+alertmanager:
+  # URL of the remote Grafana to do queries against. Defaults to http://localhost:9093
+  url: http://localhost:9093
+  # Alertmanager credentials
+  user: admin
+  password: admin

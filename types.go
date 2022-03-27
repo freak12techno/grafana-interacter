@@ -7,10 +7,11 @@ import (
 )
 
 type ConfigStruct struct {
-	LogLevel   string         `yaml:"log_level" default:"info"`
-	JSONOutput bool           `yaml:"json" default:"false"`
-	Telegram   TelegramConfig `yaml:"telegram" default:""`
-	Grafana    GrafanaConfig  `yaml:"grafana"`
+	LogLevel     string             `yaml:"log_level" default:"info"`
+	JSONOutput   bool               `yaml:"json" default:"false"`
+	Telegram     TelegramConfig     `yaml:"telegram" default:""`
+	Grafana      GrafanaConfig      `yaml:"grafana"`
+	Alertmanager AlertmanagerConfig `yaml:"alertmanager"`
 }
 
 type TelegramConfig struct {
@@ -20,6 +21,13 @@ type TelegramConfig struct {
 
 type GrafanaConfig struct {
 	URL      string `yaml:"url" default:"http://localhost:3000"`
+	User     string `yaml:"user"`
+	Password string `yaml:"password"`
+	Timezone string `yaml:"timezone" default:"Europe/Moscow"`
+}
+
+type AlertmanagerConfig struct {
+	URL      string `yaml:"url" default:"http://localhost:9093"`
 	User     string `yaml:"user"`
 	Password string `yaml:"password"`
 	Timezone string `yaml:"timezone" default:"Europe/Moscow"`

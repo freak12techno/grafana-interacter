@@ -215,7 +215,10 @@ func (g *GrafanaStruct) GetSilences() ([]Silence, error) {
 
 func (g *GrafanaStruct) Query(url string) (io.ReadCloser, error) {
 	client := &http.Client{}
-	req, _ := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
 
 	g.Logger.Trace().Str("url", url).Msg("Doing a Grafana API query")
 
@@ -244,7 +247,11 @@ func (g *GrafanaStruct) QueryPost(url string, body interface{}) (io.ReadCloser, 
 		return nil, err
 	}
 
-	req, _ := http.NewRequest("POST", url, buffer)
+	req, err := http.NewRequest("POST", url, buffer)
+	if err != nil {
+		return nil, err
+	}
+
 	req.Header.Set("Content-Type", "application/json")
 
 	g.Logger.Trace().Str("url", url).Msg("Doing a Grafana API query")
