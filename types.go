@@ -136,11 +136,16 @@ func (alert *GrafanaAlert) Serialize() string {
 
 func (silence *Silence) Serialize() string {
 	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("ID:         <pre>%s</pre>\n", silence.ID))
 	sb.WriteString(fmt.Sprintf("Starts at:  <pre>%s</pre>\n", silence.StartsAt.String()))
 	sb.WriteString(fmt.Sprintf("Ends at:    <pre>%s</pre>\n", silence.EndsAt.String()))
 	sb.WriteString(fmt.Sprintf("Created by: <pre>%s</pre>\n", silence.CreatedBy))
 	sb.WriteString(fmt.Sprintf("Comment:    <pre>%s</pre>\n", silence.Comment))
-	sb.WriteString(fmt.Sprintf("Status:     <pre>%s</pre>\n", silence.Status.State))
+	sb.WriteString(fmt.Sprintf(
+		"Status:     <pre>%s %s</pre>\n",
+		GetEmojiBySilenceStatus(silence.Status.State),
+		silence.Status.State,
+	))
 	sb.WriteString("Matchers: ")
 
 	for _, matcher := range silence.Matchers {

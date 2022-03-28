@@ -116,6 +116,17 @@ func GetEmojiByStatus(state string) string {
 	}
 }
 
+func GetEmojiBySilenceStatus(state string) string {
+	switch strings.ToLower(state) {
+	case "active":
+		return "🟢"
+	case "expired":
+		return "⚪"
+	default:
+		return "[" + state + "]"
+	}
+}
+
 func SerializeAlertLabels(qs map[string]string) string {
 	tmp := make([]string, len(qs))
 	counter := 0

@@ -19,7 +19,7 @@ func HandleListSilences(c tele.Context) error {
 	}
 
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("<strong>Silences</strong>\n"))
+	sb.WriteString("<strong>Silences</strong>\n")
 
 	for _, silence := range silences {
 		sb.WriteString(silence.Serialize() + "\n\n")
@@ -40,7 +40,7 @@ func HandleAlertmanagerListSilences(c tele.Context) error {
 	}
 
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("<strong>Silences</strong>\n"))
+	sb.WriteString("<strong>Silences</strong>\n")
 
 	for _, silence := range silences {
 		sb.WriteString(silence.Serialize() + "\n\n")
