@@ -20,7 +20,7 @@ type GrafanaStruct struct {
 func InitGrafana(config *GrafanaConfig, logger *zerolog.Logger) *GrafanaStruct {
 	return &GrafanaStruct{
 		Config: config,
-		Logger: logger.With().Str("component", "grafanaStruct").Logger(),
+		Logger: logger.With().Str("component", "grafana").Logger(),
 	}
 }
 
