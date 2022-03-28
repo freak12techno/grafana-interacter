@@ -122,3 +122,7 @@ func (g *AlertmanagerStruct) QueryAndDecode(url string, output interface{}) erro
 	defer body.Close()
 	return json.NewDecoder(body).Decode(&output)
 }
+
+func (g *AlertmanagerStruct) GetSilenceURL(silence Silence) string {
+	return fmt.Sprintf("%s/#/silences/%s", g.Config.URL, silence.ID)
+}
