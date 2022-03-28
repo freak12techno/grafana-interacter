@@ -36,6 +36,11 @@ func (g *AlertmanagerStruct) GetSilences() ([]Silence, error) {
 	return silences, err
 }
 
+func (g *AlertmanagerStruct) DeleteSilence(silenceID string) error {
+	url := g.RelativeLink("/api/v2/silence/" + silenceID)
+	return g.QueryDelete(url)
+}
+
 func (g *AlertmanagerStruct) RelativeLink(url string) string {
 	return fmt.Sprintf("%s%s", g.Config.URL, url)
 }
@@ -97,7 +102,7 @@ func (g *AlertmanagerStruct) Query(url string) (io.ReadCloser, error) {
 		return nil, err
 	}
 
-	g.Logger.Trace().Str("url", url).Msg("Doing a Grafana API query")
+	g.Logger.Trace().Str("url", url).Msg("Doing an Alertmanager API query")
 
 	req.SetBasicAuth(g.Config.User, g.Config.Password)
 
@@ -125,4 +130,32 @@ func (g *AlertmanagerStruct) QueryAndDecode(url string, output interface{}) erro
 
 func (g *AlertmanagerStruct) GetSilenceURL(silence Silence) string {
 	return fmt.Sprintf("%s/#/silences/%s", g.Config.URL, silence.ID)
+}
+
+func (g *AlertmanagerStruct) QueryDelete(url string) error {
+	if g.Config == nil || g.Config.Password == "" && g.Config.User == "" {
+		return fmt.Errorf("Alertmanager API not configured")
+	}
+
+	client := &http.Client{}
+	req, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		return err
+	}
+
+	g.Logger.Trace().Str("url", url).Msg("Doing an Alertmanager API query")
+
+	req.SetBasicAuth(g.Config.User, g.Config.Password)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode >= 400 {
+		return fmt.Errorf("Could not fetch request. Status code: %d", resp.StatusCode)
+	}
+
+	defer resp.Body.Close()
+	return nil
 }

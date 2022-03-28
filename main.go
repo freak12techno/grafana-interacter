@@ -84,6 +84,7 @@ func Execute(cmd *cobra.Command, args []string) {
 	b.Handle("/silence", HandleNewSilence)
 	b.Handle("/alertmanager_silences", HandleAlertmanagerListSilences)
 	b.Handle("/alertmanager_silence", HandleAlertmanagerNewSilence)
+	b.Handle("/alertmanager_unsilence", HandleAlertmanagerDeleteSilence)
 
 	log.Info().Msg("Telegram bot listening")
 
