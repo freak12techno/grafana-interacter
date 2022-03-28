@@ -136,7 +136,7 @@ func (alert *GrafanaAlert) Serialize() string {
 
 func (silence *Silence) Serialize() string {
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("ID:         <pre>%s</pre>\n", silence.ID))
+	sb.WriteString(fmt.Sprintf("ID:         <code>%s</code>\n", silence.ID))
 	sb.WriteString(fmt.Sprintf("Starts at:  <pre>%s</pre>\n", silence.StartsAt.String()))
 	sb.WriteString(fmt.Sprintf("Ends at:    <pre>%s</pre>\n", silence.EndsAt.String()))
 	sb.WriteString(fmt.Sprintf("Created by: <pre>%s</pre>\n", silence.CreatedBy))
