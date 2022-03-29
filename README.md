@@ -11,14 +11,34 @@ grafana-interacter is a tool to interact with your Grafana instance via a Telegr
 - `/alerts` - will list both Grafana alerts and Prometheus alerts from all Prometheus datasources, if any
 - `/silence <duration> <params>` - creates a silence for Grafana alert. You need to pass a duration (like `/silence 2h test alert`) and some params for matching alerts to silence. You may use `=` for matching the value exactly (example: `/silence 2h host=localhost`), `!=` for matching everything except this value (example: `/silence 2h host!=localhost`), `=~` for matching everything that matches the regexp (example: `/silence 2h host=~local`), , `!~` for matching everything that doesn't the regexp (example: `/silence 2h host!~local`), or just provide a string that will be treated as an alert name (example: `/silence 2h test alert`).
 - `/silences` - list silences (both active and expired).
+- `/unsilence <silence ID>` - deletes a silence.
 - `/alertmanager_silences` - same as `/silences`, but using external Alertmanager.
 - `/alertmanager_silence` - same as `/silence`, but using external Alertmanager.
+- `/alertmanager_unsilence` - same as `/unsilence`, but using external Alertmanager.
 
 ## How can I set it up?
 
-Prerequisite: You need the [`grafana-image-renderer`](https://grafana.com/grafana/plugins/grafana-image-renderer/) plugin for rendering dashboards.
+Prerequisite: You need Grafana itself with new alerting enabled, as well as the [`grafana-image-renderer`](https://grafana.com/grafana/plugins/grafana-image-renderer/) plugin for rendering dashboards.
 
-First of all, you need to download the latest release from [the releases page](https://github.com/Freak12techno/grafana-interacter/releases/). After that, you should unzip it and you are ready to go:
+Before starting, you need to create a Telegram bot. Go to @Botfather at Telegram and create a new bot there. For bot commands, put the following:
+
+```
+render - Render a panel
+dashboards - List dashboards
+dashboard - See dashboard and its panels
+alerts - See alerts
+datasources - See Grafana datasources
+silence - Creates a new silence
+silences - List all silences
+unsilence - Deletes a silence
+alertmanager_silence - Creates a new Alertmanager silence
+alertmanager_silences - List all Alertmanager silences
+alertmanager_unsilence - Deletes an Alertmanager silence
+```
+
+Save the bot token somewhere, you'll need it later to for grafana-interacter to function.
+
+Then, you need to download the latest release from [the releases page](https://github.com/Freak12techno/grafana-interacter/releases/). After that, you should unzip it and you are ready to go:
 
 ```sh
 wget <the link from the releases page>
@@ -26,7 +46,7 @@ tar xvfz grafana-interacter-*
 ./grafana-interacter --config <path to config>
 ```
 
-That's not really interesting, what you probably want to do is to have it running in the background. For that, first of all, we have to copy the file to the system apps folder:
+What you probably want to do is to have it running in the background in a detached mode. For that, first of all, we have to copy the file to the system apps folder:
 
 ```sh
 sudo cp ./grafana-interacter /usr/bin
@@ -63,8 +83,8 @@ WantedBy=multi-user.target
 Then we'll add this service to the autostart and run it:
 
 ```sh
-sudo systemctl enable grafana-interacter
-sudo systemctl start grafana-interacter
+sudo systemctl enable grafana-interacter # set it to start on system load
+sudo systemctl start grafana-interacter  # start it
 sudo systemctl status grafana-interacter # validate it's running
 ```
 
