@@ -213,63 +213,14 @@ func (g *GrafanaStruct) GetSilences() ([]Silence, error) {
 	return silences, err
 }
 
+/* Query functions */
+
 func (g *GrafanaStruct) Query(url string) (io.ReadCloser, error) {
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	g.Logger.Trace().Str("url", url).Msg("Doing a Grafana API query")
-
-	if g.UseAuth() {
-		req.SetBasicAuth(g.Config.User, g.Config.Password)
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("Could not fetch request. Status code: %d", resp.StatusCode)
-	}
-
-	return resp.Body, nil
+	return g.DoQuery("GET", url, nil)
 }
 
 func (g *GrafanaStruct) QueryPost(url string, body interface{}) (io.ReadCloser, error) {
-	client := &http.Client{}
-
-	buffer := new(bytes.Buffer)
-
-	if err := json.NewEncoder(buffer).Encode(body); err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", url, buffer)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	g.Logger.Trace().Str("url", url).Msg("Doing a Grafana API query")
-
-	if g.UseAuth() {
-		req.SetBasicAuth(g.Config.User, g.Config.Password)
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("Could not fetch request. Status code: %d", resp.StatusCode)
-	}
-
-	return resp.Body, nil
+	return g.DoQuery("POST", url, body)
 }
 
 func (g *GrafanaStruct) QueryAndDecode(url string, output interface{}) error {
@@ -290,4 +241,50 @@ func (g *GrafanaStruct) QueryAndDecodePost(url string, postBody interface{}, out
 
 	defer body.Close()
 	return json.NewDecoder(body).Decode(&output)
+}
+
+func (g *GrafanaStruct) DoQuery(method string, url string, body interface{}) (io.ReadCloser, error) {
+	client := &http.Client{}
+
+	var req *http.Request
+	var err error
+
+	if body != nil {
+		buffer := new(bytes.Buffer)
+
+		if err := json.NewEncoder(buffer).Encode(body); err != nil {
+			return nil, err
+		}
+
+		req, err = http.NewRequest(method, url, buffer)
+	} else {
+		req, err = http.NewRequest(method, url, nil)
+
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	g.Logger.Trace().
+		Str("url", url).
+		Str("method", method).
+		Msg("Doing a Grafana API query")
+
+	if g.UseAuth() {
+		req.SetBasicAuth(g.Config.User, g.Config.Password)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("Could not fetch request. Status code: %d", resp.StatusCode)
+	}
+
+	return resp.Body, nil
 }

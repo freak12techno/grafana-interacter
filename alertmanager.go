@@ -41,81 +41,29 @@ func (g *AlertmanagerStruct) DeleteSilence(silenceID string) error {
 	return g.QueryDelete(url)
 }
 
+/* Helpers */
+
 func (g *AlertmanagerStruct) RelativeLink(url string) string {
 	return fmt.Sprintf("%s%s", g.Config.URL, url)
 }
 
-func (g *AlertmanagerStruct) QueryPost(url string, body interface{}) (io.ReadCloser, error) {
-	if g.Config == nil || g.Config.Password == "" || g.Config.User == "" {
-		return nil, fmt.Errorf("Alertmanager API not configured")
-	}
-
-	client := &http.Client{}
-
-	buffer := new(bytes.Buffer)
-
-	if err := json.NewEncoder(buffer).Encode(body); err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", url, buffer)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	g.Logger.Trace().Str("url", url).Msg("Doing an Alertmanager API query")
-
-	req.SetBasicAuth(g.Config.User, g.Config.Password)
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("Could not fetch request. Status code: %d", resp.StatusCode)
-	}
-
-	return resp.Body, nil
+func (g *AlertmanagerStruct) GetSilenceURL(silence Silence) string {
+	return fmt.Sprintf("%s/#/silences/%s", g.Config.URL, silence.ID)
 }
 
-func (g *AlertmanagerStruct) QueryAndDecodePost(url string, postBody interface{}, output interface{}) error {
-	body, err := g.QueryPost(url, postBody)
-	if err != nil {
-		return err
-	}
-
-	defer body.Close()
-	return json.NewDecoder(body).Decode(&output)
-}
+/* Query functions */
 
 func (g *AlertmanagerStruct) Query(url string) (io.ReadCloser, error) {
-	if g.Config == nil || g.Config.Password == "" && g.Config.User == "" {
-		return nil, fmt.Errorf("Alertmanager API not configured")
-	}
+	return g.DoQuery("GET", url, nil)
+}
 
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
+func (g *AlertmanagerStruct) QueryDelete(url string) error {
+	_, err := g.DoQuery("DELETE", url, nil)
+	return err
+}
 
-	g.Logger.Trace().Str("url", url).Msg("Doing an Alertmanager API query")
-
-	req.SetBasicAuth(g.Config.User, g.Config.Password)
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("Could not fetch request. Status code: %d", resp.StatusCode)
-	}
-
-	return resp.Body, nil
+func (g *AlertmanagerStruct) QueryPost(url string, body interface{}) (io.ReadCloser, error) {
+	return g.DoQuery("POST", url, body)
 }
 
 func (g *AlertmanagerStruct) QueryAndDecode(url string, output interface{}) error {
@@ -128,34 +76,60 @@ func (g *AlertmanagerStruct) QueryAndDecode(url string, output interface{}) erro
 	return json.NewDecoder(body).Decode(&output)
 }
 
-func (g *AlertmanagerStruct) GetSilenceURL(silence Silence) string {
-	return fmt.Sprintf("%s/#/silences/%s", g.Config.URL, silence.ID)
-}
-
-func (g *AlertmanagerStruct) QueryDelete(url string) error {
-	if g.Config == nil || g.Config.Password == "" && g.Config.User == "" {
-		return fmt.Errorf("Alertmanager API not configured")
-	}
-
-	client := &http.Client{}
-	req, err := http.NewRequest("DELETE", url, nil)
+func (g *AlertmanagerStruct) QueryAndDecodePost(url string, postBody interface{}, output interface{}) error {
+	body, err := g.QueryPost(url, postBody)
 	if err != nil {
 		return err
 	}
 
-	g.Logger.Trace().Str("url", url).Msg("Doing an Alertmanager API query")
+	defer body.Close()
+	return json.NewDecoder(body).Decode(&output)
+}
+
+func (g *AlertmanagerStruct) DoQuery(method string, url string, body interface{}) (io.ReadCloser, error) {
+	if g.Config == nil || g.Config.Password == "" || g.Config.User == "" {
+		return nil, fmt.Errorf("Alertmanager API not configured")
+	}
+
+	client := &http.Client{}
+
+	var req *http.Request
+	var err error
+
+	if body != nil {
+		buffer := new(bytes.Buffer)
+
+		if err := json.NewEncoder(buffer).Encode(body); err != nil {
+			return nil, err
+		}
+
+		req, err = http.NewRequest(method, url, buffer)
+	} else {
+		req, err = http.NewRequest(method, url, nil)
+
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	g.Logger.Trace().
+		Str("url", url).
+		Str("method", method).
+		Msg("Doing an Alertmanager API query")
 
 	req.SetBasicAuth(g.Config.User, g.Config.Password)
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if resp.StatusCode >= 400 {
-		return fmt.Errorf("Could not fetch request. Status code: %d", resp.StatusCode)
+		return nil, fmt.Errorf("Could not fetch request. Status code: %d", resp.StatusCode)
 	}
 
-	defer resp.Body.Close()
-	return nil
+	return resp.Body, nil
 }
