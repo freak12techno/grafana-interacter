@@ -106,7 +106,6 @@ func (g *AlertmanagerStruct) DoQuery(method string, url string, body interface{}
 		req, err = http.NewRequest(method, url, buffer)
 	} else {
 		req, err = http.NewRequest(method, url, nil)
-
 	}
 
 	if err != nil {

@@ -213,6 +213,11 @@ func (g *GrafanaStruct) GetSilences() ([]Silence, error) {
 	return silences, err
 }
 
+func (g *GrafanaStruct) DeleteSilence(silenceID string) error {
+	url := g.RelativeLink("/api/alertmanager/grafana/api/v2/silence/" + silenceID)
+	return g.QueryDelete(url)
+}
+
 /* Query functions */
 
 func (g *GrafanaStruct) Query(url string) (io.ReadCloser, error) {
@@ -221,6 +226,11 @@ func (g *GrafanaStruct) Query(url string) (io.ReadCloser, error) {
 
 func (g *GrafanaStruct) QueryPost(url string, body interface{}) (io.ReadCloser, error) {
 	return g.DoQuery("POST", url, body)
+}
+
+func (g *GrafanaStruct) QueryDelete(url string) error {
+	_, err := g.DoQuery("DELETE", url, nil)
+	return err
 }
 
 func (g *GrafanaStruct) QueryAndDecode(url string, output interface{}) error {
@@ -259,7 +269,6 @@ func (g *GrafanaStruct) DoQuery(method string, url string, body interface{}) (io
 		req, err = http.NewRequest(method, url, buffer)
 	} else {
 		req, err = http.NewRequest(method, url, nil)
-
 	}
 
 	if err != nil {

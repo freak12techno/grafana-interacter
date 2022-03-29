@@ -82,6 +82,7 @@ func Execute(cmd *cobra.Command, args []string) {
 	b.Handle("/alert", HandleSingleAlert)
 	b.Handle("/silences", HandleListSilences)
 	b.Handle("/silence", HandleNewSilence)
+	b.Handle("/unsilence", HandleDeleteSilence)
 	b.Handle("/alertmanager_silences", HandleAlertmanagerListSilences)
 	b.Handle("/alertmanager_silence", HandleAlertmanagerNewSilence)
 	b.Handle("/alertmanager_unsilence", HandleAlertmanagerDeleteSilence)

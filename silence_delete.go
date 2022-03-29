@@ -7,6 +7,27 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
+func HandleDeleteSilence(c tele.Context) error {
+	log.Info().
+		Str("sender", c.Sender().Username).
+		Str("text", c.Text()).
+		Msg("Got new delete silence query")
+
+	args := strings.SplitN(c.Text(), " ", 2)
+	_, args = args[0], args[1:] // removing first argument as it's always /unsilence
+
+	if len(args) != 1 {
+		return c.Reply("Usage: /unsilence <silence ID>")
+	}
+
+	silenceErr := Grafana.DeleteSilence(args[0])
+	if silenceErr != nil {
+		return c.Reply(fmt.Sprintf("Error deleting silence: %s", silenceErr))
+	}
+
+	return BotReply(c, "Silence deleted.")
+}
+
 func HandleAlertmanagerDeleteSilence(c tele.Context) error {
 	log.Info().
 		Str("sender", c.Sender().Username).
