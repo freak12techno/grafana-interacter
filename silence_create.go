@@ -17,12 +17,13 @@ func HandleNewSilence(c tele.Context) error {
 		return c.Reply(err)
 	}
 
-	silenceErr := Grafana.CreateSilence(*silenceInfo)
+	_, silenceErr := Grafana.CreateSilence(*silenceInfo)
 	if silenceErr != nil {
 		return c.Reply(fmt.Sprintf("Error creating silence: %s", silenceErr))
 	}
 
-	return BotReply(c, "Silence created.")
+	reply := fmt.Sprintf("<a href=\"%s\">Silence created.</a>", Grafana.RelativeLink("/alerting/silences"))
+	return BotReply(c, reply)
 }
 
 func HandleAlertmanagerNewSilence(c tele.Context) error {
@@ -36,10 +37,11 @@ func HandleAlertmanagerNewSilence(c tele.Context) error {
 		return c.Reply(err)
 	}
 
-	silenceErr := Alertmanager.CreateSilence(*silenceInfo)
+	silence, silenceErr := Alertmanager.CreateSilence(*silenceInfo)
 	if silenceErr != nil {
 		return c.Reply(fmt.Sprintf("Error creating silence: %s", silenceErr))
 	}
 
-	return BotReply(c, "Silence created.")
+	reply := fmt.Sprintf("<a href=\"%s\">Silence created.</a>", Alertmanager.GetSilenceURL(silence))
+	return BotReply(c, reply)
 }

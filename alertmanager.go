@@ -22,11 +22,11 @@ func InitAlertmanager(config *AlertmanagerConfig, logger *zerolog.Logger) *Alert
 	}
 }
 
-func (g *AlertmanagerStruct) CreateSilence(silence Silence) error {
+func (g *AlertmanagerStruct) CreateSilence(silence Silence) (Silence, error) {
 	url := g.RelativeLink("/api/v2/silences")
 	res := Silence{}
 	err := g.QueryAndDecodePost(url, silence, res)
-	return err
+	return silence, err
 }
 
 func (g *AlertmanagerStruct) GetSilences() ([]Silence, error) {

@@ -22,7 +22,9 @@ func HandleListSilences(c tele.Context) error {
 	sb.WriteString("<strong>Silences</strong>\n")
 
 	for _, silence := range silences {
-		sb.WriteString(silence.Serialize() + "\n\n")
+		sb.WriteString(silence.Serialize() + "\n")
+		sb.WriteString(fmt.Sprintf("<a href=\"%s\">Link</a>\n\n", Grafana.RelativeLink("/alerting/silences")))
+
 	}
 
 	return BotReply(c, sb.String())

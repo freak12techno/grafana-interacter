@@ -199,11 +199,11 @@ func (g *GrafanaStruct) GetAllAlertingRules() ([]GrafanaAlertGroup, error) {
 	return append(grafanaRules, prometheusRules...), nil
 }
 
-func (g *GrafanaStruct) CreateSilence(silence Silence) error {
+func (g *GrafanaStruct) CreateSilence(silence Silence) (Silence, error) {
 	url := g.RelativeLink("/api/alertmanager/grafana/api/v2/silences")
 	res := Silence{}
 	err := g.QueryAndDecodePost(url, silence, res)
-	return err
+	return res, err
 }
 
 func (g *GrafanaStruct) GetSilences() ([]Silence, error) {
