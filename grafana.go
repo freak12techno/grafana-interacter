@@ -288,10 +288,20 @@ func (g *GrafanaStruct) DoQuery(method string, url string, body interface{}) (io
 
 	resp, err := client.Do(req)
 	if err != nil {
+		g.Logger.Error().
+			Str("url", url).
+			Str("method", method).
+			Err(err).
+			Msg("Error querying Grafana")
 		return nil, err
 	}
 
 	if resp.StatusCode >= 400 {
+		g.Logger.Error().
+			Str("url", url).
+			Str("method", method).
+			Int("status", resp.StatusCode).
+			Msg("Got error code from Grafana")
 		return nil, fmt.Errorf("Could not fetch request. Status code: %d", resp.StatusCode)
 	}
 
