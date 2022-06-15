@@ -153,9 +153,9 @@ func (g *GrafanaStruct) GetGrafanaAlertingRules() ([]GrafanaAlertGroup, error) {
 	return rules.Data.Groups, nil
 }
 
-func (g *GrafanaStruct) GetDatasourceAlertingRules(datasourceID int) ([]GrafanaAlertGroup, error) {
+func (g *GrafanaStruct) GetDatasourceAlertingRules(datasourceUID string) ([]GrafanaAlertGroup, error) {
 	rules := GrafanaAlertRulesResponse{}
-	url := g.RelativeLink(fmt.Sprintf("/api/prometheus/%d/api/v1/rules", datasourceID))
+	url := g.RelativeLink(fmt.Sprintf("/api/prometheus/%s/api/v1/rules", datasourceUID))
 	err := g.QueryAndDecode(url, &rules)
 	if err != nil {
 		return nil, err
@@ -173,7 +173,7 @@ func (g *GrafanaStruct) GetPrometheusAlertingRules() ([]GrafanaAlertGroup, error
 	groups := []GrafanaAlertGroup{}
 	for _, ds := range datasources {
 		if ds.Type == "prometheus" {
-			resp, err := g.GetDatasourceAlertingRules(ds.ID)
+			resp, err := g.GetDatasourceAlertingRules(ds.UID)
 			if err != nil {
 				return nil, err
 			}
