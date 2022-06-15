@@ -43,3 +43,4 @@ linters:
     - gosec
     - exportloopref
     - stylecheck
+    - exhaustruct
