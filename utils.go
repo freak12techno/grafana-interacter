@@ -254,3 +254,25 @@ func ParseSilenceOptions(query string, c tele.Context) (*Silence, string) {
 
 	return &silence, ""
 }
+
+func Filter[T any](slice []T, f func(T) bool) []T {
+	var n []T
+	for _, e := range slice {
+		if f(e) {
+			n = append(n, e)
+		}
+	}
+	return n
+}
+
+func FilterFiringOrPendingAlertGroups(groups []GrafanaAlertGroup) []GrafanaAlertGroup {
+	for _, group := range groups {
+		group.Rules = Filter(group.Rules, func(rule GrafanaAlertRule) bool {
+			return rule.State == "firing" || rule.State == "alerting" || rule.State == "pending"
+		})
+	}
+
+	return Filter(groups, func(group GrafanaAlertGroup) bool {
+		return len(group.Rules) > 0
+	})
+}

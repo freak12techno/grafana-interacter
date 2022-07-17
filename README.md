@@ -27,6 +27,7 @@ render - Render a panel
 dashboards - List dashboards
 dashboard - See dashboard and its panels
 alerts - See alerts
+firing - See firing and pending alerts
 datasources - See Grafana datasources
 silence - Creates a new silence
 silences - List all silences

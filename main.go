@@ -79,6 +79,7 @@ func Execute(cmd *cobra.Command, args []string) {
 	b.Handle("/render", HandleRenderPanel)
 	b.Handle("/datasources", HandleListDatasources)
 	b.Handle("/alerts", HandleListAlerts)
+	b.Handle("/firing", HandleListFiringAlerts)
 	b.Handle("/alert", HandleSingleAlert)
 	b.Handle("/silences", HandleListSilences)
 	b.Handle("/silence", HandleNewSilence)
