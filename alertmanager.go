@@ -126,7 +126,7 @@ func (g *AlertmanagerStruct) DoQuery(method string, url string, body interface{}
 		return nil, err
 	}
 
-	if resp.StatusCode >= 400 {
+	if resp.StatusCode >= http.StatusBadRequest {
 		return nil, fmt.Errorf("Could not fetch request. Status code: %d", resp.StatusCode)
 	}
 
