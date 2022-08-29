@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -279,4 +280,13 @@ func FilterFiringOrPendingAlertGroups(groups []GrafanaAlertGroup) []GrafanaAlert
 	}
 
 	return returnGroups
+}
+
+func StrToFloat64(s string) float64 {
+	f, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		panic(err)
+	}
+
+	return f
 }

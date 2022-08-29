@@ -25,7 +25,7 @@ func HandleListAlerts(c tele.Context) error {
 
 	var sb strings.Builder
 	if len(grafanaGroups) > 0 {
-		sb.WriteString("<strong>Grafana alerts</strong>\n")
+		sb.WriteString("<strong>Grafana alerts:</strong>\n")
 		for _, group := range grafanaGroups {
 			for _, rule := range group.Rules {
 				sb.WriteString(rule.Serialize(group.Name))
@@ -36,7 +36,7 @@ func HandleListAlerts(c tele.Context) error {
 	}
 
 	if len(prometheusGroups) > 0 {
-		sb.WriteString("<strong>Prometheus alerts</strong>\n")
+		sb.WriteString("<strong>Prometheus alerts:</strong>\n")
 		for _, group := range prometheusGroups {
 			for _, rule := range group.Rules {
 				sb.WriteString(rule.Serialize(group.Name))
