@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"os"
 	"time"
 
@@ -33,7 +32,7 @@ func Execute(cmd *cobra.Command, args []string) {
 		log.Fatal().Msg("Cannot start without config")
 	}
 
-	yamlFile, err := ioutil.ReadFile(ConfigPath)
+	yamlFile, err := os.ReadFile(ConfigPath)
 	if err != nil {
 		log.Fatal().Err(err).Msg("Could not read config file")
 	}

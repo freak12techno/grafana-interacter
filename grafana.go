@@ -296,7 +296,7 @@ func (g *GrafanaStruct) DoQuery(method string, url string, body interface{}) (io
 		return nil, err
 	}
 
-	if resp.StatusCode >= 400 {
+	if resp.StatusCode >= http.StatusBadRequest {
 		g.Logger.Error().
 			Str("url", url).
 			Str("method", method).

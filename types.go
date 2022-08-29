@@ -98,6 +98,7 @@ type GrafanaAlertRule struct {
 type GrafanaAlert struct {
 	Labels map[string]string `json:"labels"`
 	State  string            `json:"state"`
+	Value  string            `json:"value"`
 }
 
 type RenderOptions struct {
@@ -132,6 +133,31 @@ func (rule *GrafanaAlertRule) Serialize(groupName string) string {
 
 func (alert *GrafanaAlert) Serialize() string {
 	return fmt.Sprintf("- %s <pre>%s</pre>", GetEmojiByStatus(alert.State), SerializeAlertLabels(alert.Labels))
+}
+
+func (rule *GrafanaAlertRule) SerializeFull(groupName string) string {
+	var sb strings.Builder
+
+	sb.WriteString(fmt.Sprintf(
+		"%s %s -> %s (%d):\n",
+		GetEmojiByStatus(rule.State),
+		groupName,
+		rule.Name,
+		len(rule.Alerts),
+	))
+
+	for _, alert := range rule.Alerts {
+		for key, label := range alert.Labels {
+			if key == "alertname" {
+				continue
+			}
+			sb.WriteString(fmt.Sprintf("%s = %s\n", key, label))
+		}
+		sb.WriteString(fmt.Sprintf("value = %.1f\n", StrToFloat64(alert.Value)))
+		sb.WriteString("\n")
+	}
+
+	return sb.String()
 }
 
 func (silence *Silence) Serialize() string {

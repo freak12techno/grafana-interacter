@@ -3,13 +3,14 @@ package main
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
 	tele "gopkg.in/telebot.v3"
 )
 
-const MAX_MESSAGE_SIZE = 4096
+const MaxMessageSize = 4096
 
 func NormalizeString(input string) string {
 	reg := regexp.MustCompile("[^a-zA-Z0-9]+")
@@ -148,7 +149,7 @@ func BotReply(c tele.Context, msg string) error {
 	var sb strings.Builder
 
 	for _, line := range msgsByNewline {
-		if sb.Len()+len(line) > MAX_MESSAGE_SIZE {
+		if sb.Len()+len(line) > MaxMessageSize {
 			if err := c.Reply(sb.String(), tele.ModeHTML); err != nil {
 				log.Error().Err(err).Msg("Could not send Telegram message")
 				return err
@@ -279,4 +280,13 @@ func FilterFiringOrPendingAlertGroups(groups []GrafanaAlertGroup) []GrafanaAlert
 	}
 
 	return returnGroups
+}
+
+func StrToFloat64(s string) float64 {
+	f, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		panic(err)
+	}
+
+	return f
 }
