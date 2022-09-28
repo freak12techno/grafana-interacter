@@ -153,7 +153,9 @@ func (rule *GrafanaAlertRule) SerializeFull(groupName string) string {
 			}
 			sb.WriteString(fmt.Sprintf("%s = %s\n", key, label))
 		}
-		sb.WriteString(fmt.Sprintf("value = %.1f\n", StrToFloat64(alert.Value)))
+		if alert.Value != "" {
+			sb.WriteString(fmt.Sprintf("value = %.1f\n", StrToFloat64(alert.Value)))
+		}
 		sb.WriteString("\n")
 	}
 
