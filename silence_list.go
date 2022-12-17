@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"strings"
-
 	tele "gopkg.in/telebot.v3"
+	"strings"
+	"time"
 )
 
 func HandleListSilences(c tele.Context) error {
@@ -43,6 +43,10 @@ func HandleAlertmanagerListSilences(c tele.Context) error {
 	if err != nil {
 		return c.Reply(fmt.Sprintf("Error listing silence: %s", err))
 	}
+
+	silences = Filter(silences, func(s Silence) bool {
+		return s.EndsAt.After(time.Now())
+	})
 
 	var sb strings.Builder
 	sb.WriteString("<strong>Silences</strong>\n")
