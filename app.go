@@ -1,11 +1,12 @@
 package main
 
 import (
+	"strings"
+	"time"
+
 	"github.com/rs/zerolog"
 	tele "gopkg.in/telebot.v3"
 	"gopkg.in/telebot.v3/middleware"
-	"strings"
-	"time"
 )
 
 type App struct {

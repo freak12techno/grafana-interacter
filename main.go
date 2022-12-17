@@ -18,7 +18,7 @@ func Execute(configPath string) {
 func main() {
 	var configPath string
 
-	var rootCmd = &cobra.Command{
+	rootCmd := &cobra.Command{
 		Use:  "grafana-interacter",
 		Long: "A Telegram bot.",
 		Run: func(cmd *cobra.Command, args []string) {

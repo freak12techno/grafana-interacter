@@ -1,9 +1,10 @@
 package main
 
 import (
+	"os"
+
 	"github.com/creasty/defaults"
 	"gopkg.in/yaml.v2"
-	"os"
 )
 
 type Config struct {
