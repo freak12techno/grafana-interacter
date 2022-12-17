@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	tele "gopkg.in/telebot.v3"
 	"strings"
 	"time"
+
+	tele "gopkg.in/telebot.v3"
 )
 
 func HandleListSilences(c tele.Context) error {
