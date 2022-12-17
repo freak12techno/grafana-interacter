@@ -32,6 +32,10 @@ func HandleAlertmanagerNewSilence(c tele.Context) error {
 		Str("text", c.Text()).
 		Msg("Got new Alertmanager silence query")
 
+	if !Alertmanager.Enabled() {
+		return c.Reply("Alertmanager is disabled.")
+	}
+
 	silenceInfo, err := ParseSilenceOptions(c.Text(), c)
 	if err != "" {
 		return c.Reply(err)

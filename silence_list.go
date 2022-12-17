@@ -35,6 +35,10 @@ func HandleAlertmanagerListSilences(c tele.Context) error {
 		Str("text", c.Text()).
 		Msg("Got Alertmanager list silence query")
 
+	if !Alertmanager.Enabled() {
+		return c.Reply("Alertmanager is disabled.")
+	}
+
 	silences, err := Alertmanager.GetSilences()
 	if err != nil {
 		return c.Reply(fmt.Sprintf("Error listing silence: %s", err))

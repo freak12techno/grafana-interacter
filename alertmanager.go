@@ -22,6 +22,10 @@ func InitAlertmanager(config *AlertmanagerConfig, logger *zerolog.Logger) *Alert
 	}
 }
 
+func (g *AlertmanagerStruct) Enabled() bool {
+	return g.Config.User != "" && g.Config.Password != ""
+}
+
 func (g *AlertmanagerStruct) CreateSilence(silence Silence) (Silence, error) {
 	url := g.RelativeLink("/api/v2/silences")
 	res := Silence{}

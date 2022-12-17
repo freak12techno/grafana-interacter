@@ -34,6 +34,10 @@ func HandleAlertmanagerDeleteSilence(c tele.Context) error {
 		Str("text", c.Text()).
 		Msg("Got new Alertmanager delete silence query")
 
+	if !Alertmanager.Enabled() {
+		return c.Reply("Alertmanager is disabled.")
+	}
+
 	args := strings.SplitN(c.Text(), " ", 2)
 	_, args = args[0], args[1:] // removing first argument as it's always /alertmanager_unsilence
 
