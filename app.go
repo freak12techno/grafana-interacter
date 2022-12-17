@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 	tele "gopkg.in/telebot.v3"
 	"gopkg.in/telebot.v3/middleware"
 	"strings"
@@ -23,16 +22,18 @@ func NewApp(config *Config) *App {
 	alertmanager := InitAlertmanager(config.Alertmanager, logger)
 
 	bot, err := tele.NewBot(tele.Settings{
-		Token:   config.Telegram.Token,
-		Poller:  &tele.LongPoller{Timeout: 10 * time.Second},
-		OnError: HandleError,
+		Token:  config.Telegram.Token,
+		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
+		OnError: func(err error, c tele.Context) {
+			logger.Error().Err(err).Msg("Telebot error")
+		},
 	})
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Could not start Telegram bot")
 	}
 
 	if len(config.Telegram.Admins) > 0 {
-		log.Debug().Msg("Using admins whitelist")
+		logger.Debug().Msg("Using admins whitelist")
 		bot.Use(middleware.Whitelist(config.Telegram.Admins...))
 	}
 
