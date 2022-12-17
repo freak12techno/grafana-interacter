@@ -182,7 +182,7 @@ func BotReply(c tele.Context, msg string) error {
 func ParseSilenceOptions(query string, c tele.Context) (*Silence, string) {
 	args := strings.Split(query, " ")
 	if len(args) <= 2 {
-		return nil, "Usage: /silence <duration> <params>"
+		return nil, fmt.Sprintf("Usage: %s <duration> <params>", args[0])
 	}
 
 	_, args = args[0], args[1:] // removing first argument as it's always /silence
