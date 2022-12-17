@@ -2,12 +2,11 @@ package main
 
 import (
 	"fmt"
-
 	tele "gopkg.in/telebot.v3"
 )
 
-func HandleRenderPanel(c tele.Context) error {
-	log.Info().
+func (a *App) HandleRenderPanel(c tele.Context) error {
+	a.Logger.Info().
 		Str("sender", c.Sender().Username).
 		Str("text", c.Text()).
 		Msg("Got render query")
@@ -18,7 +17,7 @@ func HandleRenderPanel(c tele.Context) error {
 		return c.Reply("Usage: /render <opts> <panel name>")
 	}
 
-	panels, err := Grafana.GetAllPanels()
+	panels, err := a.Grafana.GetAllPanels()
 	if err != nil {
 		return c.Reply(fmt.Sprintf("Error querying for panels: %s", err))
 	}
@@ -28,7 +27,7 @@ func HandleRenderPanel(c tele.Context) error {
 		return c.Reply("Could not find a panel. See /dashboards for dashboards list, and /dashboard <dashboard name> for its panels.")
 	}
 
-	image, err := Grafana.RenderPanel(panel, opts.Params)
+	image, err := a.Grafana.RenderPanel(panel, opts.Params)
 	if err != nil {
 		return c.Reply(err)
 	}
@@ -37,7 +36,7 @@ func HandleRenderPanel(c tele.Context) error {
 
 	fileToSend := &tele.Photo{
 		File:    tele.FromReader(image),
-		Caption: fmt.Sprintf("Panel: %s", Grafana.GetPanelLink(*panel)),
+		Caption: fmt.Sprintf("Panel: %s", a.Grafana.GetPanelLink(*panel)),
 	}
 	return c.Reply(fileToSend, tele.ModeHTML)
 }

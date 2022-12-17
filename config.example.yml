@@ -1,7 +1,9 @@
- # Log level. Defaults to "info"
-log_level: info
+# Logging configuration.
+log:
+  # Log level. Defaults to "info"
+  level: info
  # Output logs as JSON. Useful if you are using logging aggregation solutions such as ELK. Defaults to false.
-json: false
+  json: false
 telegram:
   # Telegram bot token, you can create a Telegam bot with @BotFather bot on Telegram
   token: xxx:yyy

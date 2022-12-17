@@ -7,8 +7,8 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-func HandleDeleteSilence(c tele.Context) error {
-	log.Info().
+func (a *App) HandleDeleteSilence(c tele.Context) error {
+	a.Logger.Info().
 		Str("sender", c.Sender().Username).
 		Str("text", c.Text()).
 		Msg("Got new delete silence query")
@@ -20,21 +20,21 @@ func HandleDeleteSilence(c tele.Context) error {
 		return c.Reply("Usage: /unsilence <silence ID>")
 	}
 
-	silenceErr := Grafana.DeleteSilence(args[0])
+	silenceErr := a.Grafana.DeleteSilence(args[0])
 	if silenceErr != nil {
 		return c.Reply(fmt.Sprintf("Error deleting silence: %s", silenceErr))
 	}
 
-	return BotReply(c, "Silence deleted.")
+	return a.BotReply(c, "Silence deleted.")
 }
 
-func HandleAlertmanagerDeleteSilence(c tele.Context) error {
-	log.Info().
+func (a *App) HandleAlertmanagerDeleteSilence(c tele.Context) error {
+	a.Logger.Info().
 		Str("sender", c.Sender().Username).
 		Str("text", c.Text()).
 		Msg("Got new Alertmanager delete silence query")
 
-	if !Alertmanager.Enabled() {
+	if !a.Alertmanager.Enabled() {
 		return c.Reply("Alertmanager is disabled.")
 	}
 
@@ -45,10 +45,10 @@ func HandleAlertmanagerDeleteSilence(c tele.Context) error {
 		return c.Reply("Usage: /alertmanager_unsilence <silence ID>")
 	}
 
-	silenceErr := Alertmanager.DeleteSilence(args[0])
+	silenceErr := a.Alertmanager.DeleteSilence(args[0])
 	if silenceErr != nil {
 		return c.Reply(fmt.Sprintf("Error deleting silence: %s", silenceErr))
 	}
 
-	return BotReply(c, "Silence deleted.")
+	return a.BotReply(c, "Silence deleted.")
 }
