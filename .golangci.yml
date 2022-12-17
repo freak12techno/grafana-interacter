@@ -39,7 +39,6 @@ linters:
     - errorlint
     - noctx
     - gocognit
-    - gochecknoglobals
     - gosec
     - exportloopref
     - stylecheck

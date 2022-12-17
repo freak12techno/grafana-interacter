@@ -7,8 +7,8 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-func HandleShowDashboard(c tele.Context) error {
-	log.Info().
+func (a *App) HandleShowDashboard(c tele.Context) error {
+	a.Logger.Info().
 		Str("sender", c.Sender().Username).
 		Str("text", c.Text()).
 		Msg("Got dashboard query")
@@ -20,7 +20,7 @@ func HandleShowDashboard(c tele.Context) error {
 		return c.Reply("Usage: /dashboard <dashboard>")
 	}
 
-	dashboards, err := Grafana.GetAllDashboards()
+	dashboards, err := a.Grafana.GetAllDashboards()
 	if err != nil {
 		return c.Reply(fmt.Sprintf("Error querying for dashboards: %s", err))
 	}
@@ -30,21 +30,21 @@ func HandleShowDashboard(c tele.Context) error {
 		return c.Reply("Could not find dashboard. See /dashboards for dashboards list.")
 	}
 
-	dashboardEnriched, err := Grafana.GetDashboard(dashboard.UID)
+	dashboardEnriched, err := a.Grafana.GetDashboard(dashboard.UID)
 	if err != nil {
 		return c.Reply(fmt.Sprintf("Could not get dashboard: %s", err))
 	}
 
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("<strong>Dashboard</strong> %s\n", Grafana.GetDashboardLink(*dashboard)))
+	sb.WriteString(fmt.Sprintf("<strong>Dashboard</strong> %s\n", a.Grafana.GetDashboardLink(*dashboard)))
 	sb.WriteString("Panels:\n")
 	for _, panel := range dashboardEnriched.Dashboard.Panels {
-		sb.WriteString(fmt.Sprintf("- %s\n", Grafana.GetPanelLink(PanelStruct{
+		sb.WriteString(fmt.Sprintf("- %s\n", a.Grafana.GetPanelLink(PanelStruct{
 			DashboardURL: dashboard.URL,
 			PanelID:      panel.ID,
 			Name:         panel.Title,
 		})))
 	}
 
-	return BotReply(c, sb.String())
+	return a.BotReply(c, sb.String())
 }

@@ -7,13 +7,13 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-func HandleListDashboards(c tele.Context) error {
-	log.Info().
+func (a *App) HandleListDashboards(c tele.Context) error {
+	a.Logger.Info().
 		Str("sender", c.Sender().Username).
 		Str("text", c.Text()).
 		Msg("Got dashboards query")
 
-	dashboards, err := Grafana.GetAllDashboards()
+	dashboards, err := a.Grafana.GetAllDashboards()
 	if err != nil {
 		return c.Reply(fmt.Sprintf("Error querying for dashboards: %s", err))
 	}
@@ -21,8 +21,8 @@ func HandleListDashboards(c tele.Context) error {
 	var sb strings.Builder
 	sb.WriteString("<strong>Dashboards list</strong>:\n")
 	for _, dashboard := range dashboards {
-		sb.WriteString(fmt.Sprintf("- %s\n", Grafana.GetDashboardLink(dashboard)))
+		sb.WriteString(fmt.Sprintf("- %s\n", a.Grafana.GetDashboardLink(dashboard)))
 	}
 
-	return BotReply(c, sb.String())
+	return a.BotReply(c, sb.String())
 }

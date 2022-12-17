@@ -153,32 +153,6 @@ func SerializeAlertLabels(qs map[string]string) string {
 	return strings.Join(tmp, " ")
 }
 
-func BotReply(c tele.Context, msg string) error {
-	msgsByNewline := strings.Split(msg, "\n")
-
-	var sb strings.Builder
-
-	for _, line := range msgsByNewline {
-		if sb.Len()+len(line) > MaxMessageSize {
-			if err := c.Reply(sb.String(), tele.ModeHTML); err != nil {
-				log.Error().Err(err).Msg("Could not send Telegram message")
-				return err
-			}
-
-			sb.Reset()
-		}
-
-		sb.WriteString(line + "\n")
-	}
-
-	if err := c.Reply(sb.String(), tele.ModeHTML); err != nil {
-		log.Error().Err(err).Msg("Could not send Telegram message")
-		return err
-	}
-
-	return nil
-}
-
 func ParseSilenceOptions(query string, c tele.Context) (*Silence, string) {
 	args := strings.Split(query, " ")
 	if len(args) <= 2 {
@@ -267,7 +241,7 @@ func ParseSilenceOptions(query string, c tele.Context) (*Silence, string) {
 }
 
 func FilterFiringOrPendingAlertGroups(groups []GrafanaAlertGroup) []GrafanaAlertGroup {
-	returnGroups := []GrafanaAlertGroup{}
+	var returnGroups []GrafanaAlertGroup
 
 	for _, group := range groups {
 		rules := []GrafanaAlertRule{}
@@ -295,7 +269,7 @@ func FilterFiringOrPendingAlertGroups(groups []GrafanaAlertGroup) []GrafanaAlert
 func StrToFloat64(s string) float64 {
 	f, err := strconv.ParseFloat(s, 64)
 	if err != nil {
-		panic(err)
+		GetDefaultLogger().Fatal().Err(err).Str("value", s).Msg("Could not parse float")
 	}
 
 	return f

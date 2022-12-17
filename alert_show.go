@@ -7,8 +7,8 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-func HandleSingleAlert(c tele.Context) error {
-	log.Info().
+func (a *App) HandleSingleAlert(c tele.Context) error {
+	a.Logger.Info().
 		Str("sender", c.Sender().Username).
 		Str("text", c.Text()).
 		Msg("Got single alert query")
@@ -20,7 +20,7 @@ func HandleSingleAlert(c tele.Context) error {
 		return c.Reply("Usage: /alert <alert name>")
 	}
 
-	rules, err := Grafana.GetAllAlertingRules()
+	rules, err := a.Grafana.GetAllAlertingRules()
 	if err != nil {
 		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
 	}
@@ -38,5 +38,5 @@ func HandleSingleAlert(c tele.Context) error {
 		sb.WriteString(alert.Serialize())
 	}
 
-	return BotReply(c, sb.String())
+	return a.BotReply(c, sb.String())
 }

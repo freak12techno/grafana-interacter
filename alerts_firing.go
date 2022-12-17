@@ -7,18 +7,18 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-func HandleListFiringAlerts(c tele.Context) error {
-	log.Info().
+func (a *App) HandleListFiringAlerts(c tele.Context) error {
+	a.Logger.Info().
 		Str("sender", c.Sender().Username).
 		Str("text", c.Text()).
 		Msg("Got firing alerts query")
 
-	grafanaGroups, err := Grafana.GetGrafanaAlertingRules()
+	grafanaGroups, err := a.Grafana.GetGrafanaAlertingRules()
 	if err != nil {
 		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
 	}
 
-	prometheusGroups, err := Grafana.GetPrometheusAlertingRules()
+	prometheusGroups, err := a.Grafana.GetPrometheusAlertingRules()
 	if err != nil {
 		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
 	}
@@ -49,5 +49,5 @@ func HandleListFiringAlerts(c tele.Context) error {
 		sb.WriteString("<strong>No Prometheus alerts</strong>\n")
 	}
 
-	return BotReply(c, sb.String())
+	return a.BotReply(c, sb.String())
 }
