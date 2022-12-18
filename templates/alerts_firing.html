@@ -1,0 +1,40 @@
+<strong>Grafana alerts:</strong>
+{{- if not .Data.GrafanaGroups }}
+No Grafana alerts
+{{- end }}
+{{- range $groupId, $group := .Data.GrafanaGroups }}
+{{- range $ruleId, $rule := $group.Rules }}
+- {{ GetEmojiByStatus $rule.State }} {{ $group.Name }} -> {{ $rule.Name }} ({{ len ($rule.Alerts) }}):
+{{- range $alertId, $alert := $rule.Alerts }}
+{{- range $key, $label := $alert.Labels }}
+{{- if ne $key "alertname" }}
+{{ $key }} = {{ $label }}
+{{- end }}
+{{- end }}
+{{- if $alert.Value }}
+value = {{ StrToFloat64 $alert.Value }}
+{{- end }}
+{{ end }}
+{{- end }}
+{{- end }}
+
+
+<strong>Prometheus alerts:</strong>
+{{- if not .Data.PrometheusGroups }}
+No Prometheus alerts
+{{- end }}
+{{- range $groupId, $group := .Data.PrometheusGroups }}
+{{- range $ruleId, $rule := $group.Rules }}
+- {{ GetEmojiByStatus $rule.State }} {{ $group.Name }} -> {{ $rule.Name }} ({{ len ($rule.Alerts) }}):
+{{- range $alertId, $alert := $rule.Alerts }}
+{{- range $key, $label := $alert.Labels }}
+{{- if ne $key "alertname" }}
+{{ $key }} = {{ $label }}
+{{- end }}
+{{- end }}
+{{- if $alert.Value }}
+value = {{ StrToFloat64 $alert.Value }}
+{{- end }}
+{{ end }}
+{{- end }}
+{{- end }}

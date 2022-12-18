@@ -29,6 +29,7 @@ func (manager *TemplateManager) GetTemplate(name string) (*template.Template, er
 
 	t, err := template.New(filename).Funcs(template.FuncMap{
 		"GetEmojiByStatus": GetEmojiByStatus,
+		"StrToFloat64":     StrToFloat64,
 	}).ParseFS(templatesFs, "templates/"+filename)
 	if err != nil {
 		return nil, err

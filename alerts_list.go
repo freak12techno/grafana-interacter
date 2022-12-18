@@ -2,13 +2,9 @@ package main
 
 import (
 	"fmt"
+
 	tele "gopkg.in/telebot.v3"
 )
-
-type AlertsListStruct struct {
-	GrafanaGroups    []GrafanaAlertGroup
-	PrometheusGroups []GrafanaAlertGroup
-}
 
 func (a *App) HandleListAlerts(c tele.Context) error {
 	a.Logger.Info().
@@ -34,7 +30,6 @@ func (a *App) HandleListAlerts(c tele.Context) error {
 			PrometheusGroups: prometheusGroups,
 		},
 	})
-
 	if err != nil {
 		a.Logger.Error().Err(err).Msg("Error rendering alerts_list template")
 		return c.Reply(fmt.Sprintf("Error rendering template: %s", err))

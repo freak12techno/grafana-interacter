@@ -27,16 +27,18 @@ func (a *App) HandleSingleAlert(c tele.Context) error {
 
 	rule, found := FindAlertRuleByName(rules, args[0])
 	if !found {
-		return c.Reply("Could not find alert. See /alert for alerting rules.")
+		return c.Reply("Could not find alert. See /alerts for alerting rules.")
 	}
 
-	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("<strong>Alert rule: </strong>%s\n", rule.Name))
-	sb.WriteString("<strong>Alerts: </strong>\n")
-
-	for _, alert := range rule.Alerts {
-		sb.WriteString(alert.Serialize())
+	template, err := a.TemplateManager.Render("alert", RenderStruct{
+		Grafana:      a.Grafana,
+		Alertmanager: a.Alertmanager,
+		Data:         rule,
+	})
+	if err != nil {
+		a.Logger.Error().Err(err).Msg("Error rendering alert template")
+		return c.Reply(fmt.Sprintf("Error rendering template: %s", err))
 	}
 
-	return a.BotReply(c, sb.String())
+	return a.BotReply(c, template)
 }
