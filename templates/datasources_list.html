@@ -1,0 +1,8 @@
+{{- $global := . }}
+<strong>Datasources</strong>
+{{- if not .Data }}
+No datasources.
+{{- end }}
+{{- range $datasourceId, $datasource := .Data }}
+- {{ $global.Grafana.GetDatasourceLink $datasource }} (type <code>{{ $datasource.Type }}</code>)
+{{- end }}
