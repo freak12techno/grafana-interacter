@@ -100,10 +100,6 @@ type SilenceStatus struct {
 	State string `json:"state"`
 }
 
-func (rule *GrafanaAlertRule) Serialize(groupName string) string {
-	return fmt.Sprintf("- %s %s -> %s\n", GetEmojiByStatus(rule.State), groupName, rule.Name)
-}
-
 func (silence *Silence) Serialize() string {
 	var sb strings.Builder
 	sb.WriteString(fmt.Sprintf("ID:         <code>%s</code>\n", silence.ID))
@@ -146,4 +142,9 @@ type RenderStruct struct {
 type AlertsListStruct struct {
 	GrafanaGroups    []GrafanaAlertGroup
 	PrometheusGroups []GrafanaAlertGroup
+}
+
+type DashboardStruct struct {
+	Dashboard GrafanaDashboardInfo
+	Panels    []PanelStruct
 }

@@ -1,0 +1,8 @@
+{{- $global := . }}
+<strong>Dashboard {{ .Grafana.GetDashboardLink .Data.Dashboard }}</strong>
+{{- if not .Data }}
+No panels.
+{{- end }}
+{{- range $panelId, $panel := .Data.Panels }}
+- {{ $global.Grafana.GetPanelLink $panel }}
+{{- end }}
