@@ -10,17 +10,19 @@ import (
 )
 
 type App struct {
-	Config       Config
-	Grafana      *Grafana
-	Alertmanager *Alertmanager
-	Logger       *zerolog.Logger
-	Bot          *tele.Bot
+	Config          Config
+	Grafana         *Grafana
+	Alertmanager    *Alertmanager
+	TemplateManager *TemplateManager
+	Logger          *zerolog.Logger
+	Bot             *tele.Bot
 }
 
 func NewApp(config *Config) *App {
 	logger := GetLogger(config.Log)
 	grafana := InitGrafana(config.Grafana, logger)
 	alertmanager := InitAlertmanager(config.Alertmanager, logger)
+	templateManager := NewTemplateManager()
 
 	bot, err := tele.NewBot(tele.Settings{
 		Token:  config.Telegram.Token,
@@ -39,10 +41,11 @@ func NewApp(config *Config) *App {
 	}
 
 	return &App{
-		Logger:       logger,
-		Grafana:      grafana,
-		Alertmanager: alertmanager,
-		Bot:          bot,
+		Logger:          logger,
+		Grafana:         grafana,
+		Alertmanager:    alertmanager,
+		TemplateManager: templateManager,
+		Bot:             bot,
 	}
 }
 
