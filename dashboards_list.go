@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strings"
-
 	tele "gopkg.in/telebot.v3"
 )
 
@@ -18,11 +16,15 @@ func (a *App) HandleListDashboards(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error querying for dashboards: %s", err))
 	}
 
-	var sb strings.Builder
-	sb.WriteString("<strong>Dashboards list</strong>:\n")
-	for _, dashboard := range dashboards {
-		sb.WriteString(fmt.Sprintf("- %s\n", a.Grafana.GetDashboardLink(dashboard)))
+	template, err := a.TemplateManager.Render("dashboards_list", RenderStruct{
+		Grafana:      a.Grafana,
+		Alertmanager: a.Alertmanager,
+		Data:         dashboards,
+	})
+	if err != nil {
+		a.Logger.Error().Err(err).Msg("Error rendering dashboards_list template")
+		return c.Reply(fmt.Sprintf("Error rendering template: %s", err))
 	}
 
-	return a.BotReply(c, sb.String())
+	return a.BotReply(c, template)
 }
