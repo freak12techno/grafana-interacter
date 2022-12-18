@@ -26,29 +26,6 @@ func (a *App) HandleListAlerts(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
 	}
 
-	//var sb strings.Builder
-	//if len(grafanaGroups) > 0 {
-	//	sb.WriteString("<strong>Grafana alerts:</strong>\n")
-	//	for _, group := range grafanaGroups {
-	//		for _, rule := range group.Rules {
-	//			sb.WriteString(rule.Serialize(group.Name))
-	//		}
-	//	}
-	//} else {
-	//	sb.WriteString("<strong>No Grafana alerts</strong>\n")
-	//}
-	//
-	//if len(prometheusGroups) > 0 {
-	//	sb.WriteString("<strong>Prometheus alerts:</strong>\n")
-	//	for _, group := range prometheusGroups {
-	//		for _, rule := range group.Rules {
-	//			sb.WriteString(rule.Serialize(group.Name))
-	//		}
-	//	}
-	//} else {
-	//	sb.WriteString("<strong>No Prometheus alerts</strong>\n")
-	//}
-
 	template, err := a.TemplateManager.Render("alerts_list", RenderStruct{
 		Grafana:      a.Grafana,
 		Alertmanager: a.Alertmanager,
