@@ -26,11 +26,11 @@ func (g *Alertmanager) Enabled() bool {
 	return g.Config.User != "" && g.Config.Password != ""
 }
 
-func (g *Alertmanager) CreateSilence(silence Silence) (Silence, error) {
+func (g *Alertmanager) CreateSilence(silence Silence) (SilenceCreateResponse, error) {
 	url := g.RelativeLink("/api/v2/silences")
-	res := Silence{}
-	err := g.QueryAndDecodePost(url, silence, res)
-	return silence, err
+	res := SilenceCreateResponse{}
+	err := g.QueryAndDecodePost(url, silence, &res)
+	return res, err
 }
 
 func (g *Alertmanager) GetSilences() ([]Silence, error) {
@@ -38,6 +38,13 @@ func (g *Alertmanager) GetSilences() ([]Silence, error) {
 	url := g.RelativeLink("/api/v2/silences")
 	err := g.QueryAndDecode(url, &silences)
 	return silences, err
+}
+
+func (g *Alertmanager) GetSilence(silenceID string) (Silence, error) {
+	silence := Silence{}
+	url := g.RelativeLink("/api/v2/silence/" + silenceID)
+	err := g.QueryAndDecode(url, &silence)
+	return silence, err
 }
 
 func (g *Alertmanager) DeleteSilence(silenceID string) error {
@@ -91,7 +98,7 @@ func (g *Alertmanager) QueryAndDecodePost(url string, postBody interface{}, outp
 }
 
 func (g *Alertmanager) DoQuery(method string, url string, body interface{}) (io.ReadCloser, error) {
-	if g.Config.Password == "" || g.Config.User == "" {
+	if !g.Enabled() {
 		return nil, fmt.Errorf("Alertmanager API not configured")
 	}
 

@@ -200,10 +200,10 @@ func (g *Grafana) GetAllAlertingRules() ([]GrafanaAlertGroup, error) {
 	return append(grafanaRules, prometheusRules...), nil
 }
 
-func (g *Grafana) CreateSilence(silence Silence) (Silence, error) {
+func (g *Grafana) CreateSilence(silence Silence) (SilenceCreateResponse, error) {
 	url := g.RelativeLink("/api/alertmanager/grafana/api/v2/silences")
-	res := Silence{}
-	err := g.QueryAndDecodePost(url, silence, res)
+	res := SilenceCreateResponse{}
+	err := g.QueryAndDecodePost(url, silence, &res)
 	return res, err
 }
 
@@ -212,6 +212,13 @@ func (g *Grafana) GetSilences() ([]Silence, error) {
 	url := g.RelativeLink("/api/alertmanager/grafana/api/v2/silences")
 	err := g.QueryAndDecode(url, &silences)
 	return silences, err
+}
+
+func (g *Grafana) GetSilence(silenceID string) (Silence, error) {
+	silence := Silence{}
+	url := g.RelativeLink("/api/alertmanager/grafana/api/v2/silence/" + silenceID)
+	err := g.QueryAndDecode(url, &silence)
+	return silence, err
 }
 
 func (g *Grafana) DeleteSilence(silenceID string) error {
