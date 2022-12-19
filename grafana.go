@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"io"
 	"net/http"
 
@@ -118,21 +119,21 @@ func (g *Grafana) RelativeLink(url string) string {
 	return fmt.Sprintf("%s%s", g.Config.URL, url)
 }
 
-func (g *Grafana) GetDashboardLink(dashboard GrafanaDashboardInfo) string {
-	return fmt.Sprintf("<a href='%s%s'>%s</a>", g.Config.URL, dashboard.URL, dashboard.Title)
+func (g *Grafana) GetDashboardLink(dashboard GrafanaDashboardInfo) template.HTML {
+	return template.HTML(fmt.Sprintf("<a href='%s%s'>%s</a>", g.Config.URL, dashboard.URL, dashboard.Title))
 }
 
-func (g *Grafana) GetPanelLink(panel PanelStruct) string {
-	return fmt.Sprintf(
+func (g *Grafana) GetPanelLink(panel PanelStruct) template.HTML {
+	return template.HTML(fmt.Sprintf(
 		"<a href='%s?viewPanel=%d'>%s</a>",
 		g.RelativeLink(panel.DashboardURL),
 		panel.PanelID,
 		panel.Name,
-	)
+	))
 }
 
-func (g *Grafana) GetDatasourceLink(ds GrafanaDatasource) string {
-	return fmt.Sprintf("<a href='%s/datasources/edit/%s'>%s</a>", g.Config.URL, ds.UID, ds.Name)
+func (g *Grafana) GetDatasourceLink(ds GrafanaDatasource) template.HTML {
+	return template.HTML(fmt.Sprintf("<a href='%s/datasources/edit/%s'>%s</a>", g.Config.URL, ds.UID, ds.Name))
 }
 
 func (g *Grafana) GetDatasources() ([]GrafanaDatasource, error) {

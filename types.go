@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strings"
 	"time"
 )
 
@@ -100,31 +99,6 @@ type SilenceStatus struct {
 	State string `json:"state"`
 }
 
-func (rule *GrafanaAlertRule) Serialize(groupName string) string {
-	return fmt.Sprintf("- %s %s -> %s\n", GetEmojiByStatus(rule.State), groupName, rule.Name)
-}
-
-func (silence *Silence) Serialize() string {
-	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("ID:         <code>%s</code>\n", silence.ID))
-	sb.WriteString(fmt.Sprintf("Starts at:  <pre>%s</pre>\n", silence.StartsAt.String()))
-	sb.WriteString(fmt.Sprintf("Ends at:    <pre>%s</pre>\n", silence.EndsAt.String()))
-	sb.WriteString(fmt.Sprintf("Created by: <pre>%s</pre>\n", silence.CreatedBy))
-	sb.WriteString(fmt.Sprintf("Comment:    <pre>%s</pre>\n", silence.Comment))
-	sb.WriteString(fmt.Sprintf(
-		"Status:     <pre>%s %s</pre>\n",
-		GetEmojiBySilenceStatus(silence.Status.State),
-		silence.Status.State,
-	))
-	sb.WriteString("Matchers: ")
-
-	for _, matcher := range silence.Matchers {
-		sb.WriteString("<pre>" + matcher.Serialize() + "</pre> ")
-	}
-
-	return sb.String()
-}
-
 func (matcher *SilenceMatcher) Serialize() string {
 	if matcher.IsEqual && matcher.IsRegex {
 		return fmt.Sprintf("%s ~= %s", matcher.Name, matcher.Value)
@@ -146,4 +120,9 @@ type RenderStruct struct {
 type AlertsListStruct struct {
 	GrafanaGroups    []GrafanaAlertGroup
 	PrometheusGroups []GrafanaAlertGroup
+}
+
+type DashboardStruct struct {
+	Dashboard GrafanaDashboardInfo
+	Panels    []PanelStruct
 }

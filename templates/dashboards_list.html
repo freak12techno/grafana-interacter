@@ -1,0 +1,8 @@
+{{- $global := . }}
+<strong>Dashboards list</strong>
+{{- if not .Data }}
+No dashboards
+{{- end }}
+{{- range $dashboardId, $dashboard := .Data }}
+- {{ $global.Grafana.GetDashboardLink $dashboard }}
+{{- end }}

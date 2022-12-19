@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	tele "gopkg.in/telebot.v3"
@@ -19,15 +18,21 @@ func (a *App) HandleListSilences(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error listing silence: %s", err))
 	}
 
-	var sb strings.Builder
-	sb.WriteString("<strong>Silences</strong>\n")
+	silences = Filter(silences, func(s Silence) bool {
+		return s.EndsAt.After(time.Now())
+	})
 
-	for _, silence := range silences {
-		sb.WriteString(silence.Serialize() + "\n")
-		sb.WriteString(fmt.Sprintf("<a href=\"%s\">Link</a>\n\n", a.Grafana.RelativeLink("/alerting/silences")))
+	template, err := a.TemplateManager.Render("silences_list", RenderStruct{
+		Grafana:      a.Grafana,
+		Alertmanager: a.Alertmanager,
+		Data:         silences,
+	})
+	if err != nil {
+		a.Logger.Error().Err(err).Msg("Error rendering silences_list template")
+		return c.Reply(fmt.Sprintf("Error rendering template: %s", err))
 	}
 
-	return a.BotReply(c, sb.String())
+	return a.BotReply(c, template)
 }
 
 func (a *App) HandleAlertmanagerListSilences(c tele.Context) error {
@@ -49,13 +54,15 @@ func (a *App) HandleAlertmanagerListSilences(c tele.Context) error {
 		return s.EndsAt.After(time.Now())
 	})
 
-	var sb strings.Builder
-	sb.WriteString("<strong>Silences</strong>\n")
-
-	for _, silence := range silences {
-		sb.WriteString(silence.Serialize() + "\n")
-		sb.WriteString(fmt.Sprintf("<a href=\"%s\">Link</a>\n\n", a.Alertmanager.GetSilenceURL(silence)))
+	template, err := a.TemplateManager.Render("silences_list", RenderStruct{
+		Grafana:      a.Grafana,
+		Alertmanager: a.Alertmanager,
+		Data:         silences,
+	})
+	if err != nil {
+		a.Logger.Error().Err(err).Msg("Error rendering silences_list template")
+		return c.Reply(fmt.Sprintf("Error rendering template: %s", err))
 	}
 
-	return a.BotReply(c, sb.String())
+	return a.BotReply(c, template)
 }

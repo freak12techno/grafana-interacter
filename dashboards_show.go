@@ -35,16 +35,24 @@ func (a *App) HandleShowDashboard(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Could not get dashboard: %s", err))
 	}
 
-	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("<strong>Dashboard</strong> %s\n", a.Grafana.GetDashboardLink(*dashboard)))
-	sb.WriteString("Panels:\n")
-	for _, panel := range dashboardEnriched.Dashboard.Panels {
-		sb.WriteString(fmt.Sprintf("- %s\n", a.Grafana.GetPanelLink(PanelStruct{
-			DashboardURL: dashboard.URL,
-			PanelID:      panel.ID,
-			Name:         panel.Title,
-		})))
+	template, err := a.TemplateManager.Render("dashboards_show", RenderStruct{
+		Grafana:      a.Grafana,
+		Alertmanager: a.Alertmanager,
+		Data: DashboardStruct{
+			Dashboard: *dashboard,
+			Panels: Map(dashboardEnriched.Dashboard.Panels, func(p GrafanaPanel) PanelStruct {
+				return PanelStruct{
+					DashboardURL: dashboard.URL,
+					PanelID:      p.ID,
+					Name:         p.Title,
+				}
+			}),
+		},
+	})
+	if err != nil {
+		a.Logger.Error().Err(err).Msg("Error rendering dashboards_show template")
+		return c.Reply(fmt.Sprintf("Error rendering template: %s", err))
 	}
 
-	return a.BotReply(c, sb.String())
+	return a.BotReply(c, template)
 }
