@@ -1,0 +1,13 @@
+<strong>Alert rule: </strong> {{ .Data.Name }}
+<strong>Alerts ({{ len .Data.Alerts }}): </strong>
+{{- if not .Data.Alerts }}
+No matching alerts.
+{{- end }}
+
+{{- range $alertId, $alert := .Data.Alerts }}
+
+- {{ GetEmojiByStatus $alert.State }}
+{{- range $key, $label := $alert.Labels }}
+{{ $key }} = {{ $label }}
+{{- end }}
+{{- end }}

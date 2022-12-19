@@ -138,21 +138,6 @@ func GetEmojiBySilenceStatus(state string) string {
 	}
 }
 
-func SerializeAlertLabels(qs map[string]string) string {
-	tmp := make([]string, len(qs))
-	counter := 0
-
-	for key, value := range qs {
-		if strings.HasPrefix(key, "__") && strings.HasSuffix(key, "__") {
-			continue
-		}
-		tmp[counter] = key + "=" + value
-		counter++
-	}
-
-	return strings.Join(tmp, " ")
-}
-
 func ParseSilenceOptions(query string, c tele.Context) (*Silence, string) {
 	args := strings.Split(query, " ")
 	if len(args) <= 2 {

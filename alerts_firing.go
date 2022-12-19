@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strings"
 
 	tele "gopkg.in/telebot.v3"
 )
@@ -26,28 +25,18 @@ func (a *App) HandleListFiringAlerts(c tele.Context) error {
 	grafanaGroups = FilterFiringOrPendingAlertGroups(grafanaGroups)
 	prometheusGroups = FilterFiringOrPendingAlertGroups(prometheusGroups)
 
-	var sb strings.Builder
-	if len(grafanaGroups) > 0 {
-		sb.WriteString("<strong>Grafana alerts:</strong>\n")
-		for _, group := range grafanaGroups {
-			for _, rule := range group.Rules {
-				sb.WriteString(rule.SerializeFull(group.Name))
-			}
-		}
-	} else {
-		sb.WriteString("<strong>No Grafana alerts</strong>\n")
+	template, err := a.TemplateManager.Render("alerts_firing", RenderStruct{
+		Grafana:      a.Grafana,
+		Alertmanager: a.Alertmanager,
+		Data: AlertsListStruct{
+			GrafanaGroups:    grafanaGroups,
+			PrometheusGroups: prometheusGroups,
+		},
+	})
+	if err != nil {
+		a.Logger.Error().Err(err).Msg("Error rendering alerts_firing template")
+		return c.Reply(fmt.Sprintf("Error rendering template: %s", err))
 	}
 
-	if len(prometheusGroups) > 0 {
-		sb.WriteString("<strong>Prometheus alerts:</strong>\n")
-		for _, group := range prometheusGroups {
-			for _, rule := range group.Rules {
-				sb.WriteString(rule.SerializeFull(group.Name))
-			}
-		}
-	} else {
-		sb.WriteString("<strong>No Prometheus alerts</strong>\n")
-	}
-
-	return a.BotReply(c, sb.String())
+	return a.BotReply(c, template)
 }
