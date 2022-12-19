@@ -126,3 +126,7 @@ type DashboardStruct struct {
 	Dashboard GrafanaDashboardInfo
 	Panels    []PanelStruct
 }
+
+type SilenceCreateResponse struct {
+	SilenceID string `json:"silenceID"`
+}
