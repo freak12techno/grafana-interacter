@@ -1,7 +1,9 @@
-package main
+package app
 
 import (
 	"fmt"
+	"main/pkg/types/render"
+	"main/pkg/utils"
 
 	tele "gopkg.in/telebot.v3"
 )
@@ -12,7 +14,7 @@ func (a *App) HandleNewSilence(c tele.Context) error {
 		Str("text", c.Text()).
 		Msg("Got new silence query")
 
-	silenceInfo, err := ParseSilenceOptions(c.Text(), c)
+	silenceInfo, err := utils.ParseSilenceOptions(c.Text(), c)
 	if err != "" {
 		return c.Reply(err)
 	}
@@ -27,7 +29,7 @@ func (a *App) HandleNewSilence(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error getting created silence: %s", silenceErr))
 	}
 
-	template, renderErr := a.TemplateManager.Render("silences_create", RenderStruct{
+	template, renderErr := a.TemplateManager.Render("silences_create", render.RenderStruct{
 		Grafana:      a.Grafana,
 		Alertmanager: a.Alertmanager,
 		Data:         silence,
@@ -50,7 +52,7 @@ func (a *App) HandleAlertmanagerNewSilence(c tele.Context) error {
 		return c.Reply("Alertmanager is disabled.")
 	}
 
-	silenceInfo, err := ParseSilenceOptions(c.Text(), c)
+	silenceInfo, err := utils.ParseSilenceOptions(c.Text(), c)
 	if err != "" {
 		return c.Reply(err)
 	}
@@ -65,7 +67,7 @@ func (a *App) HandleAlertmanagerNewSilence(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error getting created silence: %s", silenceErr))
 	}
 
-	template, renderErr := a.TemplateManager.Render("silences_create", RenderStruct{
+	template, renderErr := a.TemplateManager.Render("silences_create", render.RenderStruct{
 		Grafana:      a.Grafana,
 		Alertmanager: a.Alertmanager,
 		Data:         silence,

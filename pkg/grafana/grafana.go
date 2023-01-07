@@ -1,4 +1,4 @@
-package main
+package grafana
 
 import (
 	"bytes"
@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"main/pkg/config"
+	"main/pkg/types"
+	"main/pkg/utils"
 	"net/http"
 
 	"github.com/rs/zerolog"
@@ -14,11 +17,11 @@ import (
 )
 
 type Grafana struct {
-	Config GrafanaConfig
+	Config config.GrafanaConfig
 	Logger zerolog.Logger
 }
 
-func InitGrafana(config GrafanaConfig, logger *zerolog.Logger) *Grafana {
+func InitGrafana(config config.GrafanaConfig, logger *zerolog.Logger) *Grafana {
 	return &Grafana{
 		Config: config,
 		Logger: logger.With().Str("component", "grafana").Logger(),
@@ -29,7 +32,7 @@ func (g *Grafana) UseAuth() bool {
 	return g.Config.User != "" && g.Config.Password != ""
 }
 
-func (g *Grafana) RenderPanel(panel *PanelStruct, qs map[string]string) (io.ReadCloser, error) {
+func (g *Grafana) RenderPanel(panel *types.PanelStruct, qs map[string]string) (io.ReadCloser, error) {
 	baseParams := map[string]string{
 		"orgId":   "1",
 		"from":    "now",
@@ -43,33 +46,33 @@ func (g *Grafana) RenderPanel(panel *PanelStruct, qs map[string]string) (io.Read
 	url := g.RelativeLink(fmt.Sprintf(
 		"/render/d-solo/%s/dashboard?%s",
 		panel.DashboardID,
-		SerializeQueryString(MergeMaps(baseParams, qs)),
+		utils.SerializeQueryString(utils.MergeMaps(baseParams, qs)),
 	))
 
 	return g.Query(url)
 }
 
-func (g *Grafana) GetAllDashboards() ([]GrafanaDashboardInfo, error) {
+func (g *Grafana) GetAllDashboards() ([]types.GrafanaDashboardInfo, error) {
 	url := g.RelativeLink("/api/search?type=dash-db")
-	dashboards := []GrafanaDashboardInfo{}
+	dashboards := []types.GrafanaDashboardInfo{}
 	err := g.QueryAndDecode(url, &dashboards)
 	return dashboards, err
 }
 
-func (g *Grafana) GetDashboard(dashboardUID string) (*GrafanaDashboardResponse, error) {
+func (g *Grafana) GetDashboard(dashboardUID string) (*types.GrafanaDashboardResponse, error) {
 	url := g.RelativeLink(fmt.Sprintf("/api/dashboards/uid/%s", dashboardUID))
-	dashboards := &GrafanaDashboardResponse{}
+	dashboards := &types.GrafanaDashboardResponse{}
 	err := g.QueryAndDecode(url, &dashboards)
 	return dashboards, err
 }
 
-func (g *Grafana) GetAllPanels() ([]PanelStruct, error) {
+func (g *Grafana) GetAllPanels() ([]types.PanelStruct, error) {
 	dashboards, err := g.GetAllDashboards()
 	if err != nil {
 		return nil, err
 	}
 
-	dashboardsEnriched := make([]GrafanaDashboardResponse, len(dashboards))
+	dashboardsEnriched := make([]types.GrafanaDashboardResponse, len(dashboards))
 	group, _ := errgroup.WithContext(context.Background())
 
 	for i, d := range dashboards {
@@ -95,12 +98,12 @@ func (g *Grafana) GetAllPanels() ([]PanelStruct, error) {
 		panelsCount += len(d.Dashboard.Panels)
 	}
 
-	panels := make([]PanelStruct, panelsCount)
+	panels := make([]types.PanelStruct, panelsCount)
 	counter := 0
 
 	for _, d := range dashboardsEnriched {
 		for _, p := range d.Dashboard.Panels {
-			panels[counter] = PanelStruct{
+			panels[counter] = types.PanelStruct{
 				Name:          p.Title,
 				DashboardName: d.Dashboard.Title,
 				DashboardID:   d.Dashboard.UID,
@@ -119,11 +122,11 @@ func (g *Grafana) RelativeLink(url string) string {
 	return fmt.Sprintf("%s%s", g.Config.URL, url)
 }
 
-func (g *Grafana) GetDashboardLink(dashboard GrafanaDashboardInfo) template.HTML {
+func (g *Grafana) GetDashboardLink(dashboard types.GrafanaDashboardInfo) template.HTML {
 	return template.HTML(fmt.Sprintf("<a href='%s%s'>%s</a>", g.Config.URL, dashboard.URL, dashboard.Title))
 }
 
-func (g *Grafana) GetPanelLink(panel PanelStruct) template.HTML {
+func (g *Grafana) GetPanelLink(panel types.PanelStruct) template.HTML {
 	return template.HTML(fmt.Sprintf(
 		"<a href='%s?viewPanel=%d'>%s</a>",
 		g.RelativeLink(panel.DashboardURL),
@@ -132,19 +135,19 @@ func (g *Grafana) GetPanelLink(panel PanelStruct) template.HTML {
 	))
 }
 
-func (g *Grafana) GetDatasourceLink(ds GrafanaDatasource) template.HTML {
+func (g *Grafana) GetDatasourceLink(ds types.GrafanaDatasource) template.HTML {
 	return template.HTML(fmt.Sprintf("<a href='%s/datasources/edit/%s'>%s</a>", g.Config.URL, ds.UID, ds.Name))
 }
 
-func (g *Grafana) GetDatasources() ([]GrafanaDatasource, error) {
-	datasources := []GrafanaDatasource{}
+func (g *Grafana) GetDatasources() ([]types.GrafanaDatasource, error) {
+	datasources := []types.GrafanaDatasource{}
 	url := g.RelativeLink("/api/datasources")
 	err := g.QueryAndDecode(url, &datasources)
 	return datasources, err
 }
 
-func (g *Grafana) GetGrafanaAlertingRules() ([]GrafanaAlertGroup, error) {
-	rules := GrafanaAlertRulesResponse{}
+func (g *Grafana) GetGrafanaAlertingRules() ([]types.GrafanaAlertGroup, error) {
+	rules := types.GrafanaAlertRulesResponse{}
 	url := g.RelativeLink("/api/prometheus/grafana/api/v1/rules")
 	err := g.QueryAndDecode(url, &rules)
 	if err != nil {
@@ -154,8 +157,8 @@ func (g *Grafana) GetGrafanaAlertingRules() ([]GrafanaAlertGroup, error) {
 	return rules.Data.Groups, nil
 }
 
-func (g *Grafana) GetDatasourceAlertingRules(datasourceUID string) ([]GrafanaAlertGroup, error) {
-	rules := GrafanaAlertRulesResponse{}
+func (g *Grafana) GetDatasourceAlertingRules(datasourceUID string) ([]types.GrafanaAlertGroup, error) {
+	rules := types.GrafanaAlertRulesResponse{}
 	url := g.RelativeLink(fmt.Sprintf("/api/prometheus/%s/api/v1/rules", datasourceUID))
 	err := g.QueryAndDecode(url, &rules)
 	if err != nil {
@@ -165,13 +168,13 @@ func (g *Grafana) GetDatasourceAlertingRules(datasourceUID string) ([]GrafanaAle
 	return rules.Data.Groups, nil
 }
 
-func (g *Grafana) GetPrometheusAlertingRules() ([]GrafanaAlertGroup, error) {
+func (g *Grafana) GetPrometheusAlertingRules() ([]types.GrafanaAlertGroup, error) {
 	datasources, err := g.GetDatasources()
 	if err != nil {
 		return nil, err
 	}
 
-	groups := []GrafanaAlertGroup{}
+	groups := []types.GrafanaAlertGroup{}
 	for _, ds := range datasources {
 		if ds.Type == "prometheus" {
 			resp, err := g.GetDatasourceAlertingRules(ds.UID)
@@ -186,7 +189,7 @@ func (g *Grafana) GetPrometheusAlertingRules() ([]GrafanaAlertGroup, error) {
 	return groups, err
 }
 
-func (g *Grafana) GetAllAlertingRules() ([]GrafanaAlertGroup, error) {
+func (g *Grafana) GetAllAlertingRules() ([]types.GrafanaAlertGroup, error) {
 	grafanaRules, err := g.GetGrafanaAlertingRules()
 	if err != nil {
 		return nil, err
@@ -200,22 +203,22 @@ func (g *Grafana) GetAllAlertingRules() ([]GrafanaAlertGroup, error) {
 	return append(grafanaRules, prometheusRules...), nil
 }
 
-func (g *Grafana) CreateSilence(silence Silence) (SilenceCreateResponse, error) {
+func (g *Grafana) CreateSilence(silence types.Silence) (types.SilenceCreateResponse, error) {
 	url := g.RelativeLink("/api/alertmanager/grafana/api/v2/silences")
-	res := SilenceCreateResponse{}
+	res := types.SilenceCreateResponse{}
 	err := g.QueryAndDecodePost(url, silence, &res)
 	return res, err
 }
 
-func (g *Grafana) GetSilences() ([]Silence, error) {
-	silences := []Silence{}
+func (g *Grafana) GetSilences() ([]types.Silence, error) {
+	silences := []types.Silence{}
 	url := g.RelativeLink("/api/alertmanager/grafana/api/v2/silences")
 	err := g.QueryAndDecode(url, &silences)
 	return silences, err
 }
 
-func (g *Grafana) GetSilence(silenceID string) (Silence, error) {
-	silence := Silence{}
+func (g *Grafana) GetSilence(silenceID string) (types.Silence, error) {
+	silence := types.Silence{}
 	url := g.RelativeLink("/api/alertmanager/grafana/api/v2/silence/" + silenceID)
 	err := g.QueryAndDecode(url, &silence)
 	return silence, err

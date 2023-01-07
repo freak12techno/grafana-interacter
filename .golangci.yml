@@ -43,3 +43,4 @@ linters:
     - exportloopref
     - stylecheck
     - exhaustruct
+    - gci

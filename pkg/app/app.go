@@ -1,6 +1,11 @@
-package main
+package app
 
 import (
+	"main/pkg/alertmanager"
+	"main/pkg/config"
+	"main/pkg/grafana"
+	"main/pkg/logger"
+	"main/pkg/templates"
 	"strings"
 	"time"
 
@@ -9,20 +14,22 @@ import (
 	"gopkg.in/telebot.v3/middleware"
 )
 
+const MaxMessageSize = 4096
+
 type App struct {
-	Config          Config
-	Grafana         *Grafana
-	Alertmanager    *Alertmanager
-	TemplateManager *TemplateManager
+	Config          config.Config
+	Grafana         *grafana.Grafana
+	Alertmanager    *alertmanager.Alertmanager
+	TemplateManager *templates.TemplateManager
 	Logger          *zerolog.Logger
 	Bot             *tele.Bot
 }
 
-func NewApp(config *Config) *App {
-	logger := GetLogger(config.Log)
-	grafana := InitGrafana(config.Grafana, logger)
-	alertmanager := InitAlertmanager(config.Alertmanager, logger)
-	templateManager := NewTemplateManager()
+func NewApp(config *config.Config) *App {
+	logger := logger.GetLogger(config.Log)
+	grafana := grafana.InitGrafana(config.Grafana, logger)
+	alertmanager := alertmanager.InitAlertmanager(config.Alertmanager, logger)
+	templateManager := templates.NewTemplateManager()
 
 	bot, err := tele.NewBot(tele.Settings{
 		Token:  config.Telegram.Token,

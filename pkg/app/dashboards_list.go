@@ -1,7 +1,8 @@
-package main
+package app
 
 import (
 	"fmt"
+	"main/pkg/types/render"
 
 	tele "gopkg.in/telebot.v3"
 )
@@ -17,7 +18,7 @@ func (a *App) HandleListDashboards(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error querying for dashboards: %s", err))
 	}
 
-	template, err := a.TemplateManager.Render("dashboards_list", RenderStruct{
+	template, err := a.TemplateManager.Render("dashboards_list", render.RenderStruct{
 		Grafana:      a.Grafana,
 		Alertmanager: a.Alertmanager,
 		Data:         dashboards,

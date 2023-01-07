@@ -1,4 +1,4 @@
-package main
+package types
 
 import (
 	"fmt"
@@ -109,12 +109,6 @@ func (matcher *SilenceMatcher) Serialize() string {
 	} else {
 		return fmt.Sprintf("%s != %s", matcher.Name, matcher.Value)
 	}
-}
-
-type RenderStruct struct {
-	Grafana      *Grafana
-	Alertmanager *Alertmanager
-	Data         interface{}
 }
 
 type AlertsListStruct struct {

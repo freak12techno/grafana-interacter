@@ -1,7 +1,10 @@
-package main
+package app
 
 import (
 	"fmt"
+	"main/pkg/types"
+	"main/pkg/types/render"
+	"main/pkg/utils"
 	"strings"
 
 	tele "gopkg.in/telebot.v3"
@@ -25,7 +28,7 @@ func (a *App) HandleShowDashboard(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error querying for dashboards: %s", err))
 	}
 
-	dashboard, found := FindDashboardByName(dashboards, args[0])
+	dashboard, found := utils.FindDashboardByName(dashboards, args[0])
 	if !found {
 		return c.Reply("Could not find dashboard. See /dashboards for dashboards list.")
 	}
@@ -35,13 +38,13 @@ func (a *App) HandleShowDashboard(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Could not get dashboard: %s", err))
 	}
 
-	template, err := a.TemplateManager.Render("dashboards_show", RenderStruct{
+	template, err := a.TemplateManager.Render("dashboards_show", render.RenderStruct{
 		Grafana:      a.Grafana,
 		Alertmanager: a.Alertmanager,
-		Data: DashboardStruct{
+		Data: types.DashboardStruct{
 			Dashboard: *dashboard,
-			Panels: Map(dashboardEnriched.Dashboard.Panels, func(p GrafanaPanel) PanelStruct {
-				return PanelStruct{
+			Panels: utils.Map(dashboardEnriched.Dashboard.Panels, func(p types.GrafanaPanel) types.PanelStruct {
+				return types.PanelStruct{
 					DashboardURL: dashboard.URL,
 					PanelID:      p.ID,
 					Name:         p.Title,

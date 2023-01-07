@@ -1,7 +1,8 @@
-package main
+package app
 
 import (
 	"fmt"
+	"main/pkg/utils"
 
 	tele "gopkg.in/telebot.v3"
 )
@@ -12,7 +13,7 @@ func (a *App) HandleRenderPanel(c tele.Context) error {
 		Str("text", c.Text()).
 		Msg("Got render query")
 
-	opts, valid := ParseRenderOptions(c.Text())
+	opts, valid := utils.ParseRenderOptions(c.Text())
 
 	if !valid {
 		return c.Reply("Usage: /render <opts> <panel name>")
@@ -23,7 +24,7 @@ func (a *App) HandleRenderPanel(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error querying for panels: %s", err))
 	}
 
-	panel, found := FindPanelByName(panels, opts.Query)
+	panel, found := utils.FindPanelByName(panels, opts.Query)
 	if !found {
 		return c.Reply("Could not find a panel. See /dashboards for dashboards list, and /dashboard <dashboard name> for its panels.")
 	}
