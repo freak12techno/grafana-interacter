@@ -1,11 +1,4 @@
-package main
-
-import (
-	"os"
-
-	"github.com/creasty/defaults"
-	"gopkg.in/yaml.v2"
-)
+package config
 
 type Config struct {
 	Log          LogConfig          `yaml:"log"`
@@ -36,22 +29,4 @@ type AlertmanagerConfig struct {
 	User     string `yaml:"user"`
 	Password string `yaml:"password"`
 	Timezone string `yaml:"timezone" default:"Europe/Moscow"`
-}
-
-func LoadConfig(path string) *Config {
-	yamlFile, err := os.ReadFile(path)
-	if err != nil {
-		GetDefaultLogger().Fatal().Err(err).Msg("Could not read config file")
-	}
-
-	var config *Config
-
-	err = yaml.Unmarshal(yamlFile, &config)
-	if err != nil {
-		GetDefaultLogger().Fatal().Err(err).Msg("Could not unmarshal config file")
-	}
-
-	defaults.Set(&config)
-
-	return config
 }

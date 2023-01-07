@@ -1,14 +1,13 @@
-package main
+package templates
 
 import (
 	"bytes"
-	"embed"
 	"fmt"
 	"html/template"
+	"main/pkg/types/render"
+	"main/pkg/utils"
+	templatesList "main/templates"
 )
-
-//go:embed templates/*
-var templatesFs embed.FS
 
 type TemplateManager struct {
 	Templates map[string]*template.Template
@@ -28,10 +27,10 @@ func (manager *TemplateManager) GetTemplate(name string) (*template.Template, er
 	filename := fmt.Sprintf("%s.html", name)
 
 	t, err := template.New(filename).Funcs(template.FuncMap{
-		"GetEmojiByStatus":        GetEmojiByStatus,
-		"GetEmojiBySilenceStatus": GetEmojiBySilenceStatus,
-		"StrToFloat64":            StrToFloat64,
-	}).ParseFS(templatesFs, "templates/"+filename)
+		"GetEmojiByStatus":        utils.GetEmojiByStatus,
+		"GetEmojiBySilenceStatus": utils.GetEmojiBySilenceStatus,
+		"StrToFloat64":            utils.StrToFloat64,
+	}).ParseFS(templatesList.Templates, "templates/"+filename)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +39,7 @@ func (manager *TemplateManager) GetTemplate(name string) (*template.Template, er
 	return t, nil
 }
 
-func (manager *TemplateManager) Render(name string, data RenderStruct) (string, error) {
+func (manager *TemplateManager) Render(name string, data render.RenderStruct) (string, error) {
 	t, err := manager.GetTemplate(name)
 	if err != nil {
 		return "", err

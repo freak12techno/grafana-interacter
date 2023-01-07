@@ -1,7 +1,10 @@
-package main
+package app
 
 import (
 	"fmt"
+	"main/pkg/types"
+	"main/pkg/types/render"
+	"main/pkg/utils"
 	"time"
 
 	tele "gopkg.in/telebot.v3"
@@ -18,11 +21,11 @@ func (a *App) HandleListSilences(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error listing silence: %s", err))
 	}
 
-	silences = Filter(silences, func(s Silence) bool {
+	silences = utils.Filter(silences, func(s types.Silence) bool {
 		return s.EndsAt.After(time.Now())
 	})
 
-	template, err := a.TemplateManager.Render("silences_list", RenderStruct{
+	template, err := a.TemplateManager.Render("silences_list", render.RenderStruct{
 		Grafana:      a.Grafana,
 		Alertmanager: a.Alertmanager,
 		Data:         silences,
@@ -50,11 +53,11 @@ func (a *App) HandleAlertmanagerListSilences(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error listing silence: %s", err))
 	}
 
-	silences = Filter(silences, func(s Silence) bool {
+	silences = utils.Filter(silences, func(s types.Silence) bool {
 		return s.EndsAt.After(time.Now())
 	})
 
-	template, err := a.TemplateManager.Render("silences_list", RenderStruct{
+	template, err := a.TemplateManager.Render("silences_list", render.RenderStruct{
 		Grafana:      a.Grafana,
 		Alertmanager: a.Alertmanager,
 		Data:         silences,

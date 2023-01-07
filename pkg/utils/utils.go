@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"fmt"
@@ -8,9 +8,10 @@ import (
 	"time"
 
 	tele "gopkg.in/telebot.v3"
-)
 
-const MaxMessageSize = 4096
+	"main/pkg/logger"
+	"main/pkg/types"
+)
 
 func NormalizeString(input string) string {
 	reg := regexp.MustCompile("[^a-zA-Z0-9]+")
@@ -35,7 +36,7 @@ func Map[T, V any](slice []T, f func(T) V) []V {
 	return n
 }
 
-func FindDashboardByName(dashboards []GrafanaDashboardInfo, name string) (*GrafanaDashboardInfo, bool) {
+func FindDashboardByName(dashboards []types.GrafanaDashboardInfo, name string) (*types.GrafanaDashboardInfo, bool) {
 	normalizedName := NormalizeString(name)
 
 	for _, dashboard := range dashboards {
@@ -47,7 +48,7 @@ func FindDashboardByName(dashboards []GrafanaDashboardInfo, name string) (*Grafa
 	return nil, false
 }
 
-func FindPanelByName(panels []PanelStruct, name string) (*PanelStruct, bool) {
+func FindPanelByName(panels []types.PanelStruct, name string) (*types.PanelStruct, bool) {
 	normalizedName := NormalizeString(name)
 
 	for _, panel := range panels {
@@ -61,7 +62,7 @@ func FindPanelByName(panels []PanelStruct, name string) (*PanelStruct, bool) {
 	return nil, false
 }
 
-func FindAlertRuleByName(groups []GrafanaAlertGroup, name string) (*GrafanaAlertRule, bool) {
+func FindAlertRuleByName(groups []types.GrafanaAlertGroup, name string) (*types.GrafanaAlertRule, bool) {
 	normalizedName := NormalizeString(name)
 
 	for _, group := range groups {
@@ -76,10 +77,10 @@ func FindAlertRuleByName(groups []GrafanaAlertGroup, name string) (*GrafanaAlert
 	return nil, false
 }
 
-func ParseRenderOptions(query string) (RenderOptions, bool) {
+func ParseRenderOptions(query string) (types.RenderOptions, bool) {
 	args := strings.Split(query, " ")
 	if len(args) <= 1 {
-		return RenderOptions{}, false // should have at least 1 argument
+		return types.RenderOptions{}, false // should have at least 1 argument
 	}
 
 	params := map[string]string{}
@@ -96,7 +97,7 @@ func ParseRenderOptions(query string) (RenderOptions, bool) {
 		_, args = args[0], args[1:]
 	}
 
-	return RenderOptions{
+	return types.RenderOptions{
 		Query:  strings.Join(args, " "),
 		Params: params,
 	}, len(args) > 0
@@ -146,7 +147,7 @@ func GetEmojiBySilenceStatus(state string) string {
 	}
 }
 
-func ParseSilenceOptions(query string, c tele.Context) (*Silence, string) {
+func ParseSilenceOptions(query string, c tele.Context) (*types.Silence, string) {
 	args := strings.Split(query, " ")
 	if len(args) <= 2 {
 		return nil, fmt.Sprintf("Usage: %s <duration> <params>", args[0])
@@ -160,10 +161,10 @@ func ParseSilenceOptions(query string, c tele.Context) (*Silence, string) {
 		return nil, "Invalid duration provided"
 	}
 
-	silence := Silence{
+	silence := types.Silence{
 		StartsAt:  time.Now(),
 		EndsAt:    time.Now().Add(duration),
-		Matchers:  []SilenceMatcher{},
+		Matchers:  []types.SilenceMatcher{},
 		CreatedBy: c.Sender().FirstName,
 		Comment: fmt.Sprintf(
 			"Muted using grafana-interacter for %s by %s",
@@ -176,7 +177,7 @@ func ParseSilenceOptions(query string, c tele.Context) (*Silence, string) {
 		if strings.Contains(args[0], "!=") {
 			// not equals
 			argsSplit := strings.SplitN(args[0], "!=", 2)
-			silence.Matchers = append(silence.Matchers, SilenceMatcher{
+			silence.Matchers = append(silence.Matchers, types.SilenceMatcher{
 				IsEqual: false,
 				IsRegex: false,
 				Name:    argsSplit[0],
@@ -185,7 +186,7 @@ func ParseSilenceOptions(query string, c tele.Context) (*Silence, string) {
 		} else if strings.Contains(args[0], "!~") {
 			// not matches regexp
 			argsSplit := strings.SplitN(args[0], "!~", 2)
-			silence.Matchers = append(silence.Matchers, SilenceMatcher{
+			silence.Matchers = append(silence.Matchers, types.SilenceMatcher{
 				IsEqual: false,
 				IsRegex: true,
 				Name:    argsSplit[0],
@@ -194,7 +195,7 @@ func ParseSilenceOptions(query string, c tele.Context) (*Silence, string) {
 		} else if strings.Contains(args[0], "=~") {
 			// matches regexp
 			argsSplit := strings.SplitN(args[0], "=~", 2)
-			silence.Matchers = append(silence.Matchers, SilenceMatcher{
+			silence.Matchers = append(silence.Matchers, types.SilenceMatcher{
 				IsEqual: true,
 				IsRegex: true,
 				Name:    argsSplit[0],
@@ -203,7 +204,7 @@ func ParseSilenceOptions(query string, c tele.Context) (*Silence, string) {
 		} else if strings.Contains(args[0], "=") {
 			// equals
 			argsSplit := strings.SplitN(args[0], "=", 2)
-			silence.Matchers = append(silence.Matchers, SilenceMatcher{
+			silence.Matchers = append(silence.Matchers, types.SilenceMatcher{
 				IsEqual: true,
 				IsRegex: false,
 				Name:    argsSplit[0],
@@ -218,7 +219,7 @@ func ParseSilenceOptions(query string, c tele.Context) (*Silence, string) {
 
 	if len(args) > 0 {
 		// plain string, silencing by alertname
-		silence.Matchers = append(silence.Matchers, SilenceMatcher{
+		silence.Matchers = append(silence.Matchers, types.SilenceMatcher{
 			IsEqual: true,
 			IsRegex: false,
 			Name:    "alertname",
@@ -233,11 +234,11 @@ func ParseSilenceOptions(query string, c tele.Context) (*Silence, string) {
 	return &silence, ""
 }
 
-func FilterFiringOrPendingAlertGroups(groups []GrafanaAlertGroup) []GrafanaAlertGroup {
-	var returnGroups []GrafanaAlertGroup
+func FilterFiringOrPendingAlertGroups(groups []types.GrafanaAlertGroup) []types.GrafanaAlertGroup {
+	var returnGroups []types.GrafanaAlertGroup
 
 	for _, group := range groups {
-		rules := []GrafanaAlertRule{}
+		rules := []types.GrafanaAlertRule{}
 		hasAnyRules := false
 
 		for _, rule := range group.Rules {
@@ -248,7 +249,7 @@ func FilterFiringOrPendingAlertGroups(groups []GrafanaAlertGroup) []GrafanaAlert
 		}
 
 		if hasAnyRules {
-			returnGroups = append(returnGroups, GrafanaAlertGroup{
+			returnGroups = append(returnGroups, types.GrafanaAlertGroup{
 				Name:  group.Name,
 				File:  group.File,
 				Rules: rules,
@@ -262,7 +263,7 @@ func FilterFiringOrPendingAlertGroups(groups []GrafanaAlertGroup) []GrafanaAlert
 func StrToFloat64(s string) float64 {
 	f, err := strconv.ParseFloat(s, 64)
 	if err != nil {
-		GetDefaultLogger().Fatal().Err(err).Str("value", s).Msg("Could not parse float")
+		logger.GetDefaultLogger().Fatal().Err(err).Str("value", s).Msg("Could not parse float")
 	}
 
 	return f

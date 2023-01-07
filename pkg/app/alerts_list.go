@@ -1,7 +1,9 @@
-package main
+package app
 
 import (
 	"fmt"
+	"main/pkg/types"
+	"main/pkg/types/render"
 
 	tele "gopkg.in/telebot.v3"
 )
@@ -22,10 +24,10 @@ func (a *App) HandleListAlerts(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
 	}
 
-	template, err := a.TemplateManager.Render("alerts_list", RenderStruct{
+	template, err := a.TemplateManager.Render("alerts_list", render.RenderStruct{
 		Grafana:      a.Grafana,
 		Alertmanager: a.Alertmanager,
-		Data: AlertsListStruct{
+		Data: types.AlertsListStruct{
 			GrafanaGroups:    grafanaGroups,
 			PrometheusGroups: prometheusGroups,
 		},

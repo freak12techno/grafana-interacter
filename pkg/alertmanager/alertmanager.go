@@ -1,21 +1,23 @@
-package main
+package alertmanager
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/rs/zerolog"
 	"io"
 	"net/http"
 
-	"github.com/rs/zerolog"
+	"main/pkg/config"
+	"main/pkg/types"
 )
 
 type Alertmanager struct {
-	Config AlertmanagerConfig
+	Config config.AlertmanagerConfig
 	Logger zerolog.Logger
 }
 
-func InitAlertmanager(config AlertmanagerConfig, logger *zerolog.Logger) *Alertmanager {
+func InitAlertmanager(config config.AlertmanagerConfig, logger *zerolog.Logger) *Alertmanager {
 	return &Alertmanager{
 		Config: config,
 		Logger: logger.With().Str("component", "alertmanager").Logger(),
@@ -26,22 +28,22 @@ func (g *Alertmanager) Enabled() bool {
 	return g.Config.User != "" && g.Config.Password != ""
 }
 
-func (g *Alertmanager) CreateSilence(silence Silence) (SilenceCreateResponse, error) {
+func (g *Alertmanager) CreateSilence(silence types.Silence) (types.SilenceCreateResponse, error) {
 	url := g.RelativeLink("/api/v2/silences")
-	res := SilenceCreateResponse{}
+	res := types.SilenceCreateResponse{}
 	err := g.QueryAndDecodePost(url, silence, &res)
 	return res, err
 }
 
-func (g *Alertmanager) GetSilences() ([]Silence, error) {
-	silences := []Silence{}
+func (g *Alertmanager) GetSilences() ([]types.Silence, error) {
+	silences := []types.Silence{}
 	url := g.RelativeLink("/api/v2/silences")
 	err := g.QueryAndDecode(url, &silences)
 	return silences, err
 }
 
-func (g *Alertmanager) GetSilence(silenceID string) (Silence, error) {
-	silence := Silence{}
+func (g *Alertmanager) GetSilence(silenceID string) (types.Silence, error) {
+	silence := types.Silence{}
 	url := g.RelativeLink("/api/v2/silence/" + silenceID)
 	err := g.QueryAndDecode(url, &silence)
 	return silence, err
@@ -58,7 +60,7 @@ func (g *Alertmanager) RelativeLink(url string) string {
 	return fmt.Sprintf("%s%s", g.Config.URL, url)
 }
 
-func (g *Alertmanager) GetSilenceURL(silence Silence) string {
+func (g *Alertmanager) GetSilenceURL(silence types.Silence) string {
 	return fmt.Sprintf("%s/#/silences/%s", g.Config.URL, silence.ID)
 }
 

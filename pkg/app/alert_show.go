@@ -1,7 +1,9 @@
-package main
+package app
 
 import (
 	"fmt"
+	"main/pkg/types/render"
+	"main/pkg/utils"
 	"strings"
 
 	tele "gopkg.in/telebot.v3"
@@ -25,12 +27,12 @@ func (a *App) HandleSingleAlert(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
 	}
 
-	rule, found := FindAlertRuleByName(rules, args[0])
+	rule, found := utils.FindAlertRuleByName(rules, args[0])
 	if !found {
 		return c.Reply("Could not find alert. See /alerts for alerting rules.")
 	}
 
-	template, err := a.TemplateManager.Render("alert", RenderStruct{
+	template, err := a.TemplateManager.Render("alert", render.RenderStruct{
 		Grafana:      a.Grafana,
 		Alertmanager: a.Alertmanager,
 		Data:         rule,
