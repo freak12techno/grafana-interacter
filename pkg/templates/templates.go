@@ -31,7 +31,7 @@ func (manager *TemplateManager) GetTemplate(name string) (*template.Template, er
 		"GetEmojiByStatus":        utils.GetEmojiByStatus,
 		"GetEmojiBySilenceStatus": utils.GetEmojiBySilenceStatus,
 		"StrToFloat64":            utils.StrToFloat64,
-	}).ParseFS(templatesList.Templates, "templates/"+filename)
+	}).ParseFS(templatesList.Templates, filename)
 	if err != nil {
 		return nil, err
 	}
