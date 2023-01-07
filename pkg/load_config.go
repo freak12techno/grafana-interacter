@@ -1,11 +1,12 @@
 package pkg
 
 import (
-	"github.com/creasty/defaults"
-	"gopkg.in/yaml.v3"
 	"main/pkg/config"
 	"main/pkg/logger"
 	"os"
+
+	"github.com/creasty/defaults"
+	"gopkg.in/yaml.v3"
 )
 
 func LoadConfig(path string) *config.Config {

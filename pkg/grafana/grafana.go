@@ -7,14 +7,13 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"main/pkg/config"
+	"main/pkg/types"
+	"main/pkg/utils"
 	"net/http"
 
 	"github.com/rs/zerolog"
 	"golang.org/x/sync/errgroup"
-
-	"main/pkg/config"
-	"main/pkg/types"
-	"main/pkg/utils"
 )
 
 type Grafana struct {

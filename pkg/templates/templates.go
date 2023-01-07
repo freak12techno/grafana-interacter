@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"main/pkg/types/render"
 	"main/pkg/utils"
+
 	templatesList "main/templates"
 )
 

@@ -1,11 +1,11 @@
-package cmd
+package main
 
 import (
-	"github.com/spf13/cobra"
-	"main/pkg/app"
-
 	"main/pkg"
+	"main/pkg/app"
 	"main/pkg/logger"
+
+	"github.com/spf13/cobra"
 )
 
 func Execute(configPath string) {

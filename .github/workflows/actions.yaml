@@ -10,7 +10,7 @@ jobs:
           go-version: '^1.18.0'
       - run: go version
       - run: go mod download
-      - run: go build cmd/grafana-interacter.go
+      - run: go build cmd/grafana-interacter
   go-vet:
     runs-on: ubuntu-latest
     steps:

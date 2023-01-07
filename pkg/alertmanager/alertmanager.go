@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/rs/zerolog"
 	"io"
-	"net/http"
-
 	"main/pkg/config"
 	"main/pkg/types"
+	"net/http"
+
+	"github.com/rs/zerolog"
 )
 
 type Alertmanager struct {

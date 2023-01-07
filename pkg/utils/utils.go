@@ -2,15 +2,14 @@ package utils
 
 import (
 	"fmt"
+	"main/pkg/logger"
+	"main/pkg/types"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
 	tele "gopkg.in/telebot.v3"
-
-	"main/pkg/logger"
-	"main/pkg/types"
 )
 
 func NormalizeString(input string) string {
