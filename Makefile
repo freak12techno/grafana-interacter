@@ -1,5 +1,8 @@
 build:
-	go build cmd/grafana-interacter/main.go
+	go build cmd/grafana-interacter.go
 
 install:
-	go install cmd/grafana-interacter/main.go
+	go install cmd/grafana-interacter.go
+
+lint:
+	golangci-lint run --fix ./...

@@ -2,7 +2,7 @@ before:
   hooks:
     - go mod tidy
 builds:
-  - main: ./cmd/grafana-interacter
+  - main: ./cmd/grafana-interacter.go
     env:
       - CGO_ENABLED=0
     goos:
