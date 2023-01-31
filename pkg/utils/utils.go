@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"golang.org/x/exp/slices"
 	"main/pkg/logger"
 	"main/pkg/types"
 	"regexp"
@@ -236,13 +237,35 @@ func ParseSilenceOptions(query string, c tele.Context) (*types.Silence, string) 
 func FilterFiringOrPendingAlertGroups(groups []types.GrafanaAlertGroup) []types.GrafanaAlertGroup {
 	var returnGroups []types.GrafanaAlertGroup
 
+	alertingStatuses := []string{"firing", "alerting", "pending"}
+
 	for _, group := range groups {
 		rules := []types.GrafanaAlertRule{}
 		hasAnyRules := false
 
 		for _, rule := range group.Rules {
-			if rule.State == "firing" || rule.State == "alerting" || rule.State == "pending" {
-				rules = append(rules, rule)
+			if !slices.Contains(alertingStatuses, strings.ToLower(rule.State)) {
+				continue
+			}
+
+			alerts := []types.GrafanaAlert{}
+			hasAnyAlerts := false
+
+			for _, alert := range rule.Alerts {
+				if !slices.Contains(alertingStatuses, strings.ToLower(alert.State)) {
+					continue
+				}
+
+				alerts = append(alerts, alert)
+				hasAnyAlerts = true
+			}
+
+			if hasAnyAlerts {
+				rules = append(rules, types.GrafanaAlertRule{
+					State:  rule.State,
+					Name:   rule.Name,
+					Alerts: alerts,
+				})
 				hasAnyRules = true
 			}
 		}

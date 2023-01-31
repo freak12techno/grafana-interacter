@@ -2,3 +2,4 @@ config.yml
 main
 .idea
 dist/
+grafana-interacter
