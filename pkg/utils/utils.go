@@ -2,13 +2,14 @@ package utils
 
 import (
 	"fmt"
-	"golang.org/x/exp/slices"
 	"main/pkg/logger"
 	"main/pkg/types"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"golang.org/x/exp/slices"
 
 	tele "gopkg.in/telebot.v3"
 )
