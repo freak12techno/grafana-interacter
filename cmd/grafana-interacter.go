@@ -8,23 +8,25 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var version = "unknown"
+
 func Execute(configPath string) {
 	if configPath == "" {
 		logger.GetDefaultLogger().Fatal().Msg("Cannot start without config")
 	}
 
 	config := pkg.LoadConfig(configPath)
-	app := app.NewApp(config)
-
-	app.Start()
+	newApp := app.NewApp(config)
+	newApp.Start()
 }
 
 func main() {
 	var configPath string
 
 	rootCmd := &cobra.Command{
-		Use:  "grafana-interacter",
-		Long: "A Telegram bot.",
+		Use:     "grafana-interacter",
+		Long:    "A Telegram bot to interact with your Grafana, Prometheus and Alertmanager instances.",
+		Version: version,
 		Run: func(cmd *cobra.Command, args []string) {
 			Execute(configPath)
 		},
