@@ -8,9 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	version = "unknown"
-)
+var version = "unknown"
 
 func Execute(configPath string) {
 	if configPath == "" {
