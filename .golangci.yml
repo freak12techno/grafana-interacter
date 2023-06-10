@@ -44,3 +44,4 @@ linters:
     - stylecheck
     - exhaustruct
     - gci
+    - depguard
