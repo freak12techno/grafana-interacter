@@ -26,6 +26,10 @@ func (a *App) HandleDeleteSilence(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error getting silence to delete: %s", silenceFetchErr))
 	}
 
+	if silence.Status.State == "expired" {
+		return c.Reply("Silence is already deleted!")
+	}
+
 	silenceErr := a.Grafana.DeleteSilence(args[0])
 	if silenceErr != nil {
 		return c.Reply(fmt.Sprintf("Error deleting silence: %s", silenceErr))
@@ -65,6 +69,10 @@ func (a *App) HandleAlertmanagerDeleteSilence(c tele.Context) error {
 	silence, silenceFetchErr := a.Alertmanager.GetSilence(args[0])
 	if silenceFetchErr != nil {
 		return c.Reply(fmt.Sprintf("Error getting silence to delete: %s", silenceFetchErr))
+	}
+
+	if silence.Status.State == "expired" {
+		return c.Reply("Silence is already deleted!")
 	}
 
 	silenceErr := a.Alertmanager.DeleteSilence(args[0])
