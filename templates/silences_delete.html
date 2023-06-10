@@ -1,10 +1,5 @@
 <strong>Deleted silence with following params:</strong>
 ID:         <code>{{ .Data.ID }}</code>
-Starts at:  <pre>{{ .Data.StartsAt.String }}</pre>
-Ends at:    <pre>{{ .Data.EndsAt.String }}</pre>
-Created by: <pre>{{ .Data.CreatedBy }}</pre>
-Comment:    <pre>{{ .Data.Comment }}</pre>
-Status:     <pre>{{ GetEmojiBySilenceStatus .Data.Status.State }} {{ .Data.Status.State }}</pre>
 Matchers:
 {{- range $matcherId, $matcher := .Data.Matchers }}
 <pre> {{ $matcher.Serialize }}</pre>
