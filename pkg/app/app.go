@@ -57,6 +57,8 @@ func NewApp(config *config.Config) *App {
 }
 
 func (a *App) Start() {
+	a.Bot.Handle("/start", a.HandleHelp)
+	a.Bot.Handle("/help", a.HandleHelp)
 	a.Bot.Handle("/dashboards", a.HandleListDashboards)
 	a.Bot.Handle("/dashboard", a.HandleShowDashboard)
 	a.Bot.Handle("/render", a.HandleRenderPanel)
