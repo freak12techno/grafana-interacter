@@ -2,14 +2,14 @@ package config
 
 type Config struct {
 	Log          LogConfig          `yaml:"log"`
-	Telegram     TelegramConfig     `yaml:"telegram" default:""`
+	Telegram     TelegramConfig     `default:""          yaml:"telegram"`
 	Grafana      GrafanaConfig      `yaml:"grafana"`
 	Alertmanager AlertmanagerConfig `yaml:"alertmanager"`
 }
 
 type LogConfig struct {
-	LogLevel   string `yaml:"level" default:"info"`
-	JSONOutput bool   `yaml:"json" default:"false"`
+	LogLevel   string `default:"info"  yaml:"level"`
+	JSONOutput bool   `default:"false" yaml:"json"`
 }
 
 type TelegramConfig struct {
@@ -18,15 +18,15 @@ type TelegramConfig struct {
 }
 
 type GrafanaConfig struct {
-	URL      string `yaml:"url" default:"http://localhost:3000"`
+	URL      string `default:"http://localhost:3000" yaml:"url"`
 	User     string `yaml:"user"`
 	Password string `yaml:"password"`
-	Timezone string `yaml:"timezone" default:"Europe/Moscow"`
+	Timezone string `default:"Europe/Moscow"         yaml:"timezone"`
 }
 
 type AlertmanagerConfig struct {
-	URL      string `yaml:"url" default:"http://localhost:9093"`
+	URL      string `default:"http://localhost:9093" yaml:"url"`
 	User     string `yaml:"user"`
 	Password string `yaml:"password"`
-	Timezone string `yaml:"timezone" default:"Europe/Moscow"`
+	Timezone string `default:"Europe/Moscow"         yaml:"timezone"`
 }
