@@ -2,8 +2,9 @@ package app
 
 import (
 	"fmt"
-	tele "gopkg.in/telebot.v3"
 	"main/pkg/types/render"
+
+	tele "gopkg.in/telebot.v3"
 )
 
 func (a *App) HandleHelp(c tele.Context) error {
