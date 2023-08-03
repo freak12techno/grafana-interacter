@@ -33,20 +33,13 @@ func (g *Grafana) UseAuth() bool {
 }
 
 func (g *Grafana) RenderPanel(panel *types.PanelStruct, qs map[string]string) (io.ReadCloser, error) {
-	baseParams := map[string]string{
-		"orgId":   "1",
-		"from":    "now",
-		"to":      "now-30m",
-		"panelId": fmt.Sprintf("%d", panel.PanelID),
-		"width":   "1000",
-		"height":  "500",
-		"tz":      g.Config.Timezone,
-	}
+	params := utils.MergeMaps(g.Config.RenderOptions, qs)
+	params["panelId"] = fmt.Sprintf("%d", panel.PanelID)
 
 	url := g.RelativeLink(fmt.Sprintf(
 		"/render/d-solo/%s/dashboard?%s",
 		panel.DashboardID,
-		utils.SerializeQueryString(utils.MergeMaps(baseParams, qs)),
+		utils.SerializeQueryString(params),
 	))
 
 	return g.Query(url)

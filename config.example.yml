@@ -4,8 +4,8 @@ log:
   level: info
  # Output logs as JSON. Useful if you are using logging aggregation solutions such as ELK. Defaults to false.
   json: false
+# Telegram bot token, you can create a Telegam bot with @BotFather bot on Telegram
 telegram:
-  # Telegram bot token, you can create a Telegam bot with @BotFather bot on Telegram
   token: xxx:yyy
   # List of Telegram user IDs who can interact with the bot.
   # You can get your id with @getmyid_bot on Telegram.
@@ -17,8 +17,21 @@ grafana:
    # Grafana credentials.
   user: admin
   password: admin
-  # Timezone for rendering graphs
-  timezone: Europe/Moscow
+  # Default render options. If you want to avoid specifying render params each time,
+  # you can specify it here, and it'll apply to all render requests, then all params you've specified
+  # in your render request would be added above these.
+  # Defaults to "orgId: 1, from: now, to: now-30m"
+  # All params are expected to be strings, even if they are number, so put them in quotes.
+  # Here's an example of how you can customize it:
+  render_options:
+    # Customize your time interval for rendering
+    from: "now"
+    to: "now-6h"
+    # Customize your timezone
+    timezone: "Europe/Moscow"
+    # Customize your plot width/height
+    width: "1000"
+    height: "500"
 # Optional config if you use external Alertmanager, used for getting silences list and creating new ones.
 alertmanager:
   # URL of the remote Grafana to do queries against. Defaults to http://localhost:9093
