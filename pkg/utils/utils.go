@@ -117,11 +117,17 @@ func SerializeQueryString(qs map[string]string) string {
 }
 
 func MergeMaps(first, second map[string]string) map[string]string {
-	for key, value := range second {
-		first[key] = value
+	result := map[string]string{}
+
+	for key, value := range first {
+		result[key] = value
 	}
 
-	return first
+	for key, value := range second {
+		result[key] = value
+	}
+
+	return result
 }
 
 func GetEmojiByStatus(state string) string {

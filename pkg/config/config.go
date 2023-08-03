@@ -18,10 +18,10 @@ type TelegramConfig struct {
 }
 
 type GrafanaConfig struct {
-	URL      string `default:"http://localhost:3000" yaml:"url"`
-	User     string `yaml:"user"`
-	Password string `yaml:"password"`
-	Timezone string `default:"Europe/Moscow"         yaml:"timezone"`
+	URL           string            `default:"http://localhost:3000"                                 yaml:"url"`
+	User          string            `yaml:"user"`
+	Password      string            `yaml:"password"`
+	RenderOptions map[string]string `default:"{\"orgId\":\"1\",\"from\":\"now\",\"to\":\"now-30m\"}" yaml:"render_options"`
 }
 
 type AlertmanagerConfig struct {

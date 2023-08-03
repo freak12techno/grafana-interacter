@@ -1,7 +1,7 @@
 package pkg
 
 import (
-	"main/pkg/config"
+	configPkg "main/pkg/config"
 	"main/pkg/logger"
 	"os"
 
@@ -9,20 +9,22 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func LoadConfig(path string) *config.Config {
+func LoadConfig(path string) *configPkg.Config {
 	yamlFile, err := os.ReadFile(path)
 	if err != nil {
 		logger.GetDefaultLogger().Fatal().Err(err).Msg("Could not read config file")
 	}
 
-	var config *config.Config
+	var config *configPkg.Config
 
 	err = yaml.Unmarshal(yamlFile, &config)
 	if err != nil {
 		logger.GetDefaultLogger().Fatal().Err(err).Msg("Could not unmarshal config file")
 	}
 
-	defaults.Set(&config)
+	if err := defaults.Set(config); err != nil {
+		logger.GetDefaultLogger().Fatal().Err(err).Msg("Could not set default settings")
+	}
 
 	return config
 }
