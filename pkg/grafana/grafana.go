@@ -45,9 +45,9 @@ func (g *Grafana) RenderPanel(panel *types.PanelStruct, qs map[string]string) (i
 	return g.Query(url)
 }
 
-func (g *Grafana) GetAllDashboards() ([]types.GrafanaDashboardInfo, error) {
+func (g *Grafana) GetAllDashboards() (types.GrafanaDashboardsInfo, error) {
 	url := g.RelativeLink("/api/search?type=dash-db")
-	dashboards := []types.GrafanaDashboardInfo{}
+	dashboards := types.GrafanaDashboardsInfo{}
 	err := g.QueryAndDecode(url, &dashboards)
 	return dashboards, err
 }
@@ -59,7 +59,7 @@ func (g *Grafana) GetDashboard(dashboardUID string) (*types.GrafanaDashboardResp
 	return dashboards, err
 }
 
-func (g *Grafana) GetAllPanels() ([]types.PanelStruct, error) {
+func (g *Grafana) GetAllPanels() (types.PanelsStruct, error) {
 	dashboards, err := g.GetAllDashboards()
 	if err != nil {
 		return nil, err

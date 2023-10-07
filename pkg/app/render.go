@@ -24,7 +24,7 @@ func (a *App) HandleRenderPanel(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error querying for panels: %s", err))
 	}
 
-	panel, found := utils.FindPanelByName(panels, opts.Query)
+	panel, found := panels.FindByName(opts.Query)
 	if !found {
 		return c.Reply("Could not find a panel. See /dashboards for dashboards list, and /dashboard <dashboard name> for its panels.")
 	}

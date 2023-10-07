@@ -28,7 +28,7 @@ func (a *App) HandleShowDashboard(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error querying for dashboards: %s", err))
 	}
 
-	dashboard, found := utils.FindDashboardByName(dashboards, args[0])
+	dashboard, found := dashboards.FindDashboardByName(args[0])
 	if !found {
 		return c.Reply("Could not find dashboard. See /dashboards for dashboards list.")
 	}
