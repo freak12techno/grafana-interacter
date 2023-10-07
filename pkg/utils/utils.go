@@ -4,71 +4,23 @@ import (
 	"fmt"
 	"main/pkg/logger"
 	"main/pkg/types"
-	"regexp"
+	"main/pkg/utils/normalize"
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"golang.org/x/exp/slices"
 
 	tele "gopkg.in/telebot.v3"
 )
 
-func NormalizeString(input string) string {
-	reg := regexp.MustCompile("[^a-zA-Z0-9]+")
-	return strings.ToLower(reg.ReplaceAllString(input, ""))
-}
-
-func Filter[T any](slice []T, f func(T) bool) []T {
-	var n []T
-	for _, e := range slice {
-		if f(e) {
-			n = append(n, e)
-		}
-	}
-	return n
-}
-
-func Map[T, V any](slice []T, f func(T) V) []V {
-	n := make([]V, len(slice))
-	for index, e := range slice {
-		n[index] = f(e)
-	}
-	return n
-}
-
-func FindDashboardByName(dashboards []types.GrafanaDashboardInfo, name string) (*types.GrafanaDashboardInfo, bool) {
-	normalizedName := NormalizeString(name)
-
-	for _, dashboard := range dashboards {
-		if strings.Contains(NormalizeString(dashboard.Title), normalizedName) {
-			return &dashboard, true
-		}
-	}
-
-	return nil, false
-}
-
-func FindPanelByName(panels []types.PanelStruct, name string) (*types.PanelStruct, bool) {
-	normalizedName := NormalizeString(name)
-
-	for _, panel := range panels {
-		panelNameWithDashboardName := NormalizeString(panel.DashboardName + panel.Name)
-
-		if strings.Contains(panelNameWithDashboardName, normalizedName) {
-			return &panel, true
-		}
-	}
-
-	return nil, false
-}
-
 func FindAlertRuleByName(groups []types.GrafanaAlertGroup, name string) (*types.GrafanaAlertRule, bool) {
-	normalizedName := NormalizeString(name)
+	normalizedName := normalize.NormalizeString(name)
 
 	for _, group := range groups {
 		for _, rule := range group.Rules {
-			ruleName := NormalizeString(group.Name + rule.Name)
+			ruleName := normalize.NormalizeString(group.Name + rule.Name)
 			if strings.Contains(ruleName, normalizedName) {
 				return &rule, true
 			}
@@ -155,13 +107,13 @@ func GetEmojiBySilenceStatus(state string) string {
 }
 
 func ParseSilenceOptions(query string, c tele.Context) (*types.Silence, string) {
-	args := strings.Split(query, " ")
+	args := strings.SplitN(query, " ", 3)
 	if len(args) <= 2 {
 		return nil, fmt.Sprintf("Usage: %s <duration> <params>", args[0])
 	}
 
 	_, args = args[0], args[1:] // removing first argument as it's always /silence
-	durationString, args := args[0], args[1:]
+	durationString, rest := args[0], args[1]
 
 	duration, err := time.ParseDuration(durationString)
 	if err != nil {
@@ -180,58 +132,32 @@ func ParseSilenceOptions(query string, c tele.Context) (*types.Silence, string) 
 		),
 	}
 
-	for len(args) > 0 {
-		if strings.Contains(args[0], "!=") {
-			// not equals
-			argsSplit := strings.SplitN(args[0], "!=", 2)
-			silence.Matchers = append(silence.Matchers, types.SilenceMatcher{
-				IsEqual: false,
-				IsRegex: false,
-				Name:    argsSplit[0],
-				Value:   argsSplit[1],
-			})
-		} else if strings.Contains(args[0], "!~") {
-			// not matches regexp
-			argsSplit := strings.SplitN(args[0], "!~", 2)
-			silence.Matchers = append(silence.Matchers, types.SilenceMatcher{
-				IsEqual: false,
-				IsRegex: true,
-				Name:    argsSplit[0],
-				Value:   argsSplit[1],
-			})
-		} else if strings.Contains(args[0], "=~") {
-			// matches regexp
-			argsSplit := strings.SplitN(args[0], "=~", 2)
-			silence.Matchers = append(silence.Matchers, types.SilenceMatcher{
-				IsEqual: true,
-				IsRegex: true,
-				Name:    argsSplit[0],
-				Value:   argsSplit[1],
-			})
-		} else if strings.Contains(args[0], "=") {
-			// equals
-			argsSplit := strings.SplitN(args[0], "=", 2)
-			silence.Matchers = append(silence.Matchers, types.SilenceMatcher{
-				IsEqual: true,
-				IsRegex: false,
-				Name:    argsSplit[0],
-				Value:   argsSplit[1],
-			})
-		} else {
-			break
+	matchers := ParseKeyValueString(rest)
+
+	for _, matcher := range matchers {
+		matcherParsed := types.SilenceMatcher{
+			Name:  matcher.Key,
+			Value: matcher.Value,
 		}
 
-		_, args = args[0], args[1:]
-	}
+		switch matcher.Operator {
+		case "!=":
+			matcherParsed.IsEqual = false
+			matcherParsed.IsRegex = false
+		case "!~":
+			matcherParsed.IsEqual = false
+			matcherParsed.IsRegex = true
+		case "=~":
+			matcherParsed.IsEqual = true
+			matcherParsed.IsRegex = true
+		case "=":
+			matcherParsed.IsEqual = true
+			matcherParsed.IsRegex = false
+		default:
+			return nil, fmt.Sprintf("Got unexpected operator: %s", matcher.Operator)
+		}
 
-	if len(args) > 0 {
-		// plain string, silencing by alertname
-		silence.Matchers = append(silence.Matchers, types.SilenceMatcher{
-			IsEqual: true,
-			IsRegex: false,
-			Name:    "alertname",
-			Value:   strings.Join(args, " "),
-		})
+		silence.Matchers = append(silence.Matchers, matcherParsed)
 	}
 
 	if len(silence.Matchers) == 0 {
@@ -296,4 +222,64 @@ func StrToFloat64(s string) float64 {
 	}
 
 	return f
+}
+
+func ParseKeyValueString(source string) []types.QueryMatcher {
+	lastQuote := rune(0)
+	f := func(c rune) bool {
+		switch {
+		case c == lastQuote:
+			lastQuote = rune(0)
+			return false
+		case lastQuote != rune(0):
+			return false
+		case unicode.In(c, unicode.Quotation_Mark):
+			lastQuote = c
+			return false
+		default:
+			return unicode.IsSpace(c)
+		}
+	}
+
+	// splitting string by space but considering quoted section
+	items := strings.FieldsFunc(source, f)
+
+	matchers := make([]types.QueryMatcher, 0)
+	operators := []string{"!=", "!~", "=~", "="}
+	for index, item := range items {
+		operatorFound := false
+		for _, operator := range operators {
+			if strings.Contains(item, operator) {
+				operatorFound = true
+				itemSplit := strings.Split(item, operator)
+				matchers = append(matchers, types.QueryMatcher{
+					Key:      itemSplit[0],
+					Operator: operator,
+					Value:    MaybeRemoveQuotes(itemSplit[1]),
+				})
+			}
+		}
+
+		if !operatorFound {
+			matchers = append(matchers, types.QueryMatcher{
+				Key:      "alertname",
+				Operator: "=",
+				Value:    strings.Join(items[index:], " "),
+			})
+			return matchers
+		}
+	}
+
+	return matchers
+}
+
+func MaybeRemoveQuotes(source string) string {
+	if len(source) > 0 && source[0] == '"' {
+		source = source[1:]
+	}
+	if len(source) > 0 && source[len(source)-1] == '"' {
+		source = source[:len(source)-1]
+	}
+
+	return source
 }
