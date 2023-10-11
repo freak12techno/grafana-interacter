@@ -14,7 +14,7 @@ func (a *App) HandleDeleteSilence(c tele.Context) error {
 		Msg("Got new delete silence query")
 
 	args := c.Args()
-	if len(args) != 1 {
+	if len(args) == 0 {
 		return c.Reply("Usage: /unsilence <silence ID or labels>")
 	}
 
@@ -67,7 +67,7 @@ func (a *App) HandleAlertmanagerDeleteSilence(c tele.Context) error {
 
 	args := c.Args()
 
-	if len(args) != 1 {
+	if len(args) == 0 {
 		return c.Reply("Usage: /alertmanager_unsilence <silence ID or labels>")
 	}
 
