@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"main/pkg/types"
 	"main/pkg/types/render"
-	"main/pkg/utils"
+	"main/pkg/utils/generic"
 	"strings"
 
 	tele "gopkg.in/telebot.v3"
@@ -43,7 +43,7 @@ func (a *App) HandleShowDashboard(c tele.Context) error {
 		Alertmanager: a.Alertmanager,
 		Data: types.DashboardStruct{
 			Dashboard: *dashboard,
-			Panels: utils.Map(dashboardEnriched.Dashboard.Panels, func(p types.GrafanaPanel) types.PanelStruct {
+			Panels: generic.Map(dashboardEnriched.Dashboard.Panels, func(p types.GrafanaPanel) types.PanelStruct {
 				return types.PanelStruct{
 					DashboardURL: dashboard.URL,
 					PanelID:      p.ID,

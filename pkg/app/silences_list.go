@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"main/pkg/types"
 	"main/pkg/types/render"
-	"main/pkg/utils"
+	"main/pkg/utils/generic"
 	"time"
 
 	tele "gopkg.in/telebot.v3"
@@ -21,7 +21,7 @@ func (a *App) HandleListSilences(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error listing silence: %s", err))
 	}
 
-	silences = utils.Filter(silences, func(s types.Silence) bool {
+	silences = generic.Filter(silences, func(s types.Silence) bool {
 		return s.EndsAt.After(time.Now())
 	})
 
@@ -53,7 +53,7 @@ func (a *App) HandleAlertmanagerListSilences(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error listing silence: %s", err))
 	}
 
-	silences = utils.Filter(silences, func(s types.Silence) bool {
+	silences = generic.Filter(silences, func(s types.Silence) bool {
 		return s.EndsAt.After(time.Now())
 	})
 

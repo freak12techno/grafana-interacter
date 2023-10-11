@@ -11,7 +11,7 @@ Can understand the following commands:
 - /firing - will list firing and pending alerts from both Grafana and Prometheus datasources, along with their details
 - /silence [duration] [params] - creates a silence for Grafana alert. You need to pass a duration (like <code>/silence 2h test alert</code>) and some params for matching alerts to silence. You may use '=' for matching the value exactly (example: <code>/silence 2h host=localhost</code>), '!=' for matching everything except this value (example:  <code>/silence 2h host!=localhost</code>), '=~' for matching everything that matches the regexp (example:  <code>/silence 2h host=~local</code>), '!~' for matching everything that doesn't match the regexp (example:  <code>/silence 2h host!~local</code>), or just provide a string that will be treated as an alert name (example:  <code>/silence 2h test alert</code>).
 - /silences - list silences (both active and expired).
-- /unsilence [silence ID] - deletes a silence.
+- /unsilence [silence ID or labels] - deletes a silence. You can pass either a silence ID (like <code>/unsilence xxxx</code>, or labels set (like <code>/unsilence host=test</code>) as an argument.
 - /alertmanager_silences - same as /silences, but using external Alertmanager.
 - /alertmanager_silence - same as /silence, but using external Alertmanager.
 - /alertmanager_unsilence - same as /unsilence, but using external Alertmanager.

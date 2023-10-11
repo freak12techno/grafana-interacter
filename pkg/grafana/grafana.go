@@ -10,6 +10,7 @@ import (
 	"main/pkg/config"
 	"main/pkg/types"
 	"main/pkg/utils"
+	"main/pkg/utils/generic"
 	"net/http"
 
 	"github.com/rs/zerolog"
@@ -33,7 +34,7 @@ func (g *Grafana) UseAuth() bool {
 }
 
 func (g *Grafana) RenderPanel(panel *types.PanelStruct, qs map[string]string) (io.ReadCloser, error) {
-	params := utils.MergeMaps(g.Config.RenderOptions, qs)
+	params := generic.MergeMaps(g.Config.RenderOptions, qs)
 	params["panelId"] = fmt.Sprintf("%d", panel.PanelID)
 
 	url := g.RelativeLink(fmt.Sprintf(
@@ -182,7 +183,7 @@ func (g *Grafana) GetPrometheusAlertingRules() ([]types.GrafanaAlertGroup, error
 	return groups, err
 }
 
-func (g *Grafana) GetAllAlertingRules() ([]types.GrafanaAlertGroup, error) {
+func (g *Grafana) GetAllAlertingRules() (types.GrafanaAlertGroups, error) {
 	grafanaRules, err := g.GetGrafanaAlertingRules()
 	if err != nil {
 		return nil, err
@@ -203,8 +204,8 @@ func (g *Grafana) CreateSilence(silence types.Silence) (types.SilenceCreateRespo
 	return res, err
 }
 
-func (g *Grafana) GetSilences() ([]types.Silence, error) {
-	silences := []types.Silence{}
+func (g *Grafana) GetSilences() (types.Silences, error) {
+	silences := types.Silences{}
 	url := g.RelativeLink("/api/alertmanager/grafana/api/v2/silences")
 	err := g.QueryAndDecode(url, &silences)
 	return silences, err
