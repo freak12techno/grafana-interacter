@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"main/pkg/types/render"
+	"strings"
 
 	tele "gopkg.in/telebot.v3"
 )
@@ -13,8 +14,9 @@ func (a *App) HandleDeleteSilence(c tele.Context) error {
 		Str("text", c.Text()).
 		Msg("Got new delete silence query")
 
-	args := c.Args()
-	if len(args) != 1 {
+	args := strings.SplitN(c.Text(), " ", 2)
+
+	if len(args) <= 1 {
 		return c.Reply("Usage: /unsilence <silence ID or labels>")
 	}
 
@@ -23,7 +25,7 @@ func (a *App) HandleDeleteSilence(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error getting silence to delete: %s", silencesFetchErr))
 	}
 
-	silence, found, err := silences.FindByNameOrMatchers(args[0])
+	silence, found, err := silences.FindByNameOrMatchers(args[1])
 	if !found {
 		return c.Reply(fmt.Sprintf("Silence is not found by ID or matchers: %s", args[0]))
 	}
@@ -65,9 +67,9 @@ func (a *App) HandleAlertmanagerDeleteSilence(c tele.Context) error {
 		return c.Reply("Alertmanager is disabled.")
 	}
 
-	args := c.Args()
+	args := strings.SplitN(c.Text(), " ", 2)
 
-	if len(args) != 1 {
+	if len(args) <= 1 {
 		return c.Reply("Usage: /alertmanager_unsilence <silence ID or labels>")
 	}
 
@@ -76,7 +78,7 @@ func (a *App) HandleAlertmanagerDeleteSilence(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error getting silence to delete: %s", silencesFetchErr))
 	}
 
-	silence, found, err := silences.FindByNameOrMatchers(args[0])
+	silence, found, err := silences.FindByNameOrMatchers(args[1])
 	if !found {
 		return c.Reply(fmt.Sprintf("Silence is not found by ID or matchers: %s", args[0]))
 	}
