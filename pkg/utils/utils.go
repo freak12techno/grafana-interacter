@@ -4,31 +4,14 @@ import (
 	"fmt"
 	"main/pkg/logger"
 	"main/pkg/types"
-	"main/pkg/utils/normalize"
 	"strconv"
 	"strings"
 	"time"
-	"unicode"
 
 	"golang.org/x/exp/slices"
 
 	tele "gopkg.in/telebot.v3"
 )
-
-func FindAlertRuleByName(groups []types.GrafanaAlertGroup, name string) (*types.GrafanaAlertRule, bool) {
-	normalizedName := normalize.NormalizeString(name)
-
-	for _, group := range groups {
-		for _, rule := range group.Rules {
-			ruleName := normalize.NormalizeString(group.Name + rule.Name)
-			if strings.Contains(ruleName, normalizedName) {
-				return &rule, true
-			}
-		}
-	}
-
-	return nil, false
-}
 
 func ParseRenderOptions(query string) (types.RenderOptions, bool) {
 	args := strings.Split(query, " ")
@@ -66,20 +49,6 @@ func SerializeQueryString(qs map[string]string) string {
 	}
 
 	return strings.Join(tmp, "&")
-}
-
-func MergeMaps(first, second map[string]string) map[string]string {
-	result := map[string]string{}
-
-	for key, value := range first {
-		result[key] = value
-	}
-
-	for key, value := range second {
-		result[key] = value
-	}
-
-	return result
 }
 
 func GetEmojiByStatus(state string) string {
@@ -132,7 +101,7 @@ func ParseSilenceOptions(query string, c tele.Context) (*types.Silence, string) 
 		),
 	}
 
-	matchers := ParseKeyValueString(rest)
+	matchers := types.QueryMatcherFromKeyValueString(rest)
 
 	for _, matcher := range matchers {
 		matcherParsed := types.SilenceMatcher{
@@ -222,64 +191,4 @@ func StrToFloat64(s string) float64 {
 	}
 
 	return f
-}
-
-func ParseKeyValueString(source string) []types.QueryMatcher {
-	lastQuote := rune(0)
-	f := func(c rune) bool {
-		switch {
-		case c == lastQuote:
-			lastQuote = rune(0)
-			return false
-		case lastQuote != rune(0):
-			return false
-		case unicode.In(c, unicode.Quotation_Mark):
-			lastQuote = c
-			return false
-		default:
-			return unicode.IsSpace(c)
-		}
-	}
-
-	// splitting string by space but considering quoted section
-	items := strings.FieldsFunc(source, f)
-
-	matchers := make([]types.QueryMatcher, 0)
-	operators := []string{"!=", "!~", "=~", "="}
-	for index, item := range items {
-		operatorFound := false
-		for _, operator := range operators {
-			if strings.Contains(item, operator) {
-				operatorFound = true
-				itemSplit := strings.Split(item, operator)
-				matchers = append(matchers, types.QueryMatcher{
-					Key:      itemSplit[0],
-					Operator: operator,
-					Value:    MaybeRemoveQuotes(itemSplit[1]),
-				})
-			}
-		}
-
-		if !operatorFound {
-			matchers = append(matchers, types.QueryMatcher{
-				Key:      "alertname",
-				Operator: "=",
-				Value:    strings.Join(items[index:], " "),
-			})
-			return matchers
-		}
-	}
-
-	return matchers
-}
-
-func MaybeRemoveQuotes(source string) string {
-	if len(source) > 0 && source[0] == '"' {
-		source = source[1:]
-	}
-	if len(source) > 0 && source[len(source)-1] == '"' {
-		source = source[:len(source)-1]
-	}
-
-	return source
 }

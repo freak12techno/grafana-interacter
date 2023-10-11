@@ -35,8 +35,8 @@ func (g *Alertmanager) CreateSilence(silence types.Silence) (types.SilenceCreate
 	return res, err
 }
 
-func (g *Alertmanager) GetSilences() ([]types.Silence, error) {
-	silences := []types.Silence{}
+func (g *Alertmanager) GetSilences() (types.Silences, error) {
+	silences := types.Silences{}
 	url := g.RelativeLink("/api/v2/silences")
 	err := g.QueryAndDecode(url, &silences)
 	return silences, err
