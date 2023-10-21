@@ -1,10 +1,10 @@
 package app
 
 import (
-	"main/pkg/alertmanager"
-	"main/pkg/config"
-	"main/pkg/grafana"
-	"main/pkg/logger"
+	alertmanagerPkg "main/pkg/alertmanager"
+	configPkg "main/pkg/config"
+	grafanaPkg "main/pkg/grafana"
+	loggerPkg "main/pkg/logger"
 	"main/pkg/templates"
 	"strings"
 	"time"
@@ -17,18 +17,19 @@ import (
 const MaxMessageSize = 4096
 
 type App struct {
-	Config          config.Config
-	Grafana         *grafana.Grafana
-	Alertmanager    *alertmanager.Alertmanager
+	Config          configPkg.Config
+	Grafana         *grafanaPkg.Grafana
+	Alertmanager    *alertmanagerPkg.Alertmanager
 	TemplateManager *templates.TemplateManager
 	Logger          *zerolog.Logger
 	Bot             *tele.Bot
+	Version         string
 }
 
-func NewApp(config *config.Config) *App {
-	logger := logger.GetLogger(config.Log)
-	grafana := grafana.InitGrafana(config.Grafana, logger)
-	alertmanager := alertmanager.InitAlertmanager(config.Alertmanager, logger)
+func NewApp(config *configPkg.Config, version string) *App {
+	logger := loggerPkg.GetLogger(config.Log)
+	grafana := grafanaPkg.InitGrafana(config.Grafana, logger)
+	alertmanager := alertmanagerPkg.InitAlertmanager(config.Alertmanager, logger)
 	templateManager := templates.NewTemplateManager()
 
 	bot, err := tele.NewBot(tele.Settings{
@@ -53,6 +54,7 @@ func NewApp(config *config.Config) *App {
 		Alertmanager:    alertmanager,
 		TemplateManager: templateManager,
 		Bot:             bot,
+		Version:         version,
 	}
 }
 

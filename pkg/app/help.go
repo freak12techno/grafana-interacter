@@ -16,7 +16,7 @@ func (a *App) HandleHelp(c tele.Context) error {
 	template, err := a.TemplateManager.Render("help", render.RenderStruct{
 		Grafana:      a.Grafana,
 		Alertmanager: a.Alertmanager,
-		Data:         nil,
+		Data:         a.Version,
 	})
 	if err != nil {
 		a.Logger.Error().Err(err).Msg("Error rendering help template")
