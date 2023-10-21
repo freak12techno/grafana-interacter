@@ -12,6 +12,7 @@ import (
 	"main/pkg/utils"
 	"main/pkg/utils/generic"
 	"net/http"
+	"strconv"
 
 	"github.com/rs/zerolog"
 	"golang.org/x/sync/errgroup"
@@ -35,7 +36,7 @@ func (g *Grafana) UseAuth() bool {
 
 func (g *Grafana) RenderPanel(panel *types.PanelStruct, qs map[string]string) (io.ReadCloser, error) {
 	params := generic.MergeMaps(g.Config.RenderOptions, qs)
-	params["panelId"] = fmt.Sprintf("%d", panel.PanelID)
+	params["panelId"] = strconv.Itoa(panel.PanelID)
 
 	url := g.RelativeLink(fmt.Sprintf(
 		"/render/d-solo/%s/dashboard?%s",

@@ -31,7 +31,7 @@ func (a *App) HandleRenderPanel(c tele.Context) error {
 
 	image, err := a.Grafana.RenderPanel(panel, opts.Params)
 	if err != nil {
-		return c.Reply(err)
+		return a.BotReply(c, err.Error())
 	}
 
 	defer image.Close()
