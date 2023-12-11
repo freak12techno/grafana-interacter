@@ -3,3 +3,4 @@ main
 .idea
 dist/
 grafana-interacter
+**/.DS_Store
