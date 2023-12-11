@@ -7,7 +7,12 @@ No matching alerts.
 {{- range $alertId, $alert := .Data.Alerts }}
 
 - {{ GetEmojiByStatus $alert.State }}
+<strong>Firing for:</strong> {{ FormatDuration $alert.ActiveSince }} (since {{ FormatDate $alert.ActiveAt }})
+{{- if $alert.Value }}
+<strong>Value: </strong>{{ StrToFloat64 $alert.Value }}
+{{- end }}
+<strong>Labels: </strong>
 {{- range $key, $label := $alert.Labels }}
-{{ $key }} = {{ $label }}
+  {{ $key }} = {{ $label }}
 {{- end }}
 {{- end }}

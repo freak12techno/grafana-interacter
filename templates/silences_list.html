@@ -1,17 +1,19 @@
 {{- $global := . }}
-<strong>Silences</strong>
 {{- if not .Data }}
+<strong>Silences</strong>
 No silences.
-{{- end }}
+{{- else }}
+<strong>Silences ({{ len .Data }}):</strong>
+{{ end }}
 {{- range $silenceId, $silence := .Data }}
-ID:         <code>{{ $silence.ID }}</code>
-Starts at:  <pre>{{ $silence.StartsAt.String }}</pre>
-Ends at:    <pre>{{ $silence.EndsAt.String }}</pre>
-Created by: <pre>{{ $silence.CreatedBy }}</pre>
-Comment:    <pre>{{ $silence.Comment }}</pre>
-Status:     <pre>{{ GetEmojiBySilenceStatus $silence.Status.State }} {{ $silence.Status.State }}</pre>
-Matchers:
+<strong>ID:</strong> <code>{{ $silence.ID }}</code>
+<strong>Starts at:</strong> {{ FormatDate $silence.StartsAt }}
+<strong>Ends at:</strong> {{ FormatDate $silence.EndsAt }}
+<strong>Created by:</strong> {{ $silence.CreatedBy }}
+<strong>Comment:</strong> {{ $silence.Comment }}
+<strong>Status:</strong> {{ GetEmojiBySilenceStatus $silence.Status.State }} {{ $silence.Status.State }}
+<strong>Matchers:</strong>
 {{- range $matcherId, $matcher := $silence.Matchers }}
-<pre> {{ $matcher.Serialize }}</pre>
+  {{ $matcher.Serialize }}
 {{- end }}
 {{ end }}
