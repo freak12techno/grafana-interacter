@@ -1,6 +1,7 @@
 <strong>Deleted silence with following params:</strong>
-ID:         <code>{{ .Data.ID }}</code>
-Matchers:
+
+<strong>ID:</strong> {{ .Data.ID }}
+<strong>Matchers:</strong>
 {{- range $matcherId, $matcher := .Data.Matchers }}
-<pre> {{ $matcher.Serialize }}</pre>
+  {{ $matcher.Serialize }}
 {{- end }}
