@@ -1,6 +1,9 @@
-<strong>Grafana alerts:</strong>
-{{- if not .Data.GrafanaGroups }}
-No Grafana alerts
+{{- if and (not .Data.GrafanaGroups) (not .Data.PrometheusGroups) }}
+No firing alerts.
+{{ end }}
+
+{{- if .Data.GrafanaGroups }}
+<strong>Grafana alerts ({{ len .Data.GrafanaGroups }}):</strong>
 {{- end }}
 {{- range $groupId, $group := .Data.GrafanaGroups }}
 {{- range $ruleId, $rule := $group.Rules }}
@@ -14,26 +17,28 @@ No Grafana alerts
 {{- if $alert.Value }}
 value = {{ StrToFloat64 $alert.Value }}
 {{- end }}
+firing for {{ FormatDuration $alert.ActiveSince }} (since {{ FormatDate $alert.ActiveAt }})
+{{- end }}
+{{- end }}
 {{ end }}
-{{- end }}
-{{- end }}
 
 
-<strong>Prometheus alerts:</strong>
-{{- if not .Data.PrometheusGroups }}
-No Prometheus alerts
+{{- if .Data.PrometheusGroups }}
+<strong>Prometheus alerts ({{ len .Data.PrometheusGroups }}):</strong>
 {{- end }}
-{{- range $groupId, $group := .Data.PrometheusGroups }}
+{{ range $groupId, $group := .Data.PrometheusGroups }}
 {{- range $ruleId, $rule := $group.Rules }}
 - {{ GetEmojiByStatus $rule.State }} {{ $group.Name }} -> {{ $rule.Name }} ({{ len ($rule.Alerts) }}):
-{{- range $alertId, $alert := $rule.Alerts }}
+{{ range $alertId, $alert := $rule.Alerts }}
+<strong>Firing for:</strong> {{ FormatDuration $alert.ActiveSince }} (since {{ FormatDate $alert.ActiveAt }})
+{{- if $alert.Value }}
+<strong>Value: </strong>{{ StrToFloat64 $alert.Value }}
+{{- end }}
+<strong>Labels: </strong>
 {{- range $key, $label := $alert.Labels }}
 {{- if ne $key "alertname" }}
-{{ $key }} = {{ $label }}
+  {{ $key }} = {{ $label }}
 {{- end }}
-{{- end }}
-{{- if $alert.Value }}
-value = {{ StrToFloat64 $alert.Value }}
 {{- end }}
 {{ end }}
 {{- end }}

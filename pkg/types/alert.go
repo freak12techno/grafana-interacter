@@ -3,6 +3,7 @@ package types
 import (
 	"main/pkg/utils/normalize"
 	"strings"
+	"time"
 )
 
 type GrafanaAlertRulesResponse struct {
@@ -26,9 +27,14 @@ type GrafanaAlertRule struct {
 }
 
 type GrafanaAlert struct {
-	Labels map[string]string `json:"labels"`
-	State  string            `json:"state"`
-	Value  string            `json:"value"`
+	Labels   map[string]string `json:"labels"`
+	State    string            `json:"state"`
+	Value    string            `json:"value"`
+	ActiveAt time.Time         `json:"activeAt"`
+}
+
+func (a GrafanaAlert) ActiveSince() time.Duration {
+	return time.Since(a.ActiveAt)
 }
 
 type GrafanaAlertGroups []GrafanaAlertGroup
