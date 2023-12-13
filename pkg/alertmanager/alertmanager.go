@@ -7,7 +7,10 @@ import (
 	"io"
 	"main/pkg/config"
 	"main/pkg/types"
+	"main/pkg/utils/generic"
 	"net/http"
+	"net/url"
+	"strings"
 
 	"github.com/rs/zerolog"
 )
@@ -32,6 +35,23 @@ func (g *Alertmanager) CreateSilence(silence types.Silence) (types.SilenceCreate
 	url := g.RelativeLink("/api/v2/silences")
 	res := types.SilenceCreateResponse{}
 	err := g.QueryAndDecodePost(url, silence, &res)
+	return res, err
+}
+
+func (g *Alertmanager) GetSilenceMatchingAlerts(silence types.Silence) ([]types.AlertmanagerAlert, error) {
+	filtersParts := generic.Map(silence.Matchers, func(m types.SilenceMatcher) string {
+		return fmt.Sprintf("filter=%s", url.QueryEscape(m.SerializeQueryString()))
+	})
+
+	filtersString := strings.Join(filtersParts, "&")
+
+	relativeUrl := fmt.Sprintf(
+		"/api/v2/alerts?%s&silenced=true&inhibited=true&active=true",
+		filtersString,
+	)
+	url := g.RelativeLink(relativeUrl)
+	var res []types.AlertmanagerAlert
+	err := g.QueryAndDecode(url, &res)
 	return res, err
 }
 
