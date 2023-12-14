@@ -27,10 +27,12 @@ type App struct {
 }
 
 func NewApp(config *configPkg.Config, version string) *App {
+	timezone, _ := time.LoadLocation(config.Timezone)
+
 	logger := loggerPkg.GetLogger(config.Log)
 	grafana := grafanaPkg.InitGrafana(config.Grafana, logger)
 	alertmanager := alertmanagerPkg.InitAlertmanager(config.Alertmanager, logger)
-	templateManager := templates.NewTemplateManager()
+	templateManager := templates.NewTemplateManager(timezone)
 
 	bot, err := tele.NewBot(tele.Settings{
 		Token:  config.Telegram.Token,
