@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"main/pkg/constants"
 	"strings"
 	"unicode"
 )
@@ -54,6 +55,7 @@ func QueryMatcherFromKeyValueString(source string) []QueryMatcher {
 					Operator: operator,
 					Value:    MaybeRemoveQuotes(itemSplit[1]),
 				})
+				break
 			}
 		}
 
@@ -77,16 +79,16 @@ func MatcherFromQueryMatcher(queryMatcher QueryMatcher) (*SilenceMatcher, string
 	}
 
 	switch queryMatcher.Operator {
-	case "!=":
+	case constants.SilenceMatcherNotEqual:
 		matcherParsed.IsEqual = false
 		matcherParsed.IsRegex = false
-	case "!~":
+	case constants.SilenceMatcherRegexNotEqual:
 		matcherParsed.IsEqual = false
 		matcherParsed.IsRegex = true
-	case "=~":
+	case constants.SilenceMatcherRegexEqual:
 		matcherParsed.IsEqual = true
 		matcherParsed.IsRegex = true
-	case "=":
+	case constants.SilenceMatcherEqual:
 		matcherParsed.IsEqual = true
 		matcherParsed.IsRegex = false
 	default:

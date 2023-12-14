@@ -1,12 +1,15 @@
 <strong>Created silence with following params:</strong>
 
-<strong>ID:</strong> <code>{{ .Data.ID }}</code>
-<strong>Starts at:</strong> {{ FormatDate .Data.StartsAt }}
-<strong>Ends at:</strong> {{ FormatDate .Data.EndsAt }}
-<strong>Created by:</strong> {{ .Data.CreatedBy }}
-<strong>Comment:</strong> {{ .Data.Comment }}
-<strong>Status:</strong> {{ GetEmojiBySilenceStatus .Data.Status.State }} {{ .Data.Status.State }}
+<strong>ID:</strong> <code>{{ .Data.Silence.ID }}</code>
+<strong>Starts at:</strong> {{ FormatDate .Data.Silence.StartsAt }}
+<strong>Ends at:</strong> {{ FormatDate .Data.Silence.EndsAt }}
+<strong>Created by:</strong> {{ .Data.Silence.CreatedBy }}
+<strong>Comment:</strong> {{ .Data.Silence.Comment }}
+<strong>Status:</strong> {{ GetEmojiBySilenceStatus .Data.Silence.Status.State }} {{ .Data.Silence.Status.State }}
+{{- if .Data.AlertsPresent }}
+<strong>Alerts matched:</strong> {{ len .Data.Alerts }}
+{{- end }}
 <strong>Matchers:</strong>
-{{- range $matcherId, $matcher := .Data.Matchers }}
+{{- range $matcherId, $matcher := .Data.Silence.Matchers }}
  {{ $matcher.Serialize }}
 {{- end }}

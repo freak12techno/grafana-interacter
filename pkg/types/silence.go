@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"main/pkg/constants"
 	"main/pkg/utils/generic"
 	"time"
 )
@@ -58,14 +59,22 @@ type SilenceStatus struct {
 }
 
 func (matcher *SilenceMatcher) Serialize() string {
+	return fmt.Sprintf("%s %s %s", matcher.Name, matcher.GetSymbol(), matcher.Value)
+}
+
+func (matcher *SilenceMatcher) SerializeQueryString() string {
+	return fmt.Sprintf("%s%s\"%s\"", matcher.Name, matcher.GetSymbol(), matcher.Value)
+}
+
+func (matcher *SilenceMatcher) GetSymbol() string {
 	if matcher.IsEqual && matcher.IsRegex {
-		return fmt.Sprintf("%s ~= %s", matcher.Name, matcher.Value)
+		return constants.SilenceMatcherRegexEqual
 	} else if matcher.IsEqual && !matcher.IsRegex {
-		return fmt.Sprintf("%s = %s", matcher.Name, matcher.Value)
+		return constants.SilenceMatcherEqual
 	} else if !matcher.IsEqual && matcher.IsRegex {
-		return fmt.Sprintf("%s !~ %s", matcher.Name, matcher.Value)
+		return constants.SilenceMatcherRegexNotEqual
 	} else {
-		return fmt.Sprintf("%s != %s", matcher.Name, matcher.Value)
+		return constants.SilenceMatcherNotEqual
 	}
 }
 

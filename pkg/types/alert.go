@@ -53,3 +53,7 @@ func (g GrafanaAlertGroups) FindAlertRuleByName(name string) (*GrafanaAlertRule,
 
 	return nil, false
 }
+
+type AlertmanagerAlert struct {
+	Labels map[string]string `json:"labels"`
+}

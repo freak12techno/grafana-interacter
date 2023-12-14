@@ -5,15 +5,18 @@ No silences.
 {{- else }}
 <strong>Silences ({{ len .Data }}):</strong>
 {{ end }}
-{{- range $silenceId, $silence := .Data }}
-<strong>ID:</strong> <code>{{ $silence.ID }}</code>
-<strong>Starts at:</strong> {{ FormatDate $silence.StartsAt }}
-<strong>Ends at:</strong> {{ FormatDate $silence.EndsAt }}
-<strong>Created by:</strong> {{ $silence.CreatedBy }}
-<strong>Comment:</strong> {{ $silence.Comment }}
-<strong>Status:</strong> {{ GetEmojiBySilenceStatus $silence.Status.State }} {{ $silence.Status.State }}
+{{- range $silenceId, $silenceInfo := .Data }}
+<strong>ID:</strong> <code>{{ $silenceInfo.Silence.ID }}</code>
+<strong>Starts at:</strong> {{ FormatDate $silenceInfo.Silence.StartsAt }}
+<strong>Ends at:</strong> {{ FormatDate $silenceInfo.Silence.EndsAt }}
+<strong>Created by:</strong> {{ $silenceInfo.Silence.CreatedBy }}
+<strong>Comment:</strong> {{ $silenceInfo.Silence.Comment }}
+<strong>Status:</strong> {{ GetEmojiBySilenceStatus $silenceInfo.Silence.Status.State }} {{ $silenceInfo.Silence.Status.State }}
+{{- if $silenceInfo.AlertsPresent }}
+<strong>Alerts matched:</strong> {{ len $silenceInfo.Alerts }}
+{{- end }}
 <strong>Matchers:</strong>
-{{- range $matcherId, $matcher := $silence.Matchers }}
+{{- range $matcherId, $matcher := $silenceInfo.Silence.Matchers }}
   {{ $matcher.Serialize }}
 {{- end }}
 {{ end }}

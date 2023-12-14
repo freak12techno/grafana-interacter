@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"main/pkg/types"
 	"main/pkg/types/render"
 	"main/pkg/utils"
 
@@ -32,7 +33,11 @@ func (a *App) HandleNewSilence(c tele.Context) error {
 	template, renderErr := a.TemplateManager.Render("silences_create", render.RenderStruct{
 		Grafana:      a.Grafana,
 		Alertmanager: a.Alertmanager,
-		Data:         silence,
+		Data: render.SilenceRender{
+			Silence:       silence,
+			AlertsPresent: false,
+			Alerts:        []types.AlertmanagerAlert{},
+		},
 	})
 	if renderErr != nil {
 		a.Logger.Error().Err(renderErr).Msg("Error rendering silences_create template")
@@ -67,10 +72,19 @@ func (a *App) HandleAlertmanagerNewSilence(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error getting created silence: %s", silenceErr))
 	}
 
+	alerts, alertsErr := a.Alertmanager.GetSilenceMatchingAlerts(silence)
+	if alertsErr != nil {
+		return c.Reply(fmt.Sprintf("Error getting alerts for silence: %s", alertsErr))
+	}
+
 	template, renderErr := a.TemplateManager.Render("silences_create", render.RenderStruct{
 		Grafana:      a.Grafana,
 		Alertmanager: a.Alertmanager,
-		Data:         silence,
+		Data: render.SilenceRender{
+			Silence:       silence,
+			AlertsPresent: alerts != nil,
+			Alerts:        alerts,
+		},
 	})
 	if renderErr != nil {
 		a.Logger.Error().Err(renderErr).Msg("Error rendering silences_create template")
