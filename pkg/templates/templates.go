@@ -6,17 +6,20 @@ import (
 	"html/template"
 	"main/pkg/types/render"
 	"main/pkg/utils"
+	"time"
 
 	templatesList "main/templates"
 )
 
 type TemplateManager struct {
+	Timezone  *time.Location
 	Templates map[string]*template.Template
 }
 
-func NewTemplateManager() *TemplateManager {
+func NewTemplateManager(timezone *time.Location) *TemplateManager {
 	return &TemplateManager{
 		Templates: make(map[string]*template.Template, 0),
+		Timezone:  timezone,
 	}
 }
 
@@ -32,7 +35,7 @@ func (manager *TemplateManager) GetTemplate(name string) (*template.Template, er
 		"GetEmojiBySilenceStatus": utils.GetEmojiBySilenceStatus,
 		"StrToFloat64":            utils.StrToFloat64,
 		"FormatDuration":          utils.FormatDuration,
-		"FormatDate":              utils.FormatDate,
+		"FormatDate":              utils.FormatDate(manager.Timezone),
 	}).ParseFS(templatesList.Templates, filename)
 	if err != nil {
 		return nil, err

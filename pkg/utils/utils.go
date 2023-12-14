@@ -226,6 +226,8 @@ func FormatDuration(duration time.Duration) string {
 	return strings.Join(parts, " ")
 }
 
-func FormatDate(date time.Time) string {
-	return date.Format(time.RFC1123)
+func FormatDate(timezone *time.Location) func(date time.Time) string {
+	return func(date time.Time) string {
+		return date.In(timezone).Format(time.RFC1123)
+	}
 }

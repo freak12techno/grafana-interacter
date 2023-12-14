@@ -1,3 +1,6 @@
+# Timezone. Used when displaying dates (like in silences and alerts).
+# Defaults to "Etc/GMT" (so GMT+0)
+timezone: "Europe/Moscow"
 # Logging configuration.
 log:
   # Log level. Defaults to "info"

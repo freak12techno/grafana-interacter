@@ -1,8 +1,14 @@
 package config
 
+import (
+	"fmt"
+	"time"
+)
+
 type Config struct {
+	Timezone     string             `default:"Etc/GMT"   yaml:"timezone"`
 	Log          LogConfig          `yaml:"log"`
-	Telegram     TelegramConfig     `default:""          yaml:"telegram"`
+	Telegram     TelegramConfig     `yaml:"telegram"`
 	Grafana      GrafanaConfig      `yaml:"grafana"`
 	Alertmanager AlertmanagerConfig `yaml:"alertmanager"`
 }
@@ -19,8 +25,8 @@ type TelegramConfig struct {
 
 type GrafanaConfig struct {
 	URL           string            `default:"http://localhost:3000"                                 yaml:"url"`
-	User          string            `yaml:"user"`
-	Password      string            `yaml:"password"`
+	User          string            `default:"admin"                                                 yaml:"user"`
+	Password      string            `default:"admin"                                                 yaml:"password"`
 	RenderOptions map[string]string `default:"{\"orgId\":\"1\",\"from\":\"now\",\"to\":\"now-30m\"}" yaml:"render_options"`
 }
 
@@ -28,5 +34,12 @@ type AlertmanagerConfig struct {
 	URL      string `default:"http://localhost:9093" yaml:"url"`
 	User     string `yaml:"user"`
 	Password string `yaml:"password"`
-	Timezone string `default:"Europe/Moscow"         yaml:"timezone"`
+}
+
+func (c *Config) Validate() error {
+	if _, err := time.LoadLocation(c.Timezone); err != nil {
+		return fmt.Errorf("error parsing timezone: %s", err)
+	}
+
+	return nil
 }
