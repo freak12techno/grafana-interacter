@@ -38,7 +38,7 @@ func (a *App) HandleListSilences(c tele.Context) error {
 	template, err := a.TemplateManager.Render("silences_list", render.RenderStruct{
 		Grafana:      a.Grafana,
 		Alertmanager: a.Alertmanager,
-		Data:         silences,
+		Data:         silencesRender,
 	})
 	if err != nil {
 		a.Logger.Error().Err(err).Msg("Error rendering silences_list template")
