@@ -8,19 +8,21 @@ No firing alerts.
 {{- range $groupId, $group := .Data.GrafanaGroups }}
 {{- range $ruleId, $rule := $group.Rules }}
 - {{ GetEmojiByStatus $rule.State }} {{ $group.Name }} -> {{ $rule.Name }} ({{ len ($rule.Alerts) }}):
-{{- range $alertId, $alert := $rule.Alerts }}
+{{ range $alertId, $alert := $rule.Alerts }}
+<strong>Firing for:</strong> {{ FormatDuration $alert.ActiveSince }} (since {{ FormatDate $alert.ActiveAt }})
+{{- if $alert.Value }}
+<strong>Value: </strong>{{ StrToFloat64 $alert.Value }}
+{{- end }}
+<strong>Labels: </strong>
 {{- range $key, $label := $alert.Labels }}
 {{- if ne $key "alertname" }}
-{{ $key }} = {{ $label }}
-{{- end }}
-{{- end }}
-{{- if $alert.Value }}
-value = {{ StrToFloat64 $alert.Value }}
-{{- end }}
-firing for {{ FormatDuration $alert.ActiveSince }} (since {{ FormatDate $alert.ActiveAt }})
+  {{ $key }} = {{ $label }}
 {{- end }}
 {{- end }}
 {{ end }}
+{{- end }}
+{{- end }}
+
 
 
 {{- if .Data.PrometheusGroups }}

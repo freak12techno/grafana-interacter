@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"main/pkg/constants"
 	"main/pkg/utils/generic"
+	"net/url"
+	"strings"
 	"time"
 )
 
@@ -43,6 +45,14 @@ type Silence struct {
 	ID        string          `json:"id,omitempty"`
 	Matchers  SilenceMatchers `json:"matchers"`
 	Status    SilenceStatus   `json:"status,omitempty"`
+}
+
+func (s Silence) GetFilterQueryString() string {
+	filtersParts := generic.Map(s.Matchers, func(m SilenceMatcher) string {
+		return fmt.Sprintf("filter=%s", url.QueryEscape(m.SerializeQueryString()))
+	})
+
+	return strings.Join(filtersParts, "&")
 }
 
 type SilenceMatchers []SilenceMatcher
@@ -101,4 +111,10 @@ func (matchers SilenceMatchers) Equals(otherMatchers SilenceMatchers) bool {
 	}
 
 	return true
+}
+
+type SilenceWithAlerts struct {
+	Silence       Silence
+	AlertsPresent bool
+	Alerts        []AlertmanagerAlert
 }
