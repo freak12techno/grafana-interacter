@@ -30,13 +30,18 @@ func (a *App) HandleNewSilence(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error getting created silence: %s", silenceErr))
 	}
 
+	alerts, alertsErr := a.Grafana.GetSilenceMatchingAlerts(silence)
+	if alertsErr != nil {
+		return c.Reply(fmt.Sprintf("Error getting alerts for silence: %s", alertsErr))
+	}
+
 	template, renderErr := a.TemplateManager.Render("silences_create", render.RenderStruct{
 		Grafana:      a.Grafana,
 		Alertmanager: a.Alertmanager,
-		Data: render.SilenceRender{
+		Data: types.SilenceWithAlerts{
 			Silence:       silence,
-			AlertsPresent: false,
-			Alerts:        []types.AlertmanagerAlert{},
+			AlertsPresent: true,
+			Alerts:        alerts,
 		},
 	})
 	if renderErr != nil {
@@ -80,7 +85,7 @@ func (a *App) HandleAlertmanagerNewSilence(c tele.Context) error {
 	template, renderErr := a.TemplateManager.Render("silences_create", render.RenderStruct{
 		Grafana:      a.Grafana,
 		Alertmanager: a.Alertmanager,
-		Data: render.SilenceRender{
+		Data: types.SilenceWithAlerts{
 			Silence:       silence,
 			AlertsPresent: alerts != nil,
 			Alerts:        alerts,

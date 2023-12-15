@@ -112,3 +112,9 @@ func (matchers SilenceMatchers) Equals(otherMatchers SilenceMatchers) bool {
 
 	return true
 }
+
+type SilenceWithAlerts struct {
+	Silence       Silence
+	AlertsPresent bool
+	Alerts        []AlertmanagerAlert
+}
