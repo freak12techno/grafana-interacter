@@ -16,7 +16,7 @@ No firing alerts.
 <strong>Labels: </strong>
 {{- range $key, $label := $alert.Labels }}
 {{- if ne $key "alertname" }}
-{{ $key }} = {{ $label }}
+  {{ $key }} = {{ $label }}
 {{- end }}
 {{- end }}
 {{ end }}
