@@ -226,7 +226,7 @@ func (g *Grafana) DeleteSilence(silenceID string) error {
 
 func (g *Grafana) GetSilenceMatchingAlerts(silence types.Silence) ([]types.AlertmanagerAlert, error) {
 	relativeUrl := fmt.Sprintf(
-		"api/alertmanager/grafana/api/v2/alerts?%s&silenced=&active=&inhibited=",
+		"/api/alertmanager/grafana/api/v2/alerts?%s&silenced=true&inhibited=true&active=true",
 		silence.GetFilterQueryString(),
 	)
 	url := g.RelativeLink(relativeUrl)
