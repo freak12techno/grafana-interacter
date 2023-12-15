@@ -224,6 +224,17 @@ func (g *Grafana) DeleteSilence(silenceID string) error {
 	return g.QueryDelete(url)
 }
 
+func (g *Grafana) GetSilenceMatchingAlerts(silence types.Silence) ([]types.AlertmanagerAlert, error) {
+	relativeUrl := fmt.Sprintf(
+		"api/alertmanager/grafana/api/v2/alerts?%s&silenced=&active=&inhibited=",
+		silence.GetFilterQueryString(),
+	)
+	url := g.RelativeLink(relativeUrl)
+	var res []types.AlertmanagerAlert
+	err := g.QueryAndDecode(url, &res)
+	return res, err
+}
+
 /* Query functions */
 
 func (g *Grafana) Query(url string) (io.ReadCloser, error) {
