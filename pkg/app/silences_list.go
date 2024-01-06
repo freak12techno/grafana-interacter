@@ -16,7 +16,7 @@ func (a *App) HandleListSilences(c tele.Context) error {
 
 	silencesWithAlerts, err := types.GetSilencesWithAlerts(a.Grafana)
 	if err != nil {
-		return c.Reply(err)
+		return c.Reply(fmt.Sprintf("Error fetching silences: %s\n", err))
 	}
 
 	template, err := a.TemplateManager.Render("silences_list", render.RenderStruct{
@@ -44,7 +44,7 @@ func (a *App) HandleAlertmanagerListSilences(c tele.Context) error {
 
 	silencesWithAlerts, err := types.GetSilencesWithAlerts(a.Alertmanager)
 	if err != nil {
-		return c.Reply(err)
+		return c.Reply(fmt.Sprintf("Error fetching silences: %s\n", err))
 	}
 
 	template, err := a.TemplateManager.Render("silences_list", render.RenderStruct{

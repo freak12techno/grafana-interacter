@@ -17,7 +17,7 @@ func (a *App) HandleNewSilence(c tele.Context) error {
 
 	silenceInfo, err := utils.ParseSilenceOptions(c.Text(), c)
 	if err != "" {
-		return c.Reply(err)
+		return c.Reply(fmt.Sprintf("Error parsing silence option: %s\n", err))
 	}
 
 	silenceResponse, silenceErr := a.Grafana.CreateSilence(*silenceInfo)
@@ -64,7 +64,7 @@ func (a *App) HandleAlertmanagerNewSilence(c tele.Context) error {
 
 	silenceInfo, err := utils.ParseSilenceOptions(c.Text(), c)
 	if err != "" {
-		return c.Reply(err)
+		return c.Reply(fmt.Sprintf("Error parsing silence option: %s\n", err))
 	}
 
 	silenceResponse, silenceErr := a.Alertmanager.CreateSilence(*silenceInfo)
