@@ -147,10 +147,20 @@ func (g *Alertmanager) DoQuery(method string, url string, body interface{}) (io.
 
 	resp, err := client.Do(req)
 	if err != nil {
+		g.Logger.Error().
+			Str("url", url).
+			Str("method", method).
+			Err(err).
+			Msg("Error querying Alertmanager")
 		return nil, err
 	}
 
 	if resp.StatusCode >= http.StatusBadRequest {
+		g.Logger.Error().
+			Str("url", url).
+			Str("method", method).
+			Int("status", resp.StatusCode).
+			Msg("Got error code from Alertmanager")
 		return nil, fmt.Errorf("Could not fetch request. Status code: %d", resp.StatusCode)
 	}
 
