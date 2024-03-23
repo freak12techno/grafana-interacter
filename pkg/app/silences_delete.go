@@ -27,11 +27,11 @@ func (a *App) HandleDeleteSilence(c tele.Context) error {
 
 	silence, found, err := silences.FindByNameOrMatchers(args[1])
 	if !found {
-		return c.Reply(fmt.Sprintf("Silence is not found by ID or matchers: %s", args[0]))
+		return c.Reply("Silence is not found by ID or matchers: " + args[0])
 	}
 
 	if err != "" {
-		return c.Reply(fmt.Sprintf("Error getting silence by ID or matchers: %s", err))
+		return c.Reply("Error getting silence by ID or matchers: " + err)
 	}
 
 	if silence.Status.State == "expired" {
@@ -80,11 +80,11 @@ func (a *App) HandleAlertmanagerDeleteSilence(c tele.Context) error {
 
 	silence, found, err := silences.FindByNameOrMatchers(args[1])
 	if !found {
-		return c.Reply(fmt.Sprintf("Silence is not found by ID or matchers: %s", args[0]))
+		return c.Reply("Silence is not found by ID or matchers: " + args[0])
 	}
 
 	if err != "" {
-		return c.Reply(fmt.Sprintf("Error getting silence by ID or matchers: %s", err))
+		return c.Reply("Error getting silence by ID or matchers: " + err)
 	}
 
 	if silence.Status.State == "expired" {

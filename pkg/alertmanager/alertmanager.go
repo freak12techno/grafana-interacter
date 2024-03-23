@@ -3,6 +3,7 @@ package alertmanager
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"main/pkg/config"
@@ -112,7 +113,7 @@ func (g *Alertmanager) QueryAndDecodePost(url string, postBody interface{}, outp
 
 func (g *Alertmanager) DoQuery(method string, url string, body interface{}) (io.ReadCloser, error) {
 	if !g.Enabled() {
-		return nil, fmt.Errorf("Alertmanager API not configured")
+		return nil, errors.New("Alertmanager API not configured")
 	}
 
 	client := &http.Client{}

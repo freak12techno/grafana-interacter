@@ -55,7 +55,7 @@ func (g *Grafana) GetAllDashboards() (types.GrafanaDashboardsInfo, error) {
 }
 
 func (g *Grafana) GetDashboard(dashboardUID string) (*types.GrafanaDashboardResponse, error) {
-	url := g.RelativeLink(fmt.Sprintf("/api/dashboards/uid/%s", dashboardUID))
+	url := g.RelativeLink("/api/dashboards/uid/" + dashboardUID)
 	dashboards := &types.GrafanaDashboardResponse{}
 	err := g.QueryAndDecode(url, &dashboards)
 	return dashboards, err
@@ -302,7 +302,7 @@ func (g *Grafana) DoQuery(method string, url string, body interface{}) (io.ReadC
 	if g.UseAuth() {
 		req.SetBasicAuth(g.Config.User, g.Config.Password)
 	} else if g.Config.Token != "" {
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", g.Config.Token))
+		req.Header.Set("Authorization", "Bearer "+g.Config.Token)
 	}
 
 	resp, err := client.Do(req)

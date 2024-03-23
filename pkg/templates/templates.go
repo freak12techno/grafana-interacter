@@ -2,7 +2,6 @@ package templates
 
 import (
 	"bytes"
-	"fmt"
 	"html/template"
 	"main/pkg/types/render"
 	"main/pkg/utils"
@@ -28,7 +27,7 @@ func (manager *TemplateManager) GetTemplate(name string) (*template.Template, er
 		return t, nil
 	}
 
-	filename := fmt.Sprintf("%s.html", name)
+	filename := name + ".html"
 
 	t, err := template.New(filename).Funcs(template.FuncMap{
 		"GetEmojiByStatus":        utils.GetEmojiByStatus,
