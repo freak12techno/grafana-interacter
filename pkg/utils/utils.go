@@ -124,7 +124,7 @@ func ParseSilenceOptions(query string, c tele.Context) (*types.Silence, string) 
 			matcherParsed.IsEqual = true
 			matcherParsed.IsRegex = false
 		default:
-			return nil, fmt.Sprintf("Got unexpected operator: %s", matcher.Operator)
+			return nil, "Got unexpected operator: " + matcher.Operator
 		}
 
 		silence.Matchers = append(silence.Matchers, matcherParsed)

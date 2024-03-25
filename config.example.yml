@@ -17,9 +17,11 @@ telegram:
 grafana:
   # URL of the remote Grafana to do queries against.
   url: http://localhost:3000
-   # Grafana credentials.
+   # Grafana credentials. You can authorize either with login/password, as below...
   user: admin
   password: admin
+  # ... or with bearer token.
+  token: xxxxx
   # Default render options. If you want to avoid specifying render params each time,
   # you can specify it here, and it'll apply to all render requests, then all params you've specified
   # in your render request would be added above these.

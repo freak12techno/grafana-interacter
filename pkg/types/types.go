@@ -1,7 +1,6 @@
 package types
 
 import (
-	"fmt"
 	"main/pkg/constants"
 	"strings"
 	"unicode"
@@ -92,7 +91,7 @@ func MatcherFromQueryMatcher(queryMatcher QueryMatcher) (*SilenceMatcher, string
 		matcherParsed.IsEqual = true
 		matcherParsed.IsRegex = false
 	default:
-		return nil, fmt.Sprintf("Got unexpected operator: %s", queryMatcher.Operator)
+		return nil, "Got unexpected operator: " + queryMatcher.Operator
 	}
 
 	return matcherParsed, ""

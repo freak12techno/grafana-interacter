@@ -49,7 +49,7 @@ type Silence struct {
 
 func (s Silence) GetFilterQueryString() string {
 	filtersParts := generic.Map(s.Matchers, func(m SilenceMatcher) string {
-		return fmt.Sprintf("filter=%s", url.QueryEscape(m.SerializeQueryString()))
+		return "filter=" + url.QueryEscape(m.SerializeQueryString())
 	})
 
 	return strings.Join(filtersParts, "&")

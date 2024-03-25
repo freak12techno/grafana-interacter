@@ -27,6 +27,7 @@ type GrafanaConfig struct {
 	URL           string            `default:"http://localhost:3000"                                 yaml:"url"`
 	User          string            `default:"admin"                                                 yaml:"user"`
 	Password      string            `default:"admin"                                                 yaml:"password"`
+	Token         string            `yaml:"token"`
 	RenderOptions map[string]string `default:"{\"orgId\":\"1\",\"from\":\"now\",\"to\":\"now-30m\"}" yaml:"render_options"`
 }
 
