@@ -299,10 +299,10 @@ func (g *Grafana) DoQuery(method string, url string, body interface{}) (io.ReadC
 		Str("method", method).
 		Msg("Doing a Grafana API query")
 
-	if g.UseAuth() {
-		req.SetBasicAuth(g.Config.User, g.Config.Password)
-	} else if g.Config.Token != "" {
+	if g.Config.Token != "" {
 		req.Header.Set("Authorization", "Bearer "+g.Config.Token)
+	} else if g.UseAuth() {
+		req.SetBasicAuth(g.Config.User, g.Config.Password)
 	}
 
 	resp, err := client.Do(req)
