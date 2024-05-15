@@ -47,3 +47,4 @@ linters:
     - depguard
     - goimports
     - nosnakecase
+    - mnd
