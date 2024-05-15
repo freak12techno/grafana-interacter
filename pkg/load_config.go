@@ -26,9 +26,5 @@ func LoadConfig(path string) *configPkg.Config {
 		logger.GetDefaultLogger().Fatal().Err(err).Msg("Could not set default settings")
 	}
 
-	if err := config.Validate(); err != nil {
-		logger.GetDefaultLogger().Fatal().Err(err).Msg("Error validating config")
-	}
-
 	return config
 }
