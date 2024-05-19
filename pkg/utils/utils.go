@@ -105,6 +105,11 @@ func ParseSilenceOptions(query string, c tele.Context) (*types.Silence, string) 
 	matchers := types.QueryMatcherFromKeyValueString(rest)
 
 	for _, matcher := range matchers {
+		if matcher.Key == "comment" {
+			silence.Comment = matcher.Value
+			continue
+		}
+
 		matcherParsed := types.SilenceMatcher{
 			Name:  matcher.Key,
 			Value: matcher.Value,
