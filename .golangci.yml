@@ -21,17 +21,12 @@ linters:
     - wsl
     - gomnd
     - unparam
-    - goerr113
+    - err113
     - nestif
     - errcheck
-    - golint
-    - scopelint
-    - maligned
-    - interfacer
     - wrapcheck
     - varnamelen
     - tagliatelle
-    - exhaustivestruct
     - gomoddirectives
     - ireturn
     - nlreturn
@@ -46,5 +41,4 @@ linters:
     - gci
     - depguard
     - goimports
-    - nosnakecase
     - mnd

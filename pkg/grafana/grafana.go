@@ -271,7 +271,18 @@ func (g *Grafana) QueryAndDecodePost(url string, postBody interface{}, output in
 }
 
 func (g *Grafana) DoQuery(method string, url string, body interface{}) (io.ReadCloser, error) {
-	client := &http.Client{}
+	var transport http.RoundTripper
+
+	transportRaw, ok := http.DefaultTransport.(*http.Transport)
+	if ok {
+		transport = transportRaw.Clone()
+	} else {
+		transport = http.DefaultTransport
+	}
+
+	client := &http.Client{
+		Transport: transport,
+	}
 
 	var req *http.Request
 	var err error

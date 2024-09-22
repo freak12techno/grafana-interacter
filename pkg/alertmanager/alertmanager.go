@@ -116,7 +116,18 @@ func (g *Alertmanager) DoQuery(method string, url string, body interface{}) (io.
 		return nil, errors.New("Alertmanager API not configured")
 	}
 
-	client := &http.Client{}
+	var transport http.RoundTripper
+
+	transportRaw, ok := http.DefaultTransport.(*http.Transport)
+	if ok {
+		transport = transportRaw.Clone()
+	} else {
+		transport = http.DefaultTransport
+	}
+
+	client := &http.Client{
+		Transport: transport,
+	}
 
 	var req *http.Request
 	var err error
