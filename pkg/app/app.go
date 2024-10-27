@@ -72,7 +72,7 @@ func (a *App) Start() {
 	a.Bot.Handle("/firing", a.HandleListFiringAlerts)
 	a.Bot.Handle("/alert", a.HandleSingleAlert)
 	a.Bot.Handle("/silences", a.HandleGrafanaListSilences)
-	a.Bot.Handle("/silence", a.HandleNewSilence)
+	a.Bot.Handle("/silence", a.HandleGrafanaNewSilence)
 	a.Bot.Handle("/unsilence", a.HandleGrafanaDeleteSilence)
 	a.Bot.Handle("/alertmanager_silences", a.HandleAlertmanagerListSilences)
 	a.Bot.Handle("/alertmanager_silence", a.HandleAlertmanagerNewSilence)

@@ -9,47 +9,13 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-func (a *App) HandleNewSilence(c tele.Context) error {
+func (a *App) HandleGrafanaNewSilence(c tele.Context) error {
 	a.Logger.Info().
 		Str("sender", c.Sender().Username).
 		Str("text", c.Text()).
 		Msg("Got new silence query")
 
-	silenceInfo, err := utils.ParseSilenceOptions(c.Text(), c)
-	if err != "" {
-		return c.Reply(fmt.Sprintf("Error parsing silence option: %s\n", err))
-	}
-
-	silenceResponse, silenceErr := a.Grafana.CreateSilence(*silenceInfo)
-	if silenceErr != nil {
-		return c.Reply(fmt.Sprintf("Error creating silence: %s", silenceErr))
-	}
-
-	silence, silenceErr := a.Grafana.GetSilence(silenceResponse.SilenceID)
-	if silenceErr != nil {
-		return c.Reply(fmt.Sprintf("Error getting created silence: %s", silenceErr))
-	}
-
-	alerts, alertsErr := a.Grafana.GetSilenceMatchingAlerts(silence)
-	if alertsErr != nil {
-		return c.Reply(fmt.Sprintf("Error getting alerts for silence: %s", alertsErr))
-	}
-
-	template, renderErr := a.TemplateManager.Render("silences_create", render.RenderStruct{
-		Grafana:      a.Grafana,
-		Alertmanager: a.Alertmanager,
-		Data: types.SilenceWithAlerts{
-			Silence:       silence,
-			AlertsPresent: true,
-			Alerts:        alerts,
-		},
-	})
-	if renderErr != nil {
-		a.Logger.Error().Err(renderErr).Msg("Error rendering silences_create template")
-		return c.Reply(fmt.Sprintf("Error rendering template: %s", renderErr))
-	}
-
-	return a.BotReply(c, template)
+	return a.HandleNewSilence(c, a.Grafana)
 }
 
 func (a *App) HandleAlertmanagerNewSilence(c tele.Context) error {
@@ -62,22 +28,29 @@ func (a *App) HandleAlertmanagerNewSilence(c tele.Context) error {
 		return c.Reply("Alertmanager is disabled.")
 	}
 
+	return a.HandleNewSilence(c, a.Alertmanager)
+}
+
+func (a *App) HandleNewSilence(
+	c tele.Context,
+	silenceManager types.SilenceManager,
+) error {
 	silenceInfo, err := utils.ParseSilenceOptions(c.Text(), c)
 	if err != "" {
 		return c.Reply(fmt.Sprintf("Error parsing silence option: %s\n", err))
 	}
 
-	silenceResponse, silenceErr := a.Alertmanager.CreateSilence(*silenceInfo)
+	silenceResponse, silenceErr := silenceManager.CreateSilence(*silenceInfo)
 	if silenceErr != nil {
 		return c.Reply(fmt.Sprintf("Error creating silence: %s", silenceErr))
 	}
 
-	silence, silenceErr := a.Alertmanager.GetSilence(silenceResponse.SilenceID)
+	silence, silenceErr := silenceManager.GetSilence(silenceResponse.SilenceID)
 	if silenceErr != nil {
 		return c.Reply(fmt.Sprintf("Error getting created silence: %s", silenceErr))
 	}
 
-	alerts, alertsErr := a.Alertmanager.GetSilenceMatchingAlerts(silence)
+	alerts, alertsErr := silenceManager.GetSilenceMatchingAlerts(silence)
 	if alertsErr != nil {
 		return c.Reply(fmt.Sprintf("Error getting alerts for silence: %s", alertsErr))
 	}
