@@ -41,3 +41,22 @@ func MergeMaps(first, second map[string]string) map[string]string {
 
 	return result
 }
+
+func SplitArrayIntoChunks[T any](slice []T, chunkSize int) [][]T {
+	var chunks [][]T
+
+	var currentChunk []T
+	for i := 0; i < len(slice); i++ {
+		currentChunk = append(currentChunk, slice[i])
+		if len(currentChunk) == chunkSize {
+			chunks = append(chunks, currentChunk)
+			currentChunk = []T{}
+		}
+	}
+
+	if len(currentChunk) > 0 {
+		chunks = append(chunks, currentChunk)
+	}
+
+	return chunks
+}

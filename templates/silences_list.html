@@ -1,10 +1,3 @@
-{{- $global := . }}
-{{- if not .Data }}
-<strong>Silences</strong>
-No silences.
-{{- else }}
-<strong>Silences ({{ len .Data }}):</strong>
-{{ end }}
 {{- range $silenceId, $silenceInfo := .Data }}
 <strong>ID:</strong> <code>{{ $silenceInfo.Silence.ID }}</code>
 <strong>Starts at:</strong> {{ FormatDate $silenceInfo.Silence.StartsAt }}

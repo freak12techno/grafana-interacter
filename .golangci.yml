@@ -42,3 +42,4 @@ linters:
     - depguard
     - goimports
     - mnd
+    - perfsprint
