@@ -7,6 +7,6 @@ const (
 	SilenceMatcherNotEqual      string = "!="
 
 	SilencesInOneMessage        = 5
-	GrafanaUnsilencePrefix      = "unsilence"
-	AlertmanagerUnsilencePrefix = "alertmanager_unsilence"
+	GrafanaUnsilencePrefix      = "unsilence_"
+	AlertmanagerUnsilencePrefix = "alertmanager_unsilence_"
 )

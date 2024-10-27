@@ -46,7 +46,7 @@ func SplitArrayIntoChunks[T any](slice []T, chunkSize int) [][]T {
 	var chunks [][]T
 
 	var currentChunk []T
-	for i := 0; i < len(slice); i++ {
+	for i := range slice {
 		currentChunk = append(currentChunk, slice[i])
 		if len(currentChunk) == chunkSize {
 			chunks = append(chunks, currentChunk)

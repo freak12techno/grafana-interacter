@@ -44,6 +44,21 @@ func (a *App) HandleListSilences(
 
 	silencesGrouped := generic.SplitArrayIntoChunks(silencesWithAlerts, constants.SilencesInOneMessage)
 
+	if len(silencesGrouped) == 0 {
+		template, renderErr := a.TemplateManager.Render("silences_list_header", render.RenderStruct{
+			Grafana:      a.Grafana,
+			Alertmanager: a.Alertmanager,
+			Data:         silencesWithAlerts,
+		})
+
+		if renderErr != nil {
+			a.Logger.Error().Err(renderErr).Msg("Error rendering silences_list_header template")
+			return c.Reply(fmt.Sprintf("Error rendering template: %s", renderErr))
+		}
+
+		return a.BotReply(c, template)
+	}
+
 	for index, chunk := range silencesGrouped {
 		templateRendered := ""
 
@@ -82,7 +97,8 @@ func (a *App) HandleListSilences(
 		for silenceIndex, silence := range chunk {
 			button := menu.Data(
 				fmt.Sprintf("❌Unsilence %s", silence.Silence.ID),
-				fmt.Sprintf("%s_%s", unsilencePrefix, silence.Silence.ID),
+				unsilencePrefix,
+				silence.Silence.ID,
 			)
 
 			rows[silenceIndex] = menu.Row(button)
