@@ -9,7 +9,10 @@ import (
 
 type SilenceManager interface {
 	GetSilences() (Silences, error)
+	GetSilence(silenceID string) (Silence, error)
+	CreateSilence(silence Silence) (SilenceCreateResponse, error)
 	GetSilenceMatchingAlerts(silence Silence) ([]AlertmanagerAlert, error)
+	DeleteSilence(silenceID string) error
 }
 
 func GetSilencesWithAlerts(manager SilenceManager) ([]SilenceWithAlerts, error) {

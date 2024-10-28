@@ -3,6 +3,7 @@ package app
 import (
 	alertmanagerPkg "main/pkg/alertmanager"
 	configPkg "main/pkg/config"
+	"main/pkg/constants"
 	grafanaPkg "main/pkg/grafana"
 	loggerPkg "main/pkg/logger"
 	"main/pkg/templates"
@@ -70,26 +71,32 @@ func (a *App) Start() {
 	a.Bot.Handle("/alerts", a.HandleListAlerts)
 	a.Bot.Handle("/firing", a.HandleListFiringAlerts)
 	a.Bot.Handle("/alert", a.HandleSingleAlert)
-	a.Bot.Handle("/silences", a.HandleListSilences)
-	a.Bot.Handle("/silence", a.HandleNewSilence)
-	a.Bot.Handle("/unsilence", a.HandleDeleteSilence)
+	a.Bot.Handle("/silences", a.HandleGrafanaListSilences)
+	a.Bot.Handle("/silence", a.HandleGrafanaNewSilence)
+	a.Bot.Handle("/unsilence", a.HandleGrafanaDeleteSilence)
 	a.Bot.Handle("/alertmanager_silences", a.HandleAlertmanagerListSilences)
 	a.Bot.Handle("/alertmanager_silence", a.HandleAlertmanagerNewSilence)
 	a.Bot.Handle("/alertmanager_unsilence", a.HandleAlertmanagerDeleteSilence)
+
+	// Callbacks
+	a.Bot.Handle("\f"+constants.GrafanaUnsilencePrefix, a.HandleGrafanaCallbackDeleteSilence)
+	a.Bot.Handle("\f"+constants.AlertmanagerUnsilencePrefix, a.HandleAlertmanagerCallbackDeleteSilence)
 
 	a.Logger.Info().Msg("Telegram bot listening")
 
 	a.Bot.Start()
 }
 
-func (a *App) BotReply(c tele.Context, msg string) error {
+func (a *App) BotReply(c tele.Context, msg string, opts ...interface{}) error {
 	msgsByNewline := strings.Split(msg, "\n")
 
 	var sb strings.Builder
 
+	opts = append(opts, tele.ModeHTML, tele.NoPreview)
+
 	for _, line := range msgsByNewline {
 		if sb.Len()+len(line) > MaxMessageSize {
-			if err := c.Reply(sb.String(), tele.ModeHTML); err != nil {
+			if err := c.Reply(sb.String(), opts...); err != nil {
 				a.Logger.Error().Err(err).Msg("Could not send Telegram message")
 				return err
 			}
@@ -100,7 +107,7 @@ func (a *App) BotReply(c tele.Context, msg string) error {
 		sb.WriteString(line + "\n")
 	}
 
-	if err := c.Reply(sb.String(), tele.ModeHTML); err != nil {
+	if err := c.Reply(sb.String(), opts...); err != nil {
 		a.Logger.Error().Err(err).Msg("Could not send Telegram message")
 		return err
 	}
