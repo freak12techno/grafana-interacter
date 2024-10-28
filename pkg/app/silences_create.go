@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"main/pkg/constants"
 	"main/pkg/types"
 	"main/pkg/types/render"
 	"main/pkg/utils"
@@ -15,7 +16,7 @@ func (a *App) HandleGrafanaNewSilence(c tele.Context) error {
 		Str("text", c.Text()).
 		Msg("Got new silence query")
 
-	return a.HandleNewSilence(c, a.Grafana)
+	return a.HandleNewSilence(c, a.Grafana, constants.GrafanaUnsilencePrefix)
 }
 
 func (a *App) HandleAlertmanagerNewSilence(c tele.Context) error {
@@ -28,12 +29,13 @@ func (a *App) HandleAlertmanagerNewSilence(c tele.Context) error {
 		return c.Reply("Alertmanager is disabled.")
 	}
 
-	return a.HandleNewSilence(c, a.Alertmanager)
+	return a.HandleNewSilence(c, a.Alertmanager, constants.AlertmanagerUnsilencePrefix)
 }
 
 func (a *App) HandleNewSilence(
 	c tele.Context,
 	silenceManager types.SilenceManager,
+	unsilencePrefix string,
 ) error {
 	silenceInfo, err := utils.ParseSilenceOptions(c.Text(), c)
 	if err != "" {
@@ -69,5 +71,12 @@ func (a *App) HandleNewSilence(
 		return c.Reply(fmt.Sprintf("Error rendering template: %s", renderErr))
 	}
 
-	return a.BotReply(c, template)
+	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
+	menu.Inline(menu.Row(menu.Data(
+		"❌Unsilence",
+		unsilencePrefix,
+		silence.ID,
+	)))
+
+	return a.BotReply(c, template, menu)
 }
