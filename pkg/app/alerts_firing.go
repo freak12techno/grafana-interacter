@@ -2,11 +2,9 @@ package app
 
 import (
 	"fmt"
+	tele "gopkg.in/telebot.v3"
 	"main/pkg/types"
 	"main/pkg/types/render"
-	"main/pkg/utils"
-
-	tele "gopkg.in/telebot.v3"
 )
 
 func (a *App) HandleListFiringAlerts(c tele.Context) error {
@@ -25,8 +23,8 @@ func (a *App) HandleListFiringAlerts(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
 	}
 
-	grafanaGroups = utils.FilterFiringOrPendingAlertGroups(grafanaGroups)
-	prometheusGroups = utils.FilterFiringOrPendingAlertGroups(prometheusGroups)
+	grafanaGroups = grafanaGroups.FilterFiringOrPendingAlertGroups()
+	prometheusGroups = prometheusGroups.FilterFiringOrPendingAlertGroups()
 
 	template, err := a.TemplateManager.Render("alerts_firing", render.RenderStruct{
 		Grafana:      a.Grafana,

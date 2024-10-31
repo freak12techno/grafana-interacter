@@ -1,6 +1,7 @@
 package types
 
 import (
+	"golang.org/x/exp/slices"
 	"main/pkg/utils/normalize"
 	"strings"
 	"time"
@@ -52,6 +53,54 @@ func (g GrafanaAlertGroups) FindAlertRuleByName(name string) (*GrafanaAlertRule,
 	}
 
 	return nil, false
+}
+
+func (g GrafanaAlertGroups) FilterFiringOrPendingAlertGroups() []GrafanaAlertGroup {
+	var returnGroups GrafanaAlertGroups
+
+	alertingStatuses := []string{"firing", "alerting", "pending"}
+
+	for _, group := range g {
+		rules := []GrafanaAlertRule{}
+		hasAnyRules := false
+
+		for _, rule := range group.Rules {
+			if !slices.Contains(alertingStatuses, strings.ToLower(rule.State)) {
+				continue
+			}
+
+			alerts := []GrafanaAlert{}
+			hasAnyAlerts := false
+
+			for _, alert := range rule.Alerts {
+				if !slices.Contains(alertingStatuses, strings.ToLower(alert.State)) {
+					continue
+				}
+
+				alerts = append(alerts, alert)
+				hasAnyAlerts = true
+			}
+
+			if hasAnyAlerts {
+				rules = append(rules, GrafanaAlertRule{
+					State:  rule.State,
+					Name:   rule.Name,
+					Alerts: alerts,
+				})
+				hasAnyRules = true
+			}
+		}
+
+		if hasAnyRules {
+			returnGroups = append(returnGroups, GrafanaAlertGroup{
+				Name:  group.Name,
+				File:  group.File,
+				Rules: rules,
+			})
+		}
+	}
+
+	return returnGroups
 }
 
 type AlertmanagerAlert struct {

@@ -9,8 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"golang.org/x/exp/slices"
-
 	tele "gopkg.in/telebot.v3"
 )
 
@@ -140,54 +138,6 @@ func ParseSilenceOptions(query string, c tele.Context) (*types.Silence, string) 
 	}
 
 	return &silence, ""
-}
-
-func FilterFiringOrPendingAlertGroups(groups []types.GrafanaAlertGroup) []types.GrafanaAlertGroup {
-	var returnGroups []types.GrafanaAlertGroup
-
-	alertingStatuses := []string{"firing", "alerting", "pending"}
-
-	for _, group := range groups {
-		rules := []types.GrafanaAlertRule{}
-		hasAnyRules := false
-
-		for _, rule := range group.Rules {
-			if !slices.Contains(alertingStatuses, strings.ToLower(rule.State)) {
-				continue
-			}
-
-			alerts := []types.GrafanaAlert{}
-			hasAnyAlerts := false
-
-			for _, alert := range rule.Alerts {
-				if !slices.Contains(alertingStatuses, strings.ToLower(alert.State)) {
-					continue
-				}
-
-				alerts = append(alerts, alert)
-				hasAnyAlerts = true
-			}
-
-			if hasAnyAlerts {
-				rules = append(rules, types.GrafanaAlertRule{
-					State:  rule.State,
-					Name:   rule.Name,
-					Alerts: alerts,
-				})
-				hasAnyRules = true
-			}
-		}
-
-		if hasAnyRules {
-			returnGroups = append(returnGroups, types.GrafanaAlertGroup{
-				Name:  group.Name,
-				File:  group.File,
-				Rules: rules,
-			})
-		}
-	}
-
-	return returnGroups
 }
 
 func StrToFloat64(s string) float64 {
