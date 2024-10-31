@@ -37,7 +37,7 @@ func (a *App) HandleNewSilence(
 	silenceManager types.SilenceManager,
 	unsilencePrefix string,
 ) error {
-	silenceInfo, err := utils.ParseSilenceOptions(c.Text(), c)
+	silenceInfo, err := utils.ParseSilenceOptions(c.Text(), c.Sender().FirstName)
 	if err != "" {
 		return c.Reply(fmt.Sprintf("Error parsing silence option: %s\n", err))
 	}

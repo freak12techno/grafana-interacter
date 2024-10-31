@@ -1,10 +1,11 @@
 package types
 
 import (
-	"golang.org/x/exp/slices"
 	"main/pkg/utils/normalize"
 	"strings"
 	"time"
+
+	"golang.org/x/exp/slices"
 )
 
 type GrafanaAlertRulesResponse struct {

@@ -2,9 +2,10 @@ package app
 
 import (
 	"fmt"
-	tele "gopkg.in/telebot.v3"
 	"main/pkg/types"
 	"main/pkg/types/render"
+
+	tele "gopkg.in/telebot.v3"
 )
 
 func (a *App) HandleListFiringAlerts(c tele.Context) error {

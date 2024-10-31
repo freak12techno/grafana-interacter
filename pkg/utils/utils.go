@@ -8,8 +8,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	tele "gopkg.in/telebot.v3"
 )
 
 func ParseRenderOptions(query string) (types.RenderOptions, bool) {
@@ -74,13 +72,13 @@ func GetEmojiBySilenceStatus(state string) string {
 	}
 }
 
-func ParseSilenceOptions(query string, c tele.Context) (*types.Silence, string) {
+func ParseSilenceOptions(query string, sender string) (*types.Silence, string) {
 	args := strings.SplitN(query, " ", 3)
 	if len(args) <= 2 {
 		return nil, fmt.Sprintf("Usage: %s <duration> <params>", args[0])
 	}
 
-	_, args = args[0], args[1:] // removing first argument as it's always /silence
+	cmd, args := args[0], args[1:] // removing first argument as it's always /silence
 	durationString, rest := args[0], args[1]
 
 	duration, err := time.ParseDuration(durationString)
@@ -88,19 +86,27 @@ func ParseSilenceOptions(query string, c tele.Context) (*types.Silence, string) 
 		return nil, "Invalid duration provided"
 	}
 
-	silence := types.Silence{
+	matchers := types.QueryMatcherFromKeyValueString(rest)
+	return ParseSilenceWithDuration(cmd, matchers, sender, duration)
+}
+
+func ParseSilenceWithDuration(
+	cmd string,
+	matchers []types.QueryMatcher,
+	sender string,
+	duration time.Duration,
+) (*types.Silence, string) {
+	silence := &types.Silence{
 		StartsAt:  time.Now(),
 		EndsAt:    time.Now().Add(duration),
 		Matchers:  []types.SilenceMatcher{},
-		CreatedBy: c.Sender().FirstName,
+		CreatedBy: sender,
 		Comment: fmt.Sprintf(
 			"Muted using grafana-interacter for %s by %s",
 			duration,
-			c.Sender().FirstName,
+			sender,
 		),
 	}
-
-	matchers := types.QueryMatcherFromKeyValueString(rest)
 
 	for _, matcher := range matchers {
 		if matcher.Key == "comment" {
@@ -134,10 +140,10 @@ func ParseSilenceOptions(query string, c tele.Context) (*types.Silence, string) 
 	}
 
 	if len(silence.Matchers) == 0 {
-		return nil, "Usage: /silence <duration> <params>"
+		return nil, fmt.Sprintf("Usage: %s <duration> <params>", cmd)
 	}
 
-	return &silence, ""
+	return silence, ""
 }
 
 func StrToFloat64(s string) float64 {
