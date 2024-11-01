@@ -38,3 +38,9 @@ type AlertsListStruct struct {
 	GrafanaGroups    []GrafanaAlertGroup
 	PrometheusGroups []GrafanaAlertGroup
 }
+
+type SilencesListStruct struct {
+	Silences      []SilenceWithAlerts
+	ShowHeader    bool
+	SilencesCount int
+}
