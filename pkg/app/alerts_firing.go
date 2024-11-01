@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"main/pkg/constants"
 	"main/pkg/types"
 	"main/pkg/types/render"
 
@@ -27,18 +28,89 @@ func (a *App) HandleListFiringAlerts(c tele.Context) error {
 	grafanaGroups = grafanaGroups.FilterFiringOrPendingAlertGroups()
 	prometheusGroups = prometheusGroups.FilterFiringOrPendingAlertGroups()
 
-	template, err := a.TemplateManager.Render("alerts_firing", render.RenderStruct{
-		Grafana:      a.Grafana,
-		Alertmanager: a.Alertmanager,
-		Data: types.AlertsListStruct{
-			GrafanaGroups:    grafanaGroups,
-			PrometheusGroups: prometheusGroups,
-		},
-	})
-	if err != nil {
-		a.Logger.Error().Err(err).Msg("Error rendering alerts_firing template")
-		return c.Reply(fmt.Sprintf("Error rendering template: %s", err))
+	batches := []types.FiringAlertsListStruct{}
+	batchToAdd := types.FiringAlertsListStruct{
+		GrafanaAlerts:         make([]types.FiringAlert, 0),
+		PrometheusAlerts:      make([]types.FiringAlert, 0),
+		GrafanaAlertsCount:    len(grafanaGroups),
+		PrometheusAlertsCount: len(prometheusGroups),
+		ShowGrafanaHeader:     true,
+	}
+	batchIndex := 0
+
+	for _, grafanaGroup := range grafanaGroups {
+		for ruleIndex, grafanaRule := range grafanaGroup.Rules {
+			for _, grafanaAlert := range grafanaRule.Alerts {
+				batchToAdd.GrafanaAlerts = append(batchToAdd.GrafanaAlerts, types.FiringAlert{
+					GroupName:        grafanaGroup.Name,
+					GroupAlertsCount: len(grafanaGroup.Rules),
+					AlertName:        grafanaRule.Name,
+					Alert:            grafanaAlert,
+					ShowAlertName:    ruleIndex == 0,
+				})
+				batchIndex++
+
+				if len(batchToAdd.GrafanaAlerts) >= constants.AlertsInOneMessage {
+					batches = append(batches, batchToAdd)
+					batchToAdd = types.FiringAlertsListStruct{
+						GrafanaAlerts:         make([]types.FiringAlert, 0),
+						PrometheusAlerts:      make([]types.FiringAlert, 0),
+						GrafanaAlertsCount:    len(grafanaGroups),
+						PrometheusAlertsCount: len(prometheusGroups),
+					}
+					batchIndex = 0
+				}
+			}
+		}
 	}
 
-	return a.BotReply(c, template)
+	batchToAdd.ShowPrometheusHeader = true
+
+	for _, prometheusGroup := range prometheusGroups {
+		for _, prometheusRule := range prometheusGroup.Rules {
+			for alertIndex, prometheusAlert := range prometheusRule.Alerts {
+				batchToAdd.PrometheusAlerts = append(batchToAdd.PrometheusAlerts, types.FiringAlert{
+					GroupName:        prometheusGroup.Name,
+					GroupAlertsCount: len(prometheusGroup.Rules),
+					AlertName:        prometheusRule.Name,
+					Alert:            prometheusAlert,
+					ShowAlertName:    alertIndex == 0,
+				})
+				batchIndex++
+
+				if len(batchToAdd.PrometheusAlerts) >= constants.AlertsInOneMessage {
+					batches = append(batches, batchToAdd)
+					batchToAdd = types.FiringAlertsListStruct{
+						GrafanaAlerts:         make([]types.FiringAlert, 0),
+						PrometheusAlerts:      make([]types.FiringAlert, 0),
+						GrafanaAlertsCount:    len(grafanaGroups),
+						PrometheusAlertsCount: len(prometheusGroups),
+					}
+					batchIndex = 0
+				}
+			}
+		}
+	}
+
+	if len(batches) == 0 {
+		batches = append(batches, batchToAdd)
+	}
+
+	for _, batch := range batches {
+		template, renderErr := a.TemplateManager.Render("alerts_firing", render.RenderStruct{
+			Grafana:      a.Grafana,
+			Alertmanager: a.Alertmanager,
+			Data:         batch,
+		})
+		if renderErr != nil {
+			a.Logger.Error().Err(renderErr).Msg("Error rendering alerts_firing template")
+			return c.Reply(fmt.Sprintf("Error rendering template: %s", renderErr))
+		}
+
+		if sendErr := a.BotReply(c, template); sendErr != nil {
+			return err
+		}
+	}
+
+	return nil
 }

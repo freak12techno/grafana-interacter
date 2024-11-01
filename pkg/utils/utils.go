@@ -72,7 +72,7 @@ func GetEmojiBySilenceStatus(state string) string {
 	}
 }
 
-func ParseSilenceOptions(query string, sender string) (*types.Silence, string) {
+func ParseSilenceFromCommand(query string, sender string) (*types.Silence, string) {
 	args := strings.SplitN(query, " ", 3)
 	if len(args) <= 2 {
 		return nil, fmt.Sprintf("Usage: %s <duration> <params>", args[0])
@@ -88,6 +88,21 @@ func ParseSilenceOptions(query string, sender string) (*types.Silence, string) {
 
 	matchers := types.QueryMatcherFromKeyValueString(rest)
 	return ParseSilenceWithDuration(cmd, matchers, sender, duration)
+}
+
+func ParseSilenceFromCallback(query string, sender string) (*types.Silence, string) {
+	matchers := types.QueryMatcherFromKeyValueString(query)
+
+	if matchers[0].Key != "duration" {
+		return nil, "Duration is not provided!"
+	}
+
+	durationMatcher, rest := matchers[0], matchers[1:]
+	duration, err := time.ParseDuration(durationMatcher.Value)
+	if err != nil {
+		return nil, "Invalid duration provided"
+	}
+	return ParseSilenceWithDuration("<callback>", rest, sender, duration)
 }
 
 func ParseSilenceWithDuration(

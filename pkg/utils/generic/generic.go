@@ -60,3 +60,11 @@ func SplitArrayIntoChunks[T any](slice []T, chunkSize int) [][]T {
 
 	return chunks
 }
+
+func SubSliceBefore[T any](slice []T, splitIndex int) []T {
+	return slice[:min(len(slice), splitIndex)]
+}
+
+func SubSliceAfter[T any](slice []T, splitIndex int) []T {
+	return slice[min(len(slice), splitIndex):]
+}
