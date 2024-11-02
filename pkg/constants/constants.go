@@ -6,10 +6,12 @@ const (
 	SilenceMatcherEqual         string = "="
 	SilenceMatcherNotEqual      string = "!="
 
-	SilencesInOneMessage        = 5
-	AlertsInOneMessage          = 3
-	GrafanaUnsilencePrefix      = "unsilence_"
-	AlertmanagerUnsilencePrefix = "alertmanager_unsilence_"
-	GrafanaSilencePrefix        = "silence_"
-	AlertmanagerSilencePrefix   = "alertmanager_silence_"
+	SilencesInOneMessage             = 5
+	AlertsInOneMessage               = 3
+	GrafanaUnsilencePrefix           = "grafana_unsilence_"
+	AlertmanagerUnsilencePrefix      = "alertmanager_unsilence_"
+	GrafanaSilencePrefix             = "grafana_silence_"
+	AlertmanagerSilencePrefix        = "alertmanager_silence_"
+	GrafanaPrepareSilencePrefix      = "grafana_prepare_silence_"
+	AlertmanagerPrepareSilencePrefix = "alertmanager_prepare_silence_"
 )

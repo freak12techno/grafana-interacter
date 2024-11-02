@@ -88,6 +88,21 @@ func (g GrafanaAlertGroups) FindAlertRuleByName(name string) (*GrafanaAlertRule,
 	return nil, false
 }
 
+func (g GrafanaAlertGroups) FindLabelsByHash(hash string) (map[string]string, bool) {
+	for _, group := range g {
+		for _, rule := range group.Rules {
+			for _, alert := range rule.Alerts {
+				alertHash := alert.GetCallbackHash()
+				if alertHash == hash {
+					return alert.Labels, true
+				}
+			}
+		}
+	}
+
+	return nil, false
+}
+
 func (g GrafanaAlertGroups) FilterFiringOrPendingAlertGroups() []GrafanaAlertGroup {
 	var returnGroups GrafanaAlertGroups
 

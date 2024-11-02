@@ -116,8 +116,8 @@ func (a *App) HandleListFiringAlerts(c tele.Context) error {
 		for _, alert := range batch.GrafanaAlerts {
 			button := menu.Data(
 				fmt.Sprintf("🔇Silence alert #%d", index+1),
-				constants.GrafanaSilencePrefix,
-				"48h "+alert.Alert.GetCallbackHash(),
+				constants.AlertmanagerPrepareSilencePrefix,
+				alert.Alert.GetCallbackHash(),
 			)
 
 			rows = append(rows, menu.Row(button))
@@ -127,8 +127,8 @@ func (a *App) HandleListFiringAlerts(c tele.Context) error {
 		for _, alert := range batch.PrometheusAlerts {
 			button := menu.Data(
 				fmt.Sprintf("🔇Silence alert #%d", index+1),
-				constants.AlertmanagerSilencePrefix,
-				"48h "+alert.Alert.GetCallbackHash(),
+				constants.AlertmanagerPrepareSilencePrefix,
+				alert.Alert.GetCallbackHash(),
 			)
 
 			rows = append(rows, menu.Row(button))

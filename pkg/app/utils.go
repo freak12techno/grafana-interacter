@@ -53,25 +53,16 @@ func (a *App) GenerateSilenceForAlert(
 	}
 
 	groups = groups.FilterFiringOrPendingAlertGroups()
-
-	for _, group := range groups {
-		for _, rule := range group.Rules {
-			for _, alert := range rule.Alerts {
-				alertHash := alert.GetCallbackHash()
-				if alertHash != alertHashToMute {
-					continue
-				}
-
-				matchers := types.QueryMatcherFromKeyValueMap(alert.Labels)
-				silenceInfo, silenceErr := utils.ParseSilenceWithDuration("callback", matchers, c.Sender().FirstName, duration)
-				if silenceErr != "" {
-					return nil, fmt.Errorf("Error parsing silence option: %s\n", silenceErr)
-				}
-
-				return silenceInfo, nil
-			}
-		}
+	labels, found := groups.FindLabelsByHash(alertHashToMute)
+	if !found {
+		return nil, errors.New("Alert was not found!")
 	}
 
-	return nil, errors.New("Alert was not found!")
+	matchers := types.QueryMatcherFromKeyValueMap(labels)
+	silenceInfo, silenceErr := utils.ParseSilenceWithDuration("callback", matchers, c.Sender().FirstName, duration)
+	if silenceErr != "" {
+		return nil, fmt.Errorf("Error parsing silence option: %s\n", silenceErr)
+	}
+
+	return silenceInfo, nil
 }

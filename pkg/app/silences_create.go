@@ -43,28 +43,99 @@ func (a *App) HandleAlertmanagerNewSilence(c tele.Context) error {
 	return a.HandleNewSilence(c, a.Alertmanager, constants.AlertmanagerUnsilencePrefix, silenceInfo)
 }
 
-// func (a *App) HandleAlertmanagerPrepareNewSilenceFromCallback(c tele.Context) error {
-//	a.Logger.Info().
-//		Str("sender", c.Sender().Username).
-//		Msg("Got new prepare Alertmanager silence callback via button")
-//
-//	callback := c.Callback()
-//	a.RemoveKeyboardItemByCallback(c, callback)
-//
-//	groups, err := a.Grafana.GetGrafanaAlertingRules()
-//	if err != nil {
-//		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
-//	}
-//
-//	groups = groups.FilterFiringOrPendingAlertGroups()
-//
-//	silenceInfo, err := a.GenerateSilenceForAlert(c, groups, alertHashToMute, dataSplit[0])
-//	if err != nil {
-//		return c.Reply(err.Error())
-//	}
-//
-//	return c.Reply("Alert was not found!")
-//}
+func (a *App) HandleGrafanaPrepareNewSilenceFromCallback(c tele.Context) error {
+	a.Logger.Info().
+		Str("sender", c.Sender().Username).
+		Msg("Got new prepare Grafana silence callback via button")
+
+	callback := c.Callback()
+	a.RemoveKeyboardItemByCallback(c, callback)
+
+	groups, err := a.Grafana.GetGrafanaAlertingRules()
+	if err != nil {
+		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
+	}
+
+	groups = groups.FilterFiringOrPendingAlertGroups()
+	labels, found := groups.FindLabelsByHash(callback.Data)
+	if !found {
+		return c.Reply("Alert was not found!")
+	}
+
+	matchers := types.QueryMatcherFromKeyValueMap(labels)
+	template, renderErr := a.TemplateManager.Render("silence_prepare_create", render.RenderStruct{
+		Grafana:      a.Grafana,
+		Alertmanager: a.Alertmanager,
+		Data:         matchers,
+	})
+	if renderErr != nil {
+		a.Logger.Error().Err(renderErr).Msg("Error rendering silence_prepare_create template")
+		return c.Reply(fmt.Sprintf("Error rendering template: %s", renderErr))
+	}
+
+	allowedMutes := []string{"3h", "48h", "99999h"}
+
+	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
+	rows := make([]tele.Row, len(allowedMutes))
+
+	for index, mute := range allowedMutes {
+		rows[index] = menu.Row(menu.Data(
+			fmt.Sprintf("⏱ Silence for %s", mute),
+			constants.GrafanaSilencePrefix,
+			mute+" "+callback.Data,
+		))
+	}
+
+	menu.Inline(rows...)
+	return a.BotReply(c, template, menu)
+}
+
+func (a *App) HandleAlertmanagerPrepareNewSilenceFromCallback(c tele.Context) error {
+	a.Logger.Info().
+		Str("sender", c.Sender().Username).
+		Msg("Got new prepare Alertmanager silence callback via button")
+
+	callback := c.Callback()
+	a.RemoveKeyboardItemByCallback(c, callback)
+
+	groups, err := a.Grafana.GetPrometheusAlertingRules()
+	if err != nil {
+		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
+	}
+
+	groups = groups.FilterFiringOrPendingAlertGroups()
+	labels, found := groups.FindLabelsByHash(callback.Data)
+	if !found {
+		return c.Reply("Alert was not found!")
+	}
+
+	matchers := types.QueryMatcherFromKeyValueMap(labels)
+	template, renderErr := a.TemplateManager.Render("silence_prepare_create", render.RenderStruct{
+		Grafana:      a.Grafana,
+		Alertmanager: a.Alertmanager,
+		Data:         matchers,
+	})
+	if renderErr != nil {
+		a.Logger.Error().Err(renderErr).Msg("Error rendering silence_prepare_create template")
+		return c.Reply(fmt.Sprintf("Error rendering template: %s", renderErr))
+	}
+
+	allowedMutes := []string{"3h", "48h", "99999h"}
+
+	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
+	rows := make([]tele.Row, len(allowedMutes))
+
+	for index, mute := range allowedMutes {
+		rows[index] = menu.Row(menu.Data(
+			fmt.Sprintf("⏱ Silence for %s", mute),
+			constants.AlertmanagerSilencePrefix,
+			mute+" "+callback.Data,
+		))
+	}
+
+	menu.Inline(rows...)
+	return a.BotReply(c, template, menu)
+}
 
 func (a *App) HandleGrafanaCallbackNewSilence(c tele.Context) error {
 	a.Logger.Info().
