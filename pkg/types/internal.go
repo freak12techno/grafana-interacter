@@ -38,3 +38,26 @@ type AlertsListStruct struct {
 	GrafanaGroups    []GrafanaAlertGroup
 	PrometheusGroups []GrafanaAlertGroup
 }
+
+type FiringAlert struct {
+	GroupName        string
+	GroupAlertsCount int
+	AlertName        string
+	Alert            GrafanaAlert
+	ShowAlertName    bool
+}
+
+type FiringAlertsListStruct struct {
+	GrafanaAlerts         []FiringAlert
+	PrometheusAlerts      []FiringAlert
+	ShowGrafanaHeader     bool
+	ShowPrometheusHeader  bool
+	GrafanaAlertsCount    int
+	PrometheusAlertsCount int
+}
+
+type SilencesListStruct struct {
+	Silences      []SilenceWithAlerts
+	ShowHeader    bool
+	SilencesCount int
+}

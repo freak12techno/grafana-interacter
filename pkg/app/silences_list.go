@@ -43,52 +43,25 @@ func (a *App) HandleListSilences(
 	}
 
 	silencesGrouped := generic.SplitArrayIntoChunks(silencesWithAlerts, constants.SilencesInOneMessage)
-
 	if len(silencesGrouped) == 0 {
-		template, renderErr := a.TemplateManager.Render("silences_list_header", render.RenderStruct{
-			Grafana:      a.Grafana,
-			Alertmanager: a.Alertmanager,
-			Data:         silencesWithAlerts,
-		})
-
-		if renderErr != nil {
-			a.Logger.Error().Err(renderErr).Msg("Error rendering silences_list_header template")
-			return c.Reply(fmt.Sprintf("Error rendering template: %s", renderErr))
-		}
-
-		return a.BotReply(c, template)
+		silencesGrouped = [][]types.SilenceWithAlerts{{}}
 	}
 
 	for index, chunk := range silencesGrouped {
-		templateRendered := ""
-
-		if index == 0 {
-			template, renderErr := a.TemplateManager.Render("silences_list_header", render.RenderStruct{
-				Grafana:      a.Grafana,
-				Alertmanager: a.Alertmanager,
-				Data:         silencesWithAlerts,
-			})
-
-			if renderErr != nil {
-				a.Logger.Error().Err(renderErr).Msg("Error rendering silences_list_header template")
-				return c.Reply(fmt.Sprintf("Error rendering template: %s", renderErr))
-			}
-
-			templateRendered += template
-		}
-
 		template, renderErr := a.TemplateManager.Render("silences_list", render.RenderStruct{
 			Grafana:      a.Grafana,
 			Alertmanager: a.Alertmanager,
-			Data:         chunk,
+			Data: types.SilencesListStruct{
+				Silences:      chunk,
+				ShowHeader:    index == 0,
+				SilencesCount: len(silencesWithAlerts),
+			},
 		})
 
 		if renderErr != nil {
 			a.Logger.Error().Err(renderErr).Msg("Error rendering silences_list template")
 			return c.Reply(fmt.Sprintf("Error rendering template: %s", renderErr))
 		}
-
-		templateRendered += template
 
 		menu := &tele.ReplyMarkup{ResizeKeyboard: true}
 
@@ -106,7 +79,7 @@ func (a *App) HandleListSilences(
 
 		menu.Inline(rows...)
 
-		if sendErr := a.BotReply(c, templateRendered, menu); sendErr != nil {
+		if sendErr := a.BotReply(c, template, menu); sendErr != nil {
 			a.Logger.Error().Err(sendErr).Msg("Error sending message")
 		}
 	}

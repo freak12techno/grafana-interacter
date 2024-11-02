@@ -8,10 +8,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"golang.org/x/exp/slices"
-
-	tele "gopkg.in/telebot.v3"
 )
 
 func ParseRenderOptions(query string) (types.RenderOptions, bool) {
@@ -76,13 +72,13 @@ func GetEmojiBySilenceStatus(state string) string {
 	}
 }
 
-func ParseSilenceOptions(query string, c tele.Context) (*types.Silence, string) {
+func ParseSilenceFromCommand(query string, sender string) (*types.Silence, string) {
 	args := strings.SplitN(query, " ", 3)
 	if len(args) <= 2 {
 		return nil, fmt.Sprintf("Usage: %s <duration> <params>", args[0])
 	}
 
-	_, args = args[0], args[1:] // removing first argument as it's always /silence
+	cmd, args := args[0], args[1:] // removing first argument as it's always /silence
 	durationString, rest := args[0], args[1]
 
 	duration, err := time.ParseDuration(durationString)
@@ -90,19 +86,27 @@ func ParseSilenceOptions(query string, c tele.Context) (*types.Silence, string) 
 		return nil, "Invalid duration provided"
 	}
 
-	silence := types.Silence{
+	matchers := types.QueryMatcherFromKeyValueString(rest)
+	return ParseSilenceWithDuration(cmd, matchers, sender, duration)
+}
+
+func ParseSilenceWithDuration(
+	cmd string,
+	matchers []types.QueryMatcher,
+	sender string,
+	duration time.Duration,
+) (*types.Silence, string) {
+	silence := &types.Silence{
 		StartsAt:  time.Now(),
 		EndsAt:    time.Now().Add(duration),
 		Matchers:  []types.SilenceMatcher{},
-		CreatedBy: c.Sender().FirstName,
+		CreatedBy: sender,
 		Comment: fmt.Sprintf(
 			"Muted using grafana-interacter for %s by %s",
 			duration,
-			c.Sender().FirstName,
+			sender,
 		),
 	}
-
-	matchers := types.QueryMatcherFromKeyValueString(rest)
 
 	for _, matcher := range matchers {
 		if matcher.Key == "comment" {
@@ -136,58 +140,10 @@ func ParseSilenceOptions(query string, c tele.Context) (*types.Silence, string) 
 	}
 
 	if len(silence.Matchers) == 0 {
-		return nil, "Usage: /silence <duration> <params>"
+		return nil, fmt.Sprintf("Usage: %s <duration> <params>", cmd)
 	}
 
-	return &silence, ""
-}
-
-func FilterFiringOrPendingAlertGroups(groups []types.GrafanaAlertGroup) []types.GrafanaAlertGroup {
-	var returnGroups []types.GrafanaAlertGroup
-
-	alertingStatuses := []string{"firing", "alerting", "pending"}
-
-	for _, group := range groups {
-		rules := []types.GrafanaAlertRule{}
-		hasAnyRules := false
-
-		for _, rule := range group.Rules {
-			if !slices.Contains(alertingStatuses, strings.ToLower(rule.State)) {
-				continue
-			}
-
-			alerts := []types.GrafanaAlert{}
-			hasAnyAlerts := false
-
-			for _, alert := range rule.Alerts {
-				if !slices.Contains(alertingStatuses, strings.ToLower(alert.State)) {
-					continue
-				}
-
-				alerts = append(alerts, alert)
-				hasAnyAlerts = true
-			}
-
-			if hasAnyAlerts {
-				rules = append(rules, types.GrafanaAlertRule{
-					State:  rule.State,
-					Name:   rule.Name,
-					Alerts: alerts,
-				})
-				hasAnyRules = true
-			}
-		}
-
-		if hasAnyRules {
-			returnGroups = append(returnGroups, types.GrafanaAlertGroup{
-				Name:  group.Name,
-				File:  group.File,
-				Rules: rules,
-			})
-		}
-	}
-
-	return returnGroups
+	return silence, ""
 }
 
 func StrToFloat64(s string) float64 {

@@ -1,6 +1,7 @@
 package types
 
 import (
+	"fmt"
 	"main/pkg/constants"
 	"strings"
 	"unicode"
@@ -19,6 +20,10 @@ type QueryMatcher struct {
 	Key      string
 	Operator string
 	Value    string
+}
+
+func (matcher *QueryMatcher) Serialize() string {
+	return fmt.Sprintf("%s %s %s", matcher.Key, matcher.Operator, matcher.Value)
 }
 
 func QueryMatcherFromKeyValueString(source string) []QueryMatcher {
@@ -66,6 +71,22 @@ func QueryMatcherFromKeyValueString(source string) []QueryMatcher {
 			})
 			return matchers
 		}
+	}
+
+	return matchers
+}
+
+func QueryMatcherFromKeyValueMap(source map[string]string) []QueryMatcher {
+	matchers := make([]QueryMatcher, len(source))
+	index := 0
+
+	for key, value := range source {
+		matchers[index] = QueryMatcher{
+			Key:      key,
+			Operator: "=",
+			Value:    value,
+		}
+		index++
 	}
 
 	return matchers

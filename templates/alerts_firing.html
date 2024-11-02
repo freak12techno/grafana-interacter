@@ -1,47 +1,47 @@
-{{- if and (not .Data.GrafanaGroups) (not .Data.PrometheusGroups) }}
+{{- if and (not .Data.GrafanaAlerts) (not .Data.PrometheusAlerts) }}
 No firing alerts.
 {{ end }}
 
-{{- if .Data.GrafanaGroups }}
-<strong>Grafana alerts ({{ len .Data.GrafanaGroups }}):</strong>
+{{- if .Data.ShowGrafanaHeader }}
+{{- if .Data.GrafanaAlerts }}
+<strong>Grafana alerts ({{ .Data.GrafanaAlertsCount }}):</strong>
 {{- end }}
-{{- range $groupId, $group := .Data.GrafanaGroups }}
-{{- range $ruleId, $rule := $group.Rules }}
-- {{ GetEmojiByStatus $rule.State }} {{ $group.Name }} -> {{ $rule.Name }} ({{ len ($rule.Alerts) }}):
-{{ range $alertId, $alert := $rule.Alerts }}
-<strong>Firing for:</strong> {{ FormatDuration $alert.ActiveSince }} (since {{ FormatDate $alert.ActiveAt }})
-{{- if $alert.Value }}
-<strong>Value: </strong>{{ StrToFloat64 $alert.Value }}
+{{- end }}
+{{- range $alertId, $alert := .Data.GrafanaAlerts }}
+{{- if $alert.ShowAlertName }}
+- {{ GetEmojiByStatus $alert.Alert.State }} {{ $alert.GroupName }} -> {{ $alert.AlertName }} ({{ $alert.GroupAlertsCount }}):
+{{- end }}
+<strong>Firing for:</strong> {{ FormatDuration $alert.Alert.ActiveSince }} (since {{ FormatDate $alert.Alert.ActiveAt }})
+{{- if $alert.Alert.Value }}
+<strong>Value: </strong>{{ StrToFloat64 $alert.Alert.Value }}
 {{- end }}
 <strong>Labels: </strong>
-{{- range $key, $label := $alert.Labels }}
+{{- range $key, $label := $alert.Alert.Labels }}
+{{- if ne $key "alertname" }}
+  {{ $key }} = {{ $label }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+
+
+{{- if .Data.ShowPrometheusHeader }}
+{{- if .Data.PrometheusAlerts }}
+<strong>Prometheus alerts ({{ .Data.PrometheusAlertsCount }}):</strong>
+{{- end }}
+{{- end }}
+{{- range $alertId, $alert := .Data.PrometheusAlerts }}
+{{- if $alert.ShowAlertName }}
+- {{ GetEmojiByStatus $alert.Alert.State }} {{ $alert.GroupName }} -> {{ $alert.AlertName }} ({{ $alert.GroupAlertsCount }}):
+{{- end }}
+<strong>Firing for:</strong> {{ FormatDuration $alert.Alert.ActiveSince }} (since {{ FormatDate $alert.Alert.ActiveAt }})
+{{- if $alert.Alert.Value }}
+<strong>Value: </strong>{{ StrToFloat64 $alert.Alert.Value }}
+{{- end }}
+<strong>Labels: </strong>
+{{- range $key, $label := $alert.Alert.Labels }}
 {{- if ne $key "alertname" }}
   {{ $key }} = {{ $label }}
 {{- end }}
 {{- end }}
 {{ end }}
-{{- end }}
-{{- end }}
-
-
-
-{{- if .Data.PrometheusGroups }}
-<strong>Prometheus alerts ({{ len .Data.PrometheusGroups }}):</strong>
-{{- end }}
-{{ range $groupId, $group := .Data.PrometheusGroups }}
-{{- range $ruleId, $rule := $group.Rules }}
-- {{ GetEmojiByStatus $rule.State }} {{ $group.Name }} -> {{ $rule.Name }} ({{ len ($rule.Alerts) }}):
-{{ range $alertId, $alert := $rule.Alerts }}
-<strong>Firing for:</strong> {{ FormatDuration $alert.ActiveSince }} (since {{ FormatDate $alert.ActiveAt }})
-{{- if $alert.Value }}
-<strong>Value: </strong>{{ StrToFloat64 $alert.Value }}
-{{- end }}
-<strong>Labels: </strong>
-{{- range $key, $label := $alert.Labels }}
-{{- if ne $key "alertname" }}
-  {{ $key }} = {{ $label }}
-{{- end }}
-{{- end }}
-{{ end }}
-{{- end }}
-{{- end }}

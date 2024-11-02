@@ -18,7 +18,7 @@ import (
 const MaxMessageSize = 4096
 
 type App struct {
-	Config          configPkg.Config
+	Config          *configPkg.Config
 	Grafana         *grafanaPkg.Grafana
 	Alertmanager    *alertmanagerPkg.Alertmanager
 	TemplateManager *templates.TemplateManager
@@ -52,6 +52,7 @@ func NewApp(config *configPkg.Config, version string) *App {
 	}
 
 	return &App{
+		Config:          config,
 		Logger:          logger,
 		Grafana:         grafana,
 		Alertmanager:    alertmanager,
@@ -81,6 +82,9 @@ func (a *App) Start() {
 	// Callbacks
 	a.Bot.Handle("\f"+constants.GrafanaUnsilencePrefix, a.HandleGrafanaCallbackDeleteSilence)
 	a.Bot.Handle("\f"+constants.AlertmanagerUnsilencePrefix, a.HandleAlertmanagerCallbackDeleteSilence)
+	a.Bot.Handle("\f"+constants.AlertmanagerPrepareSilencePrefix, a.HandleAlertmanagerPrepareNewSilenceFromCallback)
+	a.Bot.Handle("\f"+constants.GrafanaSilencePrefix, a.HandleGrafanaCallbackNewSilence)
+	a.Bot.Handle("\f"+constants.AlertmanagerSilencePrefix, a.HandleAlertmanagerCallbackNewSilence)
 
 	a.Logger.Info().Msg("Telegram bot listening")
 

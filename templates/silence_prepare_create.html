@@ -1,0 +1,6 @@
+<strong>Going to mute an alert with the following matchers:</strong>
+{{- range $matcherId, $matcher := .Data }}
+  {{ $matcher.Serialize }}
+{{- end }}
+
+Please choose for how long to mute this alert:
