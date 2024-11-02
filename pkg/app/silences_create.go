@@ -73,14 +73,12 @@ func (a *App) HandleGrafanaPrepareNewSilenceFromCallback(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error rendering template: %s", renderErr))
 	}
 
-	allowedMutes := []string{"3h", "48h", "99999h"}
-
 	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
-	rows := make([]tele.Row, len(allowedMutes))
+	rows := make([]tele.Row, len(a.Config.Grafana.MutesDurations))
 
-	for index, mute := range allowedMutes {
+	for index, mute := range a.Config.Grafana.MutesDurations {
 		rows[index] = menu.Row(menu.Data(
-			fmt.Sprintf("⏱ Silence for %s", mute),
+			fmt.Sprintf("⌛ Silence for %s", mute),
 			constants.GrafanaSilencePrefix,
 			mute+" "+callback.Data,
 		))
@@ -120,14 +118,12 @@ func (a *App) HandleAlertmanagerPrepareNewSilenceFromCallback(c tele.Context) er
 		return c.Reply(fmt.Sprintf("Error rendering template: %s", renderErr))
 	}
 
-	allowedMutes := []string{"3h", "48h", "99999h"}
-
 	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
-	rows := make([]tele.Row, len(allowedMutes))
+	rows := make([]tele.Row, len(a.Config.Alertmanager.MutesDurations))
 
-	for index, mute := range allowedMutes {
+	for index, mute := range a.Config.Alertmanager.MutesDurations {
 		rows[index] = menu.Row(menu.Data(
-			fmt.Sprintf("⏱ Silence for %s", mute),
+			fmt.Sprintf("⌛ Silence for %s", mute),
 			constants.AlertmanagerSilencePrefix,
 			mute+" "+callback.Data,
 		))

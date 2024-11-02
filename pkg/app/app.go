@@ -18,7 +18,7 @@ import (
 const MaxMessageSize = 4096
 
 type App struct {
-	Config          configPkg.Config
+	Config          *configPkg.Config
 	Grafana         *grafanaPkg.Grafana
 	Alertmanager    *alertmanagerPkg.Alertmanager
 	TemplateManager *templates.TemplateManager
@@ -52,6 +52,7 @@ func NewApp(config *configPkg.Config, version string) *App {
 	}
 
 	return &App{
+		Config:          config,
 		Logger:          logger,
 		Grafana:         grafana,
 		Alertmanager:    alertmanager,

@@ -37,6 +37,16 @@ grafana:
     # Customize your plot width/height
     width: "1000"
     height: "500"
+  # A set of mutes duration used when launching a /firing command and creating
+  # a new silence via inline keyboard from the result of this command.
+  # Used for silencing Grafana alerts only.
+  # Defaults to: 1h, 8h, 48h, 168h, 99999h
+  mutes_durations:
+    - 1h
+    - 8h
+    - 24h
+    - 168h
+    - 99999h
 # Optional config if you use external Alertmanager, used for getting silences list and creating new ones.
 alertmanager:
   # URL of the remote Grafana to do queries against. Defaults to http://localhost:9093
@@ -44,3 +54,10 @@ alertmanager:
   # Alertmanager credentials
   user: admin
   password: admin
+  # Same as grafana.mutes_duration, but for Prometheus alerts. Defaults are the same.
+  mutes_durations:
+    - 1h
+    - 8h
+    - 24h
+    - 168h
+    - 99999h
