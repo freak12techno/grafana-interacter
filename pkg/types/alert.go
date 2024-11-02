@@ -1,6 +1,9 @@
 package types
 
 import (
+	"crypto/md5"
+	"encoding/hex"
+	"fmt"
 	"main/pkg/utils/normalize"
 	"strings"
 	"time"
@@ -33,6 +36,35 @@ type GrafanaAlert struct {
 	State    string            `json:"state"`
 	Value    string            `json:"value"`
 	ActiveAt time.Time         `json:"activeAt"`
+}
+
+func (a GrafanaAlert) GetCallbackHash() string {
+	// Using hash here as Telegram limits callback size to 64 chars
+	// Firstly, need to make sure it's ordered, then convert it to a string
+	// like "label1=value1 label2=value2", then take a md5 hash of it.
+	hash := md5.Sum([]byte(a.SerializeLabels()))
+	return hex.EncodeToString(hash[:])
+}
+
+func (a GrafanaAlert) SerializeLabels() string {
+	// Using hash here as Telegram limits callback size to 64 chars
+	// Firstly, need to make sure it's ordered, then convert it to a string
+	// like "label1=value1 label2=value2", then take a md5 hash of it.
+	keys := make([]string, len(a.Labels))
+	index := 0
+	for key := range a.Labels {
+		keys[index] = key
+		index++
+	}
+
+	slices.Sort(keys)
+
+	labels := make([]string, len(a.Labels))
+	for keyIndex, key := range keys {
+		labels[keyIndex] = fmt.Sprintf("%s=%s", key, a.Labels[key])
+	}
+
+	return strings.Join(labels, " ")
 }
 
 func (a GrafanaAlert) ActiveSince() time.Duration {

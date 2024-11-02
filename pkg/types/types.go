@@ -71,6 +71,22 @@ func QueryMatcherFromKeyValueString(source string) []QueryMatcher {
 	return matchers
 }
 
+func QueryMatcherFromKeyValueMap(source map[string]string) []QueryMatcher {
+	matchers := make([]QueryMatcher, len(source))
+	index := 0
+
+	for key, value := range source {
+		matchers[index] = QueryMatcher{
+			Key:      key,
+			Operator: "=",
+			Value:    value,
+		}
+		index++
+	}
+
+	return matchers
+}
+
 func MatcherFromQueryMatcher(queryMatcher QueryMatcher) (*SilenceMatcher, string) {
 	matcherParsed := &SilenceMatcher{
 		Name:  queryMatcher.Key,

@@ -10,4 +10,6 @@ const (
 	AlertsInOneMessage          = 3
 	GrafanaUnsilencePrefix      = "unsilence_"
 	AlertmanagerUnsilencePrefix = "alertmanager_unsilence_"
+	GrafanaSilencePrefix        = "silence_"
+	AlertmanagerSilencePrefix   = "alertmanager_silence_"
 )

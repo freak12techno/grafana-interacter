@@ -90,21 +90,6 @@ func ParseSilenceFromCommand(query string, sender string) (*types.Silence, strin
 	return ParseSilenceWithDuration(cmd, matchers, sender, duration)
 }
 
-func ParseSilenceFromCallback(query string, sender string) (*types.Silence, string) {
-	matchers := types.QueryMatcherFromKeyValueString(query)
-
-	if matchers[0].Key != "duration" {
-		return nil, "Duration is not provided!"
-	}
-
-	durationMatcher, rest := matchers[0], matchers[1:]
-	duration, err := time.ParseDuration(durationMatcher.Value)
-	if err != nil {
-		return nil, "Invalid duration provided"
-	}
-	return ParseSilenceWithDuration("<callback>", rest, sender, duration)
-}
-
 func ParseSilenceWithDuration(
 	cmd string,
 	matchers []types.QueryMatcher,

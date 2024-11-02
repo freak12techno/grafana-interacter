@@ -107,7 +107,37 @@ func (a *App) HandleListFiringAlerts(c tele.Context) error {
 			return c.Reply(fmt.Sprintf("Error rendering template: %s", renderErr))
 		}
 
-		if sendErr := a.BotReply(c, template); sendErr != nil {
+		menu := &tele.ReplyMarkup{ResizeKeyboard: true}
+
+		rows := make([]tele.Row, 0)
+
+		index := 0
+
+		for _, alert := range batch.GrafanaAlerts {
+			button := menu.Data(
+				fmt.Sprintf("🔇Silence alert #%d", index+1),
+				constants.GrafanaSilencePrefix,
+				"48h "+alert.Alert.GetCallbackHash(),
+			)
+
+			rows = append(rows, menu.Row(button))
+			index += 1
+		}
+
+		for _, alert := range batch.PrometheusAlerts {
+			button := menu.Data(
+				fmt.Sprintf("🔇Silence alert #%d", index+1),
+				constants.AlertmanagerSilencePrefix,
+				"48h "+alert.Alert.GetCallbackHash(),
+			)
+
+			rows = append(rows, menu.Row(button))
+			index += 1
+		}
+
+		menu.Inline(rows...)
+
+		if sendErr := a.BotReply(c, template, menu); sendErr != nil {
 			return err
 		}
 	}

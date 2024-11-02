@@ -81,6 +81,8 @@ func (a *App) Start() {
 	// Callbacks
 	a.Bot.Handle("\f"+constants.GrafanaUnsilencePrefix, a.HandleGrafanaCallbackDeleteSilence)
 	a.Bot.Handle("\f"+constants.AlertmanagerUnsilencePrefix, a.HandleAlertmanagerCallbackDeleteSilence)
+	a.Bot.Handle("\f"+constants.GrafanaSilencePrefix, a.HandleGrafanaCallbackNewSilence)
+	a.Bot.Handle("\f"+constants.AlertmanagerSilencePrefix, a.HandleAlertmanagerCallbackNewSilence)
 
 	a.Logger.Info().Msg("Telegram bot listening")
 
