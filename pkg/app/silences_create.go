@@ -7,7 +7,6 @@ import (
 	"main/pkg/types/render"
 	"main/pkg/utils"
 	"strings"
-	"time"
 
 	tele "gopkg.in/telebot.v3"
 )
@@ -44,6 +43,29 @@ func (a *App) HandleAlertmanagerNewSilence(c tele.Context) error {
 	return a.HandleNewSilence(c, a.Alertmanager, constants.AlertmanagerUnsilencePrefix, silenceInfo)
 }
 
+// func (a *App) HandleAlertmanagerPrepareNewSilenceFromCallback(c tele.Context) error {
+//	a.Logger.Info().
+//		Str("sender", c.Sender().Username).
+//		Msg("Got new prepare Alertmanager silence callback via button")
+//
+//	callback := c.Callback()
+//	a.RemoveKeyboardItemByCallback(c, callback)
+//
+//	groups, err := a.Grafana.GetGrafanaAlertingRules()
+//	if err != nil {
+//		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
+//	}
+//
+//	groups = groups.FilterFiringOrPendingAlertGroups()
+//
+//	silenceInfo, err := a.GenerateSilenceForAlert(c, groups, alertHashToMute, dataSplit[0])
+//	if err != nil {
+//		return c.Reply(err.Error())
+//	}
+//
+//	return c.Reply("Alert was not found!")
+//}
+
 func (a *App) HandleGrafanaCallbackNewSilence(c tele.Context) error {
 	a.Logger.Info().
 		Str("sender", c.Sender().Username).
@@ -57,11 +79,6 @@ func (a *App) HandleGrafanaCallbackNewSilence(c tele.Context) error {
 		return c.Reply("Invalid callback provided!")
 	}
 
-	duration, err := time.ParseDuration(dataSplit[0])
-	if err != nil {
-		return c.Reply("Invalid duration provided!")
-	}
-
 	alertHashToMute := dataSplit[1]
 
 	groups, err := a.Grafana.GetGrafanaAlertingRules()
@@ -69,28 +86,12 @@ func (a *App) HandleGrafanaCallbackNewSilence(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
 	}
 
-	groups = groups.FilterFiringOrPendingAlertGroups()
-
-	for _, group := range groups {
-		for _, rule := range group.Rules {
-			for _, alert := range rule.Alerts {
-				alertHash := alert.GetCallbackHash()
-				if alertHash != alertHashToMute {
-					continue
-				}
-
-				matchers := types.QueryMatcherFromKeyValueMap(alert.Labels)
-				silenceInfo, silenceErr := utils.ParseSilenceWithDuration("callback", matchers, c.Sender().FirstName, duration)
-				if silenceErr != "" {
-					return c.Reply(fmt.Sprintf("Error parsing silence option: %s\n", silenceErr))
-				}
-
-				return a.HandleNewSilence(c, a.Grafana, constants.GrafanaUnsilencePrefix, silenceInfo)
-			}
-		}
+	silenceInfo, err := a.GenerateSilenceForAlert(c, groups, alertHashToMute, dataSplit[0])
+	if err != nil {
+		return c.Reply(err.Error())
 	}
 
-	return c.Reply("Alert was not found!")
+	return a.HandleNewSilence(c, a.Grafana, constants.GrafanaUnsilencePrefix, silenceInfo)
 }
 
 func (a *App) HandleAlertmanagerCallbackNewSilence(c tele.Context) error {
@@ -106,11 +107,6 @@ func (a *App) HandleAlertmanagerCallbackNewSilence(c tele.Context) error {
 		return c.Reply("Invalid callback provided!")
 	}
 
-	duration, err := time.ParseDuration(dataSplit[0])
-	if err != nil {
-		return c.Reply("Invalid duration provided!")
-	}
-
 	alertHashToMute := dataSplit[1]
 
 	groups, err := a.Grafana.GetPrometheusAlertingRules()
@@ -118,28 +114,12 @@ func (a *App) HandleAlertmanagerCallbackNewSilence(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
 	}
 
-	groups = groups.FilterFiringOrPendingAlertGroups()
-
-	for _, group := range groups {
-		for _, rule := range group.Rules {
-			for _, alert := range rule.Alerts {
-				alertHash := alert.GetCallbackHash()
-				if alertHash != alertHashToMute {
-					continue
-				}
-
-				matchers := types.QueryMatcherFromKeyValueMap(alert.Labels)
-				silenceInfo, silenceErr := utils.ParseSilenceWithDuration("callback", matchers, c.Sender().FirstName, duration)
-				if silenceErr != "" {
-					return c.Reply(fmt.Sprintf("Error parsing silence option: %s\n", silenceErr))
-				}
-
-				return a.HandleNewSilence(c, a.Alertmanager, constants.AlertmanagerUnsilencePrefix, silenceInfo)
-			}
-		}
+	silenceInfo, err := a.GenerateSilenceForAlert(c, groups, alertHashToMute, dataSplit[0])
+	if err != nil {
+		return c.Reply(err.Error())
 	}
 
-	return c.Reply("Alert was not found!")
+	return a.HandleNewSilence(c, a.Alertmanager, constants.AlertmanagerUnsilencePrefix, silenceInfo)
 }
 
 func (a *App) HandleNewSilence(
