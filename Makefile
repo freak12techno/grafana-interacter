@@ -9,3 +9,9 @@ install:
 
 lint:
 	golangci-lint run --fix ./...
+
+test:
+	go test -coverprofile cover.out -coverpkg ./... -v ./...
+
+coverage:
+	go tool cover -html=cover.out

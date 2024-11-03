@@ -4,3 +4,4 @@ main
 dist/
 grafana-interacter
 **/.DS_Store
+cover.out
