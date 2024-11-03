@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"io"
 	"main/pkg/config"
+	"main/pkg/constants"
 	"main/pkg/types"
 	"main/pkg/utils"
 	"main/pkg/utils/generic"
@@ -32,6 +33,18 @@ func InitGrafana(config config.GrafanaConfig, logger *zerolog.Logger) *Grafana {
 
 func (g *Grafana) UseAuth() bool {
 	return g.Config.User != "" && g.Config.Password != ""
+}
+
+func (g *Grafana) GetUnsilencePrefix() string {
+	return constants.GrafanaUnsilencePrefix
+}
+
+func (g *Grafana) Name() string {
+	return "Grafana"
+}
+
+func (g *Grafana) Enabled() bool {
+	return true
 }
 
 func (g *Grafana) RenderPanel(panel *types.PanelStruct, qs map[string]string) (io.ReadCloser, error) {

@@ -13,6 +13,9 @@ type SilenceManager interface {
 	CreateSilence(silence Silence) (SilenceCreateResponse, error)
 	GetSilenceMatchingAlerts(silence Silence) ([]AlertmanagerAlert, error)
 	DeleteSilence(silenceID string) error
+	GetUnsilencePrefix() string
+	Name() string
+	Enabled() bool
 }
 
 func GetSilencesWithAlerts(manager SilenceManager) ([]SilenceWithAlerts, error) {

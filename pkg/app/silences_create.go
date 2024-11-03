@@ -11,36 +11,25 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-func (a *App) HandleGrafanaNewSilence(c tele.Context) error {
-	a.Logger.Info().
-		Str("sender", c.Sender().Username).
-		Str("text", c.Text()).
-		Msg("Got new silence query")
+func (a *App) HandleNewSilenceViaCommand(silenceManager types.SilenceManager) func(c tele.Context) error {
+	return func(c tele.Context) error {
+		a.Logger.Info().
+			Str("sender", c.Sender().Username).
+			Str("text", c.Text()).
+			Str("silence_manager", silenceManager.Name()).
+			Msg("Got new silence query")
 
-	silenceInfo, err := utils.ParseSilenceFromCommand(c.Text(), c.Sender().FirstName)
-	if err != "" {
-		return c.Reply(fmt.Sprintf("Error parsing silence option: %s\n", err))
+		if !silenceManager.Enabled() {
+			return c.Reply(silenceManager.Name() + " is disabled.")
+		}
+
+		silenceInfo, err := utils.ParseSilenceFromCommand(c.Text(), c.Sender().FirstName)
+		if err != "" {
+			return c.Reply(fmt.Sprintf("Error parsing silence option: %s\n", err))
+		}
+
+		return a.HandleNewSilenceGeneric(c, silenceManager, silenceInfo)
 	}
-
-	return a.HandleNewSilence(c, a.Grafana, constants.GrafanaUnsilencePrefix, silenceInfo)
-}
-
-func (a *App) HandleAlertmanagerNewSilence(c tele.Context) error {
-	a.Logger.Info().
-		Str("sender", c.Sender().Username).
-		Str("text", c.Text()).
-		Msg("Got new Alertmanager silence query")
-
-	if !a.Alertmanager.Enabled() {
-		return c.Reply("Alertmanager is disabled.")
-	}
-
-	silenceInfo, err := utils.ParseSilenceFromCommand(c.Text(), c.Sender().FirstName)
-	if err != "" {
-		return c.Reply(fmt.Sprintf("Error parsing silence option: %s\n", err))
-	}
-
-	return a.HandleNewSilence(c, a.Alertmanager, constants.AlertmanagerUnsilencePrefix, silenceInfo)
 }
 
 func (a *App) HandleGrafanaPrepareNewSilenceFromCallback(c tele.Context) error {
@@ -158,7 +147,7 @@ func (a *App) HandleGrafanaCallbackNewSilence(c tele.Context) error {
 		return c.Reply(err.Error())
 	}
 
-	return a.HandleNewSilence(c, a.Grafana, constants.GrafanaUnsilencePrefix, silenceInfo)
+	return a.HandleNewSilenceGeneric(c, a.Grafana, silenceInfo)
 }
 
 func (a *App) HandleAlertmanagerCallbackNewSilence(c tele.Context) error {
@@ -186,13 +175,12 @@ func (a *App) HandleAlertmanagerCallbackNewSilence(c tele.Context) error {
 		return c.Reply(err.Error())
 	}
 
-	return a.HandleNewSilence(c, a.Alertmanager, constants.AlertmanagerUnsilencePrefix, silenceInfo)
+	return a.HandleNewSilenceGeneric(c, a.Alertmanager, silenceInfo)
 }
 
-func (a *App) HandleNewSilence(
+func (a *App) HandleNewSilenceGeneric(
 	c tele.Context,
 	silenceManager types.SilenceManager,
-	unsilencePrefix string,
 	silenceInfo *types.Silence,
 ) error {
 	silenceResponse, silenceErr := silenceManager.CreateSilence(*silenceInfo)
@@ -227,7 +215,7 @@ func (a *App) HandleNewSilence(
 	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
 	menu.Inline(menu.Row(menu.Data(
 		"❌Unsilence",
-		unsilencePrefix,
+		silenceManager.GetUnsilencePrefix(),
 		silence.ID,
 	)))
 

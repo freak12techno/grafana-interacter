@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"main/pkg/config"
+	"main/pkg/constants"
 	"main/pkg/types"
 	"net/http"
 
@@ -27,6 +28,14 @@ func InitAlertmanager(config config.AlertmanagerConfig, logger *zerolog.Logger) 
 
 func (g *Alertmanager) Enabled() bool {
 	return g.Config.User != "" && g.Config.Password != ""
+}
+
+func (g *Alertmanager) Name() string {
+	return "Alertmanager"
+}
+
+func (g *Alertmanager) GetUnsilencePrefix() string {
+	return constants.AlertmanagerUnsilencePrefix
 }
 
 func (g *Alertmanager) CreateSilence(silence types.Silence) (types.SilenceCreateResponse, error) {
