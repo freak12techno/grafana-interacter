@@ -86,9 +86,10 @@ func (a *App) Start() {
 	// Callbacks
 	a.Bot.Handle("\f"+constants.GrafanaUnsilencePrefix, a.HandleGrafanaCallbackDeleteSilence)
 	a.Bot.Handle("\f"+constants.AlertmanagerUnsilencePrefix, a.HandleAlertmanagerCallbackDeleteSilence)
-	a.Bot.Handle("\f"+constants.AlertmanagerPrepareSilencePrefix, a.HandleAlertmanagerPrepareNewSilenceFromCallback)
-	a.Bot.Handle("\f"+constants.GrafanaSilencePrefix, a.HandleGrafanaCallbackNewSilence)
-	a.Bot.Handle("\f"+constants.AlertmanagerSilencePrefix, a.HandleAlertmanagerCallbackNewSilence)
+	a.Bot.Handle("\f"+constants.GrafanaPrepareSilencePrefix, a.HandlePrepareNewSilenceFromCallback(a.Grafana, a.Grafana))
+	a.Bot.Handle("\f"+constants.AlertmanagerPrepareSilencePrefix, a.HandlePrepareNewSilenceFromCallback(a.Alertmanager, a.Grafana))
+	a.Bot.Handle("\f"+constants.GrafanaSilencePrefix, a.HandleCallbackNewSilence(a.Grafana, a.Grafana))
+	a.Bot.Handle("\f"+constants.AlertmanagerSilencePrefix, a.HandleCallbackNewSilence(a.Alertmanager, a.Prometheus))
 
 	a.Logger.Info().Msg("Telegram bot listening")
 

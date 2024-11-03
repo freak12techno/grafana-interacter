@@ -38,6 +38,10 @@ func (g *Alertmanager) GetUnsilencePrefix() string {
 	return constants.AlertmanagerUnsilencePrefix
 }
 
+func (g *Alertmanager) GetMutesDurations() []string {
+	return g.Config.MutesDurations
+}
+
 func (g *Alertmanager) CreateSilence(silence types.Silence) (types.SilenceCreateResponse, error) {
 	url := g.RelativeLink("/api/v2/silences")
 	res := types.SilenceCreateResponse{}

@@ -47,6 +47,10 @@ func (g *Grafana) Enabled() bool {
 	return true
 }
 
+func (g *Grafana) GetMutesDurations() []string {
+	return g.Config.MutesDurations
+}
+
 func (g *Grafana) RenderPanel(panel *types.PanelStruct, qs map[string]string) (io.ReadCloser, error) {
 	params := generic.MergeMaps(g.Config.RenderOptions, qs)
 	params["panelId"] = strconv.Itoa(panel.PanelID)

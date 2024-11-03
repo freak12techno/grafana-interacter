@@ -16,6 +16,7 @@ type SilenceManager interface {
 	GetUnsilencePrefix() string
 	Name() string
 	Enabled() bool
+	GetMutesDurations() []string
 }
 
 func GetSilencesWithAlerts(manager SilenceManager) ([]SilenceWithAlerts, error) {

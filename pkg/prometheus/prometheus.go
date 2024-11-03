@@ -32,7 +32,7 @@ func (p *Prometheus) Enabled() bool {
 	return p.Config != nil
 }
 
-func (p *Prometheus) AlertSourceName() string {
+func (p *Prometheus) Name() string {
 	return "Prometheus"
 }
 
