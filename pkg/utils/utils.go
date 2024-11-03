@@ -83,7 +83,7 @@ func ParseSilenceFromCommand(query string, sender string) (*types.Silence, strin
 
 	duration, err := time.ParseDuration(durationString)
 	if err != nil {
-		return nil, "Invalid duration provided"
+		return nil, "Invalid duration provided!"
 	}
 
 	matchers := types.QueryMatcherFromKeyValueString(rest)
@@ -149,7 +149,7 @@ func ParseSilenceWithDuration(
 func StrToFloat64(s string) float64 {
 	f, err := strconv.ParseFloat(s, 64)
 	if err != nil {
-		logger.GetDefaultLogger().Fatal().Err(err).Str("value", s).Msg("Could not parse float")
+		logger.GetDefaultLogger().Panic().Err(err).Str("value", s).Msg("Could not parse float")
 	}
 
 	return f
