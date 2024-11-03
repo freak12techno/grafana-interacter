@@ -92,7 +92,7 @@ func QueryMatcherFromKeyValueMap(source map[string]string) []QueryMatcher {
 	return matchers
 }
 
-func MatcherFromQueryMatcher(queryMatcher QueryMatcher) (*SilenceMatcher, string) {
+func MatcherFromQueryMatcher(queryMatcher QueryMatcher) *SilenceMatcher {
 	matcherParsed := &SilenceMatcher{
 		Name:  queryMatcher.Key,
 		Value: queryMatcher.Value,
@@ -111,11 +111,9 @@ func MatcherFromQueryMatcher(queryMatcher QueryMatcher) (*SilenceMatcher, string
 	case constants.SilenceMatcherEqual:
 		matcherParsed.IsEqual = true
 		matcherParsed.IsRegex = false
-	default:
-		return nil, "Got unexpected operator: " + queryMatcher.Operator
 	}
 
-	return matcherParsed, ""
+	return matcherParsed
 }
 
 func MaybeRemoveQuotes(source string) string {
