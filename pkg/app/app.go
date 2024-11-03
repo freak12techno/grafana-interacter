@@ -6,6 +6,7 @@ import (
 	"main/pkg/constants"
 	grafanaPkg "main/pkg/grafana"
 	loggerPkg "main/pkg/logger"
+	prometheusPkg "main/pkg/prometheus"
 	"main/pkg/templates"
 	"strings"
 	"time"
@@ -21,6 +22,7 @@ type App struct {
 	Config          *configPkg.Config
 	Grafana         *grafanaPkg.Grafana
 	Alertmanager    *alertmanagerPkg.Alertmanager
+	Prometheus      *prometheusPkg.Prometheus
 	TemplateManager *templates.TemplateManager
 	Logger          *zerolog.Logger
 	Bot             *tele.Bot
@@ -33,6 +35,7 @@ func NewApp(config *configPkg.Config, version string) *App {
 	logger := loggerPkg.GetLogger(config.Log)
 	grafana := grafanaPkg.InitGrafana(config.Grafana, logger)
 	alertmanager := alertmanagerPkg.InitAlertmanager(config.Alertmanager, logger)
+	prometheus := prometheusPkg.InitPrometheus(config.Prometheus, logger)
 	templateManager := templates.NewTemplateManager(timezone)
 
 	bot, err := tele.NewBot(tele.Settings{
@@ -56,6 +59,7 @@ func NewApp(config *configPkg.Config, version string) *App {
 		Logger:          logger,
 		Grafana:         grafana,
 		Alertmanager:    alertmanager,
+		Prometheus:      prometheus,
 		TemplateManager: templateManager,
 		Bot:             bot,
 		Version:         version,

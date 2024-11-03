@@ -51,7 +51,7 @@ func (a *App) HandleGrafanaPrepareNewSilenceFromCallback(c tele.Context) error {
 	callback := c.Callback()
 	a.RemoveKeyboardItemByCallback(c, callback)
 
-	groups, err := a.Grafana.GetGrafanaAlertingRules()
+	groups, err := a.Grafana.GetAlertingRules()
 	if err != nil {
 		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
 	}
@@ -96,7 +96,7 @@ func (a *App) HandleAlertmanagerPrepareNewSilenceFromCallback(c tele.Context) er
 	callback := c.Callback()
 	a.RemoveKeyboardItemByCallback(c, callback)
 
-	groups, err := a.Grafana.GetPrometheusAlertingRules()
+	groups, err := a.Prometheus.GetAlertingRules()
 	if err != nil {
 		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
 	}
@@ -148,7 +148,7 @@ func (a *App) HandleGrafanaCallbackNewSilence(c tele.Context) error {
 
 	alertHashToMute := dataSplit[1]
 
-	groups, err := a.Grafana.GetGrafanaAlertingRules()
+	groups, err := a.Grafana.GetAlertingRules()
 	if err != nil {
 		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
 	}
@@ -176,7 +176,7 @@ func (a *App) HandleAlertmanagerCallbackNewSilence(c tele.Context) error {
 
 	alertHashToMute := dataSplit[1]
 
-	groups, err := a.Grafana.GetPrometheusAlertingRules()
+	groups, err := a.Prometheus.GetAlertingRules()
 	if err != nil {
 		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
 	}
