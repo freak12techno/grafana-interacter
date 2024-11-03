@@ -39,6 +39,10 @@ func (g *Grafana) GetUnsilencePrefix() string {
 	return constants.GrafanaUnsilencePrefix
 }
 
+func (g *Grafana) GetSilencePrefix() string {
+	return constants.GrafanaSilencePrefix
+}
+
 func (g *Grafana) Name() string {
 	return "Grafana"
 }

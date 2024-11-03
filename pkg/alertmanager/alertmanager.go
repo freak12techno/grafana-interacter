@@ -38,6 +38,10 @@ func (g *Alertmanager) GetUnsilencePrefix() string {
 	return constants.AlertmanagerUnsilencePrefix
 }
 
+func (g *Alertmanager) GetSilencePrefix() string {
+	return constants.AlertmanagerSilencePrefix
+}
+
 func (g *Alertmanager) GetMutesDurations() []string {
 	return g.Config.MutesDurations
 }

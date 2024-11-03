@@ -74,7 +74,7 @@ func (a *App) HandlePrepareNewSilenceFromCallback(
 		for index, mute := range mutesDurations {
 			rows[index] = menu.Row(menu.Data(
 				fmt.Sprintf("⌛ Silence for %s", mute),
-				silenceManager.GetUnsilencePrefix(),
+				silenceManager.GetSilencePrefix(),
 				mute+" "+callback.Data,
 			))
 		}
