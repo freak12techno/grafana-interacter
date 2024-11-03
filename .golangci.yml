@@ -43,3 +43,4 @@ linters:
     - goimports
     - mnd
     - perfsprint
+    - testpackage
