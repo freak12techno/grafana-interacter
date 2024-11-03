@@ -9,63 +9,43 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-func (a *App) HandleGrafanaDeleteSilence(c tele.Context) error {
-	a.Logger.Info().
-		Str("sender", c.Sender().Username).
-		Str("text", c.Text()).
-		Msg("Got new delete silence query")
+func (a *App) HandleDeleteSilenceViaCommand(silenceManager types.SilenceManager) func(c tele.Context) error {
+	return func(c tele.Context) error {
+		a.Logger.Info().
+			Str("sender", c.Sender().Username).
+			Str("text", c.Text()).
+			Str("silence_manager", silenceManager.Name()).
+			Msg("Got new delete silence query via command")
 
-	args := strings.SplitN(c.Text(), " ", 2)
+		if !silenceManager.Enabled() {
+			return c.Reply(silenceManager.Name() + " is disabled.")
+		}
 
-	if len(args) <= 1 {
-		return c.Reply(fmt.Sprintf("Usage: %s <silence ID or labels>", args[0]))
+		args := strings.SplitN(c.Text(), " ", 2)
+
+		if len(args) <= 1 {
+			return c.Reply(fmt.Sprintf("Usage: %s <silence ID or labels>", args[0]))
+		}
+
+		return a.HandleDeleteSilenceGeneric(c, silenceManager, args[1])
 	}
-
-	return a.HandleDeleteSilence(c, a.Grafana, args[1])
 }
 
-func (a *App) HandleAlertmanagerDeleteSilence(c tele.Context) error {
-	a.Logger.Info().
-		Str("sender", c.Sender().Username).
-		Str("text", c.Text()).
-		Msg("Got new Alertmanager delete silence query")
+func (a *App) HandleCallbackDeleteSilence(silenceManager types.SilenceManager) func(c tele.Context) error {
+	return func(c tele.Context) error {
+		a.Logger.Info().
+			Str("sender", c.Sender().Username).
+			Str("silence_manager", silenceManager.Name()).
+			Msg("Got new delete silence callback via button")
 
-	if !a.Alertmanager.Enabled() {
-		return c.Reply("Alertmanager is disabled.")
+		callback := c.Callback()
+
+		a.RemoveKeyboardItemByCallback(c, callback)
+		return a.HandleDeleteSilenceGeneric(c, silenceManager, callback.Data)
 	}
-
-	args := strings.SplitN(c.Text(), " ", 2)
-
-	if len(args) <= 1 {
-		return c.Reply(fmt.Sprintf("Usage: %s <silence ID or labels>", args[0]))
-	}
-
-	return a.HandleDeleteSilence(c, a.Alertmanager, args[1])
 }
 
-func (a *App) HandleGrafanaCallbackDeleteSilence(c tele.Context) error {
-	a.Logger.Info().
-		Str("sender", c.Sender().Username).
-		Msg("Got new delete silence callback via button")
-
-	callback := c.Callback()
-
-	a.RemoveKeyboardItemByCallback(c, callback)
-	return a.HandleDeleteSilence(c, a.Grafana, callback.Data)
-}
-
-func (a *App) HandleAlertmanagerCallbackDeleteSilence(c tele.Context) error {
-	a.Logger.Info().
-		Str("sender", c.Sender().Username).
-		Msg("Got new delete Alertmanager silence callback via button")
-
-	callback := c.Callback()
-
-	a.RemoveKeyboardItemByCallback(c, callback)
-	return a.HandleDeleteSilence(c, a.Alertmanager, callback.Data)
-}
-
-func (a *App) HandleDeleteSilence(
+func (a *App) HandleDeleteSilenceGeneric(
 	c tele.Context,
 	silenceManager types.SilenceManager,
 	silenceID string,
