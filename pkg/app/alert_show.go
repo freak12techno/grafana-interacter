@@ -21,7 +21,7 @@ func (a *App) HandleSingleAlert(c tele.Context) error {
 		return c.Reply("Usage: /alert <alert name>")
 	}
 
-	rules, err := a.Grafana.GetAllAlertingRules()
+	rules, err := a.GetAllAlertingRules()
 	if err != nil {
 		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
 	}

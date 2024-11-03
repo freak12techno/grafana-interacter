@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"io"
 	"main/pkg/config"
+	"main/pkg/constants"
 	"main/pkg/types"
 	"main/pkg/utils"
 	"main/pkg/utils/generic"
@@ -32,6 +33,26 @@ func InitGrafana(config config.GrafanaConfig, logger *zerolog.Logger) *Grafana {
 
 func (g *Grafana) UseAuth() bool {
 	return g.Config.User != "" && g.Config.Password != ""
+}
+
+func (g *Grafana) GetUnsilencePrefix() string {
+	return constants.GrafanaUnsilencePrefix
+}
+
+func (g *Grafana) GetSilencePrefix() string {
+	return constants.GrafanaSilencePrefix
+}
+
+func (g *Grafana) Name() string {
+	return "Grafana"
+}
+
+func (g *Grafana) Enabled() bool {
+	return true
+}
+
+func (g *Grafana) GetMutesDurations() []string {
+	return g.Config.MutesDurations
 }
 
 func (g *Grafana) RenderPanel(panel *types.PanelStruct, qs map[string]string) (io.ReadCloser, error) {
@@ -141,7 +162,7 @@ func (g *Grafana) GetDatasources() ([]types.GrafanaDatasource, error) {
 	return datasources, err
 }
 
-func (g *Grafana) GetGrafanaAlertingRules() (types.GrafanaAlertGroups, error) {
+func (g *Grafana) GetAlertingRules() (types.GrafanaAlertGroups, error) {
 	rules := types.GrafanaAlertRulesResponse{}
 	url := g.RelativeLink("/api/prometheus/grafana/api/v1/rules")
 	err := g.QueryAndDecode(url, &rules)
@@ -150,52 +171,6 @@ func (g *Grafana) GetGrafanaAlertingRules() (types.GrafanaAlertGroups, error) {
 	}
 
 	return rules.Data.Groups, nil
-}
-
-func (g *Grafana) GetDatasourceAlertingRules(datasourceUID string) ([]types.GrafanaAlertGroup, error) {
-	rules := types.GrafanaAlertRulesResponse{}
-	url := g.RelativeLink(fmt.Sprintf("/api/prometheus/%s/api/v1/rules", datasourceUID))
-	err := g.QueryAndDecode(url, &rules)
-	if err != nil {
-		return nil, err
-	}
-
-	return rules.Data.Groups, nil
-}
-
-func (g *Grafana) GetPrometheusAlertingRules() (types.GrafanaAlertGroups, error) {
-	datasources, err := g.GetDatasources()
-	if err != nil {
-		return nil, err
-	}
-
-	groups := []types.GrafanaAlertGroup{}
-	for _, ds := range datasources {
-		if ds.Type == "prometheus" {
-			resp, err := g.GetDatasourceAlertingRules(ds.UID)
-			if err != nil {
-				return nil, err
-			}
-
-			groups = append(groups, resp...)
-		}
-	}
-
-	return groups, err
-}
-
-func (g *Grafana) GetAllAlertingRules() (types.GrafanaAlertGroups, error) {
-	grafanaRules, err := g.GetGrafanaAlertingRules()
-	if err != nil {
-		return nil, err
-	}
-
-	prometheusRules, err := g.GetPrometheusAlertingRules()
-	if err != nil {
-		return nil, err
-	}
-
-	return append(grafanaRules, prometheusRules...), nil
 }
 
 func (g *Grafana) CreateSilence(silence types.Silence) (types.SilenceCreateResponse, error) {

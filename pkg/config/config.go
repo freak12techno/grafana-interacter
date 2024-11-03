@@ -11,6 +11,7 @@ type Config struct {
 	Telegram     TelegramConfig     `yaml:"telegram"`
 	Grafana      GrafanaConfig      `yaml:"grafana"`
 	Alertmanager AlertmanagerConfig `yaml:"alertmanager"`
+	Prometheus   *PrometheusConfig  `yaml:"prometheus"`
 }
 
 type LogConfig struct {
@@ -30,6 +31,12 @@ type GrafanaConfig struct {
 	Token          string            `yaml:"token"`
 	RenderOptions  map[string]string `default:"{\"orgId\":\"1\",\"from\":\"now\",\"to\":\"now-30m\"}" yaml:"render_options"`
 	MutesDurations []string          `default:"[\"1h\",\"8h\",\"24h\",\"168h\",\"99999h\"]"           yaml:"mutes_durations"`
+}
+
+type PrometheusConfig struct {
+	URL      string `default:"http://localhost:9090" yaml:"url"`
+	User     string `default:"admin"                 yaml:"user"`
+	Password string `default:"admin"                 yaml:"password"`
 }
 
 type AlertmanagerConfig struct {

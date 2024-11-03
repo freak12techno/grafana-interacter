@@ -66,3 +66,21 @@ func (a *App) GenerateSilenceForAlert(
 
 	return silenceInfo, nil
 }
+
+func (a *App) GetAllAlertingRules() (types.GrafanaAlertGroups, error) {
+	rules, err := a.Grafana.GetAlertingRules()
+	if err != nil {
+		return nil, err
+	}
+
+	if a.Prometheus.Enabled() {
+		prometheusRules, prometheusErr := a.Prometheus.GetAlertingRules()
+		if prometheusErr != nil {
+			return nil, prometheusErr
+		}
+
+		rules = append(rules, prometheusRules...)
+	}
+
+	return rules, nil
+}

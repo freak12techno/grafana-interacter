@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"main/pkg/constants"
 	"main/pkg/types"
 	"main/pkg/types/render"
 	"main/pkg/utils"
@@ -11,188 +10,118 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-func (a *App) HandleGrafanaNewSilence(c tele.Context) error {
-	a.Logger.Info().
-		Str("sender", c.Sender().Username).
-		Str("text", c.Text()).
-		Msg("Got new silence query")
+func (a *App) HandleNewSilenceViaCommand(silenceManager types.SilenceManager) func(c tele.Context) error {
+	return func(c tele.Context) error {
+		a.Logger.Info().
+			Str("sender", c.Sender().Username).
+			Str("text", c.Text()).
+			Str("silence_manager", silenceManager.Name()).
+			Msg("Got new silence query")
 
-	silenceInfo, err := utils.ParseSilenceFromCommand(c.Text(), c.Sender().FirstName)
-	if err != "" {
-		return c.Reply(fmt.Sprintf("Error parsing silence option: %s\n", err))
+		if !silenceManager.Enabled() {
+			return c.Reply(silenceManager.Name() + " is disabled.")
+		}
+
+		silenceInfo, err := utils.ParseSilenceFromCommand(c.Text(), c.Sender().FirstName)
+		if err != "" {
+			return c.Reply(fmt.Sprintf("Error parsing silence option: %s\n", err))
+		}
+
+		return a.HandleNewSilenceGeneric(c, silenceManager, silenceInfo)
 	}
-
-	return a.HandleNewSilence(c, a.Grafana, constants.GrafanaUnsilencePrefix, silenceInfo)
 }
 
-func (a *App) HandleAlertmanagerNewSilence(c tele.Context) error {
-	a.Logger.Info().
-		Str("sender", c.Sender().Username).
-		Str("text", c.Text()).
-		Msg("Got new Alertmanager silence query")
+func (a *App) HandlePrepareNewSilenceFromCallback(
+	silenceManager types.SilenceManager,
+	alertSource types.AlertSource,
+) func(c tele.Context) error {
+	return func(c tele.Context) error {
+		a.Logger.Info().
+			Str("sender", c.Sender().Username).
+			Str("silence_manager", silenceManager.Name()).
+			Str("alert_source", alertSource.Name()).
+			Msg("Got new prepare silence callback via button")
 
-	if !a.Alertmanager.Enabled() {
-		return c.Reply("Alertmanager is disabled.")
+		callback := c.Callback()
+		a.RemoveKeyboardItemByCallback(c, callback)
+
+		groups, err := alertSource.GetAlertingRules()
+		if err != nil {
+			return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
+		}
+
+		groups = groups.FilterFiringOrPendingAlertGroups()
+		labels, found := groups.FindLabelsByHash(callback.Data)
+		if !found {
+			return c.Reply("Alert was not found!")
+		}
+
+		matchers := types.QueryMatcherFromKeyValueMap(labels)
+		template, renderErr := a.TemplateManager.Render("silence_prepare_create", render.RenderStruct{
+			Grafana:      a.Grafana,
+			Alertmanager: a.Alertmanager,
+			Data:         matchers,
+		})
+		if renderErr != nil {
+			a.Logger.Error().Err(renderErr).Msg("Error rendering silence_prepare_create template")
+			return c.Reply(fmt.Sprintf("Error rendering template: %s", renderErr))
+		}
+
+		menu := &tele.ReplyMarkup{ResizeKeyboard: true}
+		mutesDurations := silenceManager.GetMutesDurations()
+		rows := make([]tele.Row, len(mutesDurations))
+
+		for index, mute := range mutesDurations {
+			rows[index] = menu.Row(menu.Data(
+				fmt.Sprintf("⌛ Silence for %s", mute),
+				silenceManager.GetSilencePrefix(),
+				mute+" "+callback.Data,
+			))
+		}
+
+		menu.Inline(rows...)
+		return a.BotReply(c, template, menu)
 	}
-
-	silenceInfo, err := utils.ParseSilenceFromCommand(c.Text(), c.Sender().FirstName)
-	if err != "" {
-		return c.Reply(fmt.Sprintf("Error parsing silence option: %s\n", err))
-	}
-
-	return a.HandleNewSilence(c, a.Alertmanager, constants.AlertmanagerUnsilencePrefix, silenceInfo)
 }
 
-func (a *App) HandleGrafanaPrepareNewSilenceFromCallback(c tele.Context) error {
-	a.Logger.Info().
-		Str("sender", c.Sender().Username).
-		Msg("Got new prepare Grafana silence callback via button")
+func (a *App) HandleCallbackNewSilence(
+	silenceManager types.SilenceManager,
+	alertSource types.AlertSource,
+) func(c tele.Context) error {
+	return func(c tele.Context) error {
+		a.Logger.Info().
+			Str("sender", c.Sender().Username).
+			Str("silence_manager", silenceManager.Name()).
+			Str("alert_source", alertSource.Name()).
+			Msg("Got new create silence callback via button")
 
-	callback := c.Callback()
-	a.RemoveKeyboardItemByCallback(c, callback)
+		callback := c.Callback()
+		a.RemoveKeyboardItemByCallback(c, callback)
 
-	groups, err := a.Grafana.GetGrafanaAlertingRules()
-	if err != nil {
-		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
+		dataSplit := strings.SplitN(callback.Data, " ", 2)
+		if len(dataSplit) != 2 {
+			return c.Reply("Invalid callback provided!")
+		}
+
+		alertHashToMute := dataSplit[1]
+
+		groups, err := alertSource.GetAlertingRules()
+		if err != nil {
+			return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
+		}
+
+		silenceInfo, err := a.GenerateSilenceForAlert(c, groups, alertHashToMute, dataSplit[0])
+		if err != nil {
+			return c.Reply(err.Error())
+		}
+
+		return a.HandleNewSilenceGeneric(c, silenceManager, silenceInfo)
 	}
-
-	groups = groups.FilterFiringOrPendingAlertGroups()
-	labels, found := groups.FindLabelsByHash(callback.Data)
-	if !found {
-		return c.Reply("Alert was not found!")
-	}
-
-	matchers := types.QueryMatcherFromKeyValueMap(labels)
-	template, renderErr := a.TemplateManager.Render("silence_prepare_create", render.RenderStruct{
-		Grafana:      a.Grafana,
-		Alertmanager: a.Alertmanager,
-		Data:         matchers,
-	})
-	if renderErr != nil {
-		a.Logger.Error().Err(renderErr).Msg("Error rendering silence_prepare_create template")
-		return c.Reply(fmt.Sprintf("Error rendering template: %s", renderErr))
-	}
-
-	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
-	rows := make([]tele.Row, len(a.Config.Grafana.MutesDurations))
-
-	for index, mute := range a.Config.Grafana.MutesDurations {
-		rows[index] = menu.Row(menu.Data(
-			fmt.Sprintf("⌛ Silence for %s", mute),
-			constants.GrafanaSilencePrefix,
-			mute+" "+callback.Data,
-		))
-	}
-
-	menu.Inline(rows...)
-	return a.BotReply(c, template, menu)
 }
 
-func (a *App) HandleAlertmanagerPrepareNewSilenceFromCallback(c tele.Context) error {
-	a.Logger.Info().
-		Str("sender", c.Sender().Username).
-		Msg("Got new prepare Alertmanager silence callback via button")
-
-	callback := c.Callback()
-	a.RemoveKeyboardItemByCallback(c, callback)
-
-	groups, err := a.Grafana.GetPrometheusAlertingRules()
-	if err != nil {
-		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
-	}
-
-	groups = groups.FilterFiringOrPendingAlertGroups()
-	labels, found := groups.FindLabelsByHash(callback.Data)
-	if !found {
-		return c.Reply("Alert was not found!")
-	}
-
-	matchers := types.QueryMatcherFromKeyValueMap(labels)
-	template, renderErr := a.TemplateManager.Render("silence_prepare_create", render.RenderStruct{
-		Grafana:      a.Grafana,
-		Alertmanager: a.Alertmanager,
-		Data:         matchers,
-	})
-	if renderErr != nil {
-		a.Logger.Error().Err(renderErr).Msg("Error rendering silence_prepare_create template")
-		return c.Reply(fmt.Sprintf("Error rendering template: %s", renderErr))
-	}
-
-	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
-	rows := make([]tele.Row, len(a.Config.Alertmanager.MutesDurations))
-
-	for index, mute := range a.Config.Alertmanager.MutesDurations {
-		rows[index] = menu.Row(menu.Data(
-			fmt.Sprintf("⌛ Silence for %s", mute),
-			constants.AlertmanagerSilencePrefix,
-			mute+" "+callback.Data,
-		))
-	}
-
-	menu.Inline(rows...)
-	return a.BotReply(c, template, menu)
-}
-
-func (a *App) HandleGrafanaCallbackNewSilence(c tele.Context) error {
-	a.Logger.Info().
-		Str("sender", c.Sender().Username).
-		Msg("Got new create Grafana silence callback via button")
-
-	callback := c.Callback()
-	a.RemoveKeyboardItemByCallback(c, callback)
-
-	dataSplit := strings.SplitN(callback.Data, " ", 2)
-	if len(dataSplit) != 2 {
-		return c.Reply("Invalid callback provided!")
-	}
-
-	alertHashToMute := dataSplit[1]
-
-	groups, err := a.Grafana.GetGrafanaAlertingRules()
-	if err != nil {
-		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
-	}
-
-	silenceInfo, err := a.GenerateSilenceForAlert(c, groups, alertHashToMute, dataSplit[0])
-	if err != nil {
-		return c.Reply(err.Error())
-	}
-
-	return a.HandleNewSilence(c, a.Grafana, constants.GrafanaUnsilencePrefix, silenceInfo)
-}
-
-func (a *App) HandleAlertmanagerCallbackNewSilence(c tele.Context) error {
-	a.Logger.Info().
-		Str("sender", c.Sender().Username).
-		Msg("Got new create Alertmanager silence callback via button")
-
-	callback := c.Callback()
-	a.RemoveKeyboardItemByCallback(c, callback)
-
-	dataSplit := strings.SplitN(callback.Data, " ", 2)
-	if len(dataSplit) != 2 {
-		return c.Reply("Invalid callback provided!")
-	}
-
-	alertHashToMute := dataSplit[1]
-
-	groups, err := a.Grafana.GetPrometheusAlertingRules()
-	if err != nil {
-		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
-	}
-
-	silenceInfo, err := a.GenerateSilenceForAlert(c, groups, alertHashToMute, dataSplit[0])
-	if err != nil {
-		return c.Reply(err.Error())
-	}
-
-	return a.HandleNewSilence(c, a.Alertmanager, constants.AlertmanagerUnsilencePrefix, silenceInfo)
-}
-
-func (a *App) HandleNewSilence(
+func (a *App) HandleNewSilenceGeneric(
 	c tele.Context,
 	silenceManager types.SilenceManager,
-	unsilencePrefix string,
 	silenceInfo *types.Silence,
 ) error {
 	silenceResponse, silenceErr := silenceManager.CreateSilence(*silenceInfo)
@@ -227,7 +156,7 @@ func (a *App) HandleNewSilence(
 	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
 	menu.Inline(menu.Row(menu.Data(
 		"❌Unsilence",
-		unsilencePrefix,
+		silenceManager.GetUnsilencePrefix(),
 		silence.ID,
 	)))
 

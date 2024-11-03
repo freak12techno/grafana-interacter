@@ -6,6 +6,7 @@ import (
 	"main/pkg/constants"
 	grafanaPkg "main/pkg/grafana"
 	loggerPkg "main/pkg/logger"
+	prometheusPkg "main/pkg/prometheus"
 	"main/pkg/templates"
 	"strings"
 	"time"
@@ -21,6 +22,7 @@ type App struct {
 	Config          *configPkg.Config
 	Grafana         *grafanaPkg.Grafana
 	Alertmanager    *alertmanagerPkg.Alertmanager
+	Prometheus      *prometheusPkg.Prometheus
 	TemplateManager *templates.TemplateManager
 	Logger          *zerolog.Logger
 	Bot             *tele.Bot
@@ -33,6 +35,7 @@ func NewApp(config *configPkg.Config, version string) *App {
 	logger := loggerPkg.GetLogger(config.Log)
 	grafana := grafanaPkg.InitGrafana(config.Grafana, logger)
 	alertmanager := alertmanagerPkg.InitAlertmanager(config.Alertmanager, logger)
+	prometheus := prometheusPkg.InitPrometheus(config.Prometheus, logger)
 	templateManager := templates.NewTemplateManager(timezone)
 
 	bot, err := tele.NewBot(tele.Settings{
@@ -56,6 +59,7 @@ func NewApp(config *configPkg.Config, version string) *App {
 		Logger:          logger,
 		Grafana:         grafana,
 		Alertmanager:    alertmanager,
+		Prometheus:      prometheus,
 		TemplateManager: templateManager,
 		Bot:             bot,
 		Version:         version,
@@ -72,19 +76,20 @@ func (a *App) Start() {
 	a.Bot.Handle("/alerts", a.HandleListAlerts)
 	a.Bot.Handle("/firing", a.HandleListFiringAlerts)
 	a.Bot.Handle("/alert", a.HandleSingleAlert)
-	a.Bot.Handle("/silences", a.HandleGrafanaListSilences)
-	a.Bot.Handle("/silence", a.HandleGrafanaNewSilence)
-	a.Bot.Handle("/unsilence", a.HandleGrafanaDeleteSilence)
-	a.Bot.Handle("/alertmanager_silences", a.HandleAlertmanagerListSilences)
-	a.Bot.Handle("/alertmanager_silence", a.HandleAlertmanagerNewSilence)
-	a.Bot.Handle("/alertmanager_unsilence", a.HandleAlertmanagerDeleteSilence)
+	a.Bot.Handle("/silences", a.HandleListSilences(a.Grafana))
+	a.Bot.Handle("/silence", a.HandleNewSilenceViaCommand(a.Grafana))
+	a.Bot.Handle("/unsilence", a.HandleDeleteSilenceViaCommand(a.Grafana))
+	a.Bot.Handle("/alertmanager_silences", a.HandleListSilences(a.Alertmanager))
+	a.Bot.Handle("/alertmanager_silence", a.HandleNewSilenceViaCommand(a.Alertmanager))
+	a.Bot.Handle("/alertmanager_unsilence", a.HandleDeleteSilenceViaCommand(a.Alertmanager))
 
 	// Callbacks
-	a.Bot.Handle("\f"+constants.GrafanaUnsilencePrefix, a.HandleGrafanaCallbackDeleteSilence)
-	a.Bot.Handle("\f"+constants.AlertmanagerUnsilencePrefix, a.HandleAlertmanagerCallbackDeleteSilence)
-	a.Bot.Handle("\f"+constants.AlertmanagerPrepareSilencePrefix, a.HandleAlertmanagerPrepareNewSilenceFromCallback)
-	a.Bot.Handle("\f"+constants.GrafanaSilencePrefix, a.HandleGrafanaCallbackNewSilence)
-	a.Bot.Handle("\f"+constants.AlertmanagerSilencePrefix, a.HandleAlertmanagerCallbackNewSilence)
+	a.Bot.Handle("\f"+constants.GrafanaUnsilencePrefix, a.HandleCallbackDeleteSilence(a.Grafana))
+	a.Bot.Handle("\f"+constants.AlertmanagerUnsilencePrefix, a.HandleCallbackDeleteSilence(a.Alertmanager))
+	a.Bot.Handle("\f"+constants.GrafanaPrepareSilencePrefix, a.HandlePrepareNewSilenceFromCallback(a.Grafana, a.Grafana))
+	a.Bot.Handle("\f"+constants.AlertmanagerPrepareSilencePrefix, a.HandlePrepareNewSilenceFromCallback(a.Alertmanager, a.Prometheus))
+	a.Bot.Handle("\f"+constants.GrafanaSilencePrefix, a.HandleCallbackNewSilence(a.Grafana, a.Grafana))
+	a.Bot.Handle("\f"+constants.AlertmanagerSilencePrefix, a.HandleCallbackNewSilence(a.Alertmanager, a.Prometheus))
 
 	a.Logger.Info().Msg("Telegram bot listening")
 
