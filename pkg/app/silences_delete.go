@@ -55,13 +55,9 @@ func (a *App) HandleDeleteSilenceGeneric(
 		return c.Reply(fmt.Sprintf("Error getting silence to delete: %s", silencesFetchErr))
 	}
 
-	silence, found, err := silences.FindByNameOrMatchers(silenceID)
+	silence, found := silences.FindByNameOrMatchers(silenceID)
 	if !found {
 		return c.Reply("Silence is not found by ID or matchers: " + silenceID)
-	}
-
-	if err != "" {
-		return c.Reply("Error getting silence by ID or matchers: " + err)
 	}
 
 	if silence.Status.State == "expired" {

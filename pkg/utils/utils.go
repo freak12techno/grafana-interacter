@@ -5,6 +5,7 @@ import (
 	"main/pkg/logger"
 	"main/pkg/types"
 	"math"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -37,11 +38,21 @@ func ParseRenderOptions(query string) (types.RenderOptions, bool) {
 }
 
 func SerializeQueryString(qs map[string]string) string {
+	keys := make([]string, len(qs))
+	index := 0
+
+	for key := range qs {
+		keys[index] = key
+		index++
+	}
+
+	sort.Strings(keys)
+
 	tmp := make([]string, len(qs))
 	counter := 0
 
-	for key, value := range qs {
-		tmp[counter] = key + "=" + value
+	for _, key := range keys {
+		tmp[counter] = key + "=" + qs[key]
 		counter++
 	}
 

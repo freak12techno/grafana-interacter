@@ -11,22 +11,19 @@ import (
 
 type Silences []Silence
 
-func (s Silences) FindByNameOrMatchers(source string) (*Silence, bool, string) {
+func (s Silences) FindByNameOrMatchers(source string) (*Silence, bool) {
 	// Finding by ID first
 	if silence, found := generic.Find(s, func(s Silence) bool {
 		return s.ID == source
 	}); found {
-		return silence, true, ""
+		return silence, true
 	}
 
 	queryMatchers := QueryMatcherFromKeyValueString(source)
 	silenceMatchers := make(SilenceMatchers, len(queryMatchers))
 
 	for index, queryMatcher := range queryMatchers {
-		silenceMatcher, err := MatcherFromQueryMatcher(queryMatcher)
-		if err != "" {
-			return nil, false, err
-		}
+		silenceMatcher := MatcherFromQueryMatcher(queryMatcher)
 		silenceMatchers[index] = *silenceMatcher
 	}
 
@@ -34,7 +31,7 @@ func (s Silences) FindByNameOrMatchers(source string) (*Silence, bool, string) {
 		return s.Matchers.Equals(silenceMatchers)
 	})
 
-	return silenceFound, found, ""
+	return silenceFound, found
 }
 
 type Silence struct {
