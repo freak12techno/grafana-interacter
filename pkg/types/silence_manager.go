@@ -13,6 +13,7 @@ type SilenceManager interface {
 	CreateSilence(silence Silence) (SilenceCreateResponse, error)
 	GetSilenceMatchingAlerts(silence Silence) ([]AlertmanagerAlert, error)
 	DeleteSilence(silenceID string) error
+	GetPaginatedSilencesListPrefix() string
 	GetSilencePrefix() string
 	GetUnsilencePrefix() string
 	Name() string

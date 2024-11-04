@@ -1,10 +1,8 @@
-{{- if .Data.ShowHeader }}
 {{- if not .Data.Silences }}
 <strong>Silences</strong>
 No silences.
 {{- else }}
-<strong>Silences ({{ .Data.SilencesCount }}):</strong>
-{{- end }}
+<strong>Silences ({{.Data.Start}} - {{ .Data.End }} of {{ .Data.SilencesCount }}):</strong>
 {{- end }}
 {{ range $silenceId, $silenceInfo := .Data.Silences }}
 <strong>ID:</strong> <code>{{ $silenceInfo.Silence.ID }}</code>

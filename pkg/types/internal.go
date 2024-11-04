@@ -59,5 +59,7 @@ type FiringAlertsListStruct struct {
 type SilencesListStruct struct {
 	Silences      []SilenceWithAlerts
 	ShowHeader    bool
+	Start         int
+	End           int
 	SilencesCount int
 }
