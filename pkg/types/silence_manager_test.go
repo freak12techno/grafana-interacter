@@ -15,7 +15,7 @@ func TestGetSilencesWithAlertsFetchSilencesError(t *testing.T) {
 	manager.GetSilencesError = errors.New("custom error")
 
 	silences, err := GetSilencesWithAlerts(manager)
-	require.NoError(t, err)
+	require.Error(t, err)
 	require.ErrorContains(t, err, "custom error")
 	require.Empty(t, silences)
 }
@@ -35,7 +35,7 @@ func TestGetSilencesWithAlertsFetchSilenceError(t *testing.T) {
 	require.NoError(t, err)
 
 	silences, err := GetSilencesWithAlerts(manager)
-	require.NoError(t, err)
+	require.Error(t, err)
 	require.ErrorContains(t, err, "Error getting alerts for silence on 1 silences!")
 	require.Empty(t, silences)
 }
