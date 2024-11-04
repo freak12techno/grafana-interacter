@@ -93,6 +93,7 @@ func (c *Client) doQuery(
 	}
 
 	req.Header.Set("User-Agent", "grafana-interacter")
+	req.Header.Set("Content-Type", "application/json")
 
 	if auth != nil {
 		req.SetBasicAuth(auth.Username, auth.Password)
