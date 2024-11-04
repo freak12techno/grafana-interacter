@@ -1,0 +1,36 @@
+{
+  "status": "success",
+  "data": {
+    "groups": [
+      {
+        "name": "BlackboxExporterAlerts",
+        "file": "/etc/prometheus/rules.d/blackbox-exporter.yml",
+        "rules": [
+          {
+            "state": "inactive",
+            "name": "BlackboxProbeFailed",
+            "query": "probe_success == 0",
+            "duration": 300,
+            "keepFiringFor": 0,
+            "labels": {
+              "severity": "critical"
+            },
+            "annotations": {
+              "description": "Probe failed",
+              "summary": "Blackbox probe failed (instance {{ $labels.instance }})"
+            },
+            "alerts": [],
+            "health": "ok",
+            "evaluationTime": 0.000205286,
+            "lastEvaluation": "2024-11-04T23:00:09.617125776+01:00",
+            "type": "alerting"
+          }
+        ],
+        "interval": 15,
+        "limit": 0,
+        "evaluationTime": 0.001109495,
+        "lastEvaluation": "2024-11-04T23:00:09.617114674+01:00"
+      }
+    ]
+  }
+}
