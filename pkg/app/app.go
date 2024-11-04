@@ -12,6 +12,7 @@ import (
 	"github.com/rs/zerolog"
 	tele "gopkg.in/telebot.v3"
 	"gopkg.in/telebot.v3/middleware"
+	templatesList "main/templates"
 )
 
 const MaxMessageSize = 4096
@@ -34,7 +35,7 @@ func NewApp(config *configPkg.Config, version string) *App {
 	grafana := clients.InitGrafana(config.Grafana, logger)
 	alertmanager := clients.InitAlertmanager(config.Alertmanager, logger)
 	prometheus := clients.InitPrometheus(config.Prometheus, logger)
-	templateManager := templates.NewTemplateManager(timezone)
+	templateManager := templates.NewTemplateManager(timezone, templatesList.Templates)
 
 	bot, err := tele.NewBot(tele.Settings{
 		Token:  config.Telegram.Token,

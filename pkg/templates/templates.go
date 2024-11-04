@@ -3,22 +3,23 @@ package templates
 import (
 	"bytes"
 	"html/template"
+	"io/fs"
 	"main/pkg/types/render"
 	"main/pkg/utils"
 	"time"
-
-	templatesList "main/templates"
 )
 
 type TemplateManager struct {
-	Timezone  *time.Location
-	Templates map[string]*template.Template
+	Timezone   *time.Location
+	Templates  map[string]*template.Template
+	Filesystem fs.FS
 }
 
-func NewTemplateManager(timezone *time.Location) *TemplateManager {
+func NewTemplateManager(timezone *time.Location, filesystem fs.FS) *TemplateManager {
 	return &TemplateManager{
-		Templates: make(map[string]*template.Template, 0),
-		Timezone:  timezone,
+		Templates:  make(map[string]*template.Template, 0),
+		Timezone:   timezone,
+		Filesystem: filesystem,
 	}
 }
 
@@ -35,7 +36,7 @@ func (manager *TemplateManager) GetTemplate(name string) (*template.Template, er
 		"StrToFloat64":            utils.StrToFloat64,
 		"FormatDuration":          utils.FormatDuration,
 		"FormatDate":              utils.FormatDate(manager.Timezone),
-	}).ParseFS(templatesList.Templates, filename)
+	}).ParseFS(manager.Filesystem, filename)
 	if err != nil {
 		return nil, err
 	}
