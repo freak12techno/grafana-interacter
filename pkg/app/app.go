@@ -1,12 +1,10 @@
 package app
 
 import (
-	alertmanagerPkg "main/pkg/alertmanager"
+	"main/pkg/clients"
 	configPkg "main/pkg/config"
 	"main/pkg/constants"
-	grafanaPkg "main/pkg/grafana"
 	loggerPkg "main/pkg/logger"
-	prometheusPkg "main/pkg/prometheus"
 	"main/pkg/templates"
 	"strings"
 	"time"
@@ -20,9 +18,9 @@ const MaxMessageSize = 4096
 
 type App struct {
 	Config          *configPkg.Config
-	Grafana         *grafanaPkg.Grafana
-	Alertmanager    *alertmanagerPkg.Alertmanager
-	Prometheus      *prometheusPkg.Prometheus
+	Grafana         *clients.Grafana
+	Alertmanager    *clients.Alertmanager
+	Prometheus      *clients.Prometheus
 	TemplateManager *templates.TemplateManager
 	Logger          *zerolog.Logger
 	Bot             *tele.Bot
@@ -33,9 +31,9 @@ func NewApp(config *configPkg.Config, version string) *App {
 	timezone, _ := time.LoadLocation(config.Timezone)
 
 	logger := loggerPkg.GetLogger(config.Log)
-	grafana := grafanaPkg.InitGrafana(config.Grafana, logger)
-	alertmanager := alertmanagerPkg.InitAlertmanager(config.Alertmanager, logger)
-	prometheus := prometheusPkg.InitPrometheus(config.Prometheus, logger)
+	grafana := clients.InitGrafana(config.Grafana, logger)
+	alertmanager := clients.InitAlertmanager(config.Alertmanager, logger)
+	prometheus := clients.InitPrometheus(config.Prometheus, logger)
 	templateManager := templates.NewTemplateManager(timezone)
 
 	bot, err := tele.NewBot(tele.Settings{
