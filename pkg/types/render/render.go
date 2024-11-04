@@ -1,12 +1,11 @@
 package render
 
 import (
-	"main/pkg/alertmanager"
-	"main/pkg/grafana"
+	"main/pkg/clients"
 )
 
 type RenderStruct struct {
-	Grafana      *grafana.Grafana
-	Alertmanager *alertmanager.Alertmanager
+	Grafana      *clients.Grafana
+	Alertmanager *clients.Alertmanager
 	Data         interface{}
 }
