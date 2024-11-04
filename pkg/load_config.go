@@ -2,29 +2,24 @@ package pkg
 
 import (
 	configPkg "main/pkg/config"
+	"main/pkg/fs"
 	"main/pkg/logger"
-	"os"
 
 	"github.com/creasty/defaults"
 	"gopkg.in/yaml.v3"
 )
 
-func LoadConfig(path string) *configPkg.Config {
-	yamlFile, err := os.ReadFile(path)
+func LoadConfig(filesystem fs.FS, path string) *configPkg.Config {
+	yamlFile, err := filesystem.ReadFile(path)
 	if err != nil {
-		logger.GetDefaultLogger().Fatal().Err(err).Msg("Could not read config file")
+		logger.GetDefaultLogger().Panic().Err(err).Msg("Could not read config file")
 	}
 
 	var config *configPkg.Config
-
-	err = yaml.Unmarshal(yamlFile, &config)
-	if err != nil {
-		logger.GetDefaultLogger().Fatal().Err(err).Msg("Could not unmarshal config file")
+	if parseErr := yaml.Unmarshal(yamlFile, &config); parseErr != nil {
+		logger.GetDefaultLogger().Panic().Err(parseErr).Msg("Could not unmarshal config file")
 	}
 
-	if err := defaults.Set(config); err != nil {
-		logger.GetDefaultLogger().Fatal().Err(err).Msg("Could not set default settings")
-	}
-
+	defaults.MustSet(config)
 	return config
 }

@@ -1,0 +1,33 @@
+timezone: "Europe/Moscow"
+log:
+  level: info
+  json: false
+telegram:
+  token: xxx:yyy
+  admins: [1, 2]
+grafana:
+  url: http://localhost:3000
+  user: admin
+  password: admin
+  render_options:
+    from: "now"
+    to: "now-6h"
+    timezone: "Europe/Moscow"
+    width: "1000"
+    height: "500"
+  mutes_durations:
+    - 1h
+    - 8h
+    - 24h
+    - 168h
+    - 99999h
+alertmanager:
+  url: http://localhost:9093
+  user: admin
+  password: admin
+  mutes_durations:
+    - 1h
+    - 8h
+    - 24h
+    - 168h
+    - 99999h

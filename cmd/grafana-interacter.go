@@ -3,6 +3,7 @@ package main
 import (
 	"main/pkg"
 	"main/pkg/app"
+	"main/pkg/fs"
 	"main/pkg/logger"
 
 	"github.com/spf13/cobra"
@@ -12,12 +13,13 @@ var version = "unknown"
 
 func ExecuteMain(configPath string) {
 	if configPath == "" {
-		logger.GetDefaultLogger().Fatal().Msg("Cannot start without config")
+		logger.GetDefaultLogger().Panic().Msg("Cannot start without config")
 	}
 
-	config := pkg.LoadConfig(configPath)
+	filesystem := &fs.OsFS{}
+	config := pkg.LoadConfig(filesystem, configPath)
 	if err := config.Validate(); err != nil {
-		logger.GetDefaultLogger().Fatal().Err(err).Msg("Error validating config")
+		logger.GetDefaultLogger().Panic().Err(err).Msg("Error validating config")
 	}
 
 	newApp := app.NewApp(config, version)
@@ -25,10 +27,11 @@ func ExecuteMain(configPath string) {
 }
 
 func ExecuteValidateConfig(configPath string) {
-	config := pkg.LoadConfig(configPath)
+	filesystem := &fs.OsFS{}
+	config := pkg.LoadConfig(filesystem, configPath)
 
 	if err := config.Validate(); err != nil {
-		logger.GetDefaultLogger().Fatal().Err(err).Msg("Error validating config")
+		logger.GetDefaultLogger().Panic().Err(err).Msg("Error validating config")
 	}
 
 	logger.GetDefaultLogger().Info().Msg("Provided config is valid.")
