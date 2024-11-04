@@ -1,0 +1,37 @@
+[
+  {
+    "annotations": {
+      "description": "Time since Slinky's last ticker (matic_usdt) update is probably stale neutron-testnet: 54d 19h 27m 14s",
+      "summary": "Slinky time since latest update issue"
+    },
+    "endsAt": "2024-11-04T23:25:06.406Z",
+    "fingerprint": "0dd17329be4633ce",
+    "receivers": [
+      {
+        "name": "telegram"
+      }
+    ],
+    "startsAt": "2024-10-16T01:07:06.406Z",
+    "status": {
+      "inhibitedBy": [],
+      "silencedBy": [
+        "59f51c0d-326b-4e05-8afa-8202ca133273"
+      ],
+      "state": "suppressed"
+    },
+    "updatedAt": "2024-11-05T00:21:06.414+01:00",
+    "generatorURL": "https://example.com/graph?g0.expr=time%28%29+-+side_car_provider_last_updated_id+%3E+60+%2A+60+%2A+1.5&g0.tab=1",
+    "labels": {
+      "alertname": "SlinkyTimeSinceLatestUpdate",
+      "datacenter": "home",
+      "exported_type": "websockets",
+      "hosting": "proxmox-2",
+      "id": "matic_usdt",
+      "job": "slinky",
+      "network": "neutron",
+      "provider": "gate_ws",
+      "severity": "warning",
+      "type": "testnet"
+    }
+  }
+]

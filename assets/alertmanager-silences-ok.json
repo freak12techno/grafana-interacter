@@ -1,0 +1,27 @@
+[
+  {
+    "id": "4de5faa2-8c0c-4c66-bd31-25c3bf5fa231",
+    "status": {
+      "state": "active"
+    },
+    "updatedAt": "2024-10-30T17:27:18.203Z",
+    "comment": "Muted using grafana-interacter for 300h0m0s by Sergey | 🐹 Quokka Stake",
+    "createdBy": "Sergey | 🐹 Quokka Stake",
+    "endsAt": "2024-11-12T08:57:18.199+03:30",
+    "matchers": [
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "network",
+        "value": "neutron"
+      },
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "alertname",
+        "value": "CosmosNodeNotLatestBinary"
+      }
+    ],
+    "startsAt": "2024-10-30T17:27:18.203Z"
+  }
+]
