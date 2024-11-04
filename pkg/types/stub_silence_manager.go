@@ -84,6 +84,10 @@ func (m *StubSilenceManager) GetUnsilencePrefix() string {
 	return "stub_unsilence"
 }
 
+func (m *StubSilenceManager) GetPaginatedSilencesListPrefix() string {
+	return "stub_paginate_silences"
+}
+
 func (m *StubSilenceManager) Name() string {
 	return "StubSilenceManager"
 }

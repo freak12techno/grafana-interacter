@@ -42,6 +42,10 @@ func (g *Alertmanager) GetSilencePrefix() string {
 	return constants.AlertmanagerSilencePrefix
 }
 
+func (g *Alertmanager) GetPaginatedSilencesListPrefix() string {
+	return constants.AlertmanagerPaginatedSilencesList
+}
+
 func (g *Alertmanager) GetMutesDurations() []string {
 	return g.Config.MutesDurations
 }

@@ -43,6 +43,10 @@ func (g *Grafana) GetSilencePrefix() string {
 	return constants.GrafanaSilencePrefix
 }
 
+func (g *Grafana) GetPaginatedSilencesListPrefix() string {
+	return constants.GrafanaPaginatedSilencesList
+}
+
 func (g *Grafana) Name() string {
 	return "Grafana"
 }

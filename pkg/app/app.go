@@ -82,6 +82,8 @@ func (a *App) Start() {
 	a.Bot.Handle("/alertmanager_unsilence", a.HandleDeleteSilenceViaCommand(a.Alertmanager))
 
 	// Callbacks
+	a.Bot.Handle("\f"+constants.GrafanaPaginatedSilencesList, a.HandleListSilencesFromCallback(a.Grafana))
+	a.Bot.Handle("\f"+constants.AlertmanagerPaginatedSilencesList, a.HandleListSilencesFromCallback(a.Alertmanager))
 	a.Bot.Handle("\f"+constants.GrafanaUnsilencePrefix, a.HandleCallbackDeleteSilence(a.Grafana))
 	a.Bot.Handle("\f"+constants.AlertmanagerUnsilencePrefix, a.HandleCallbackDeleteSilence(a.Alertmanager))
 	a.Bot.Handle("\f"+constants.GrafanaPrepareSilencePrefix, a.HandlePrepareNewSilenceFromCallback(a.Grafana, a.Grafana))
