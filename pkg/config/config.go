@@ -6,12 +6,12 @@ import (
 )
 
 type Config struct {
-	Timezone     string             `default:"Etc/GMT"   yaml:"timezone"`
-	Log          LogConfig          `yaml:"log"`
-	Telegram     TelegramConfig     `yaml:"telegram"`
-	Grafana      GrafanaConfig      `yaml:"grafana"`
-	Alertmanager AlertmanagerConfig `yaml:"alertmanager"`
-	Prometheus   *PrometheusConfig  `yaml:"prometheus"`
+	Timezone     string              `default:"Etc/GMT"   yaml:"timezone"`
+	Log          LogConfig           `yaml:"log"`
+	Telegram     TelegramConfig      `yaml:"telegram"`
+	Grafana      GrafanaConfig       `yaml:"grafana"`
+	Alertmanager *AlertmanagerConfig `yaml:"alertmanager"`
+	Prometheus   *PrometheusConfig   `yaml:"prometheus"`
 }
 
 type LogConfig struct {

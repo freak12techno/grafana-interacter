@@ -1,9 +1,9 @@
 package http
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 
 	"github.com/rs/zerolog"
@@ -34,15 +34,33 @@ func (c *Client) Get(
 	target interface{},
 	auth *Auth,
 ) error {
-	return c.doQuery(http.MethodGet, url, nil, auth, target)
+	return c.doQuery(http.MethodGet, url, nil, auth, target, true)
+}
+
+func (c *Client) Post(
+	url string,
+	body interface{},
+	target interface{},
+	auth *Auth,
+) error {
+	return c.doQuery(http.MethodPost, url, body, auth, target, true)
+}
+
+func (c *Client) Delete(
+	url string,
+	target interface{},
+	auth *Auth,
+) error {
+	return c.doQuery(http.MethodDelete, url, nil, auth, target, false)
 }
 
 func (c *Client) doQuery(
 	method string,
 	url string,
-	body io.Reader,
+	body interface{},
 	auth *Auth,
 	target interface{},
+	parseResponse bool,
 ) error {
 	var transport http.RoundTripper
 
@@ -55,7 +73,21 @@ func (c *Client) doQuery(
 
 	client := &http.Client{Transport: transport}
 
-	req, err := http.NewRequest(method, url, body)
+	var req *http.Request
+	var err error
+
+	if body != nil {
+		buffer := new(bytes.Buffer)
+
+		if encodeErr := json.NewEncoder(buffer).Encode(body); encodeErr != nil {
+			return encodeErr
+		}
+
+		req, err = http.NewRequest(method, url, buffer)
+	} else {
+		req, err = http.NewRequest(method, url, nil)
+	}
+
 	if err != nil {
 		return err
 	}
@@ -87,5 +119,9 @@ func (c *Client) doQuery(
 		return fmt.Errorf("Could not fetch request. Status code: %d", res.StatusCode)
 	}
 
-	return json.NewDecoder(res.Body).Decode(target)
+	if parseResponse {
+		return json.NewDecoder(res.Body).Decode(target)
+	}
+
+	return nil
 }

@@ -37,3 +37,14 @@ func TestHttpClientNotOkHTTPCode(t *testing.T) {
 	require.Error(t, err)
 	require.ErrorContains(t, err, "Could not fetch request. Status code: 503")
 }
+
+func TestHttpClientInvalidBody(t *testing.T) {
+	t.Parallel()
+
+	logger := loggerPkg.GetNopLogger()
+	client := NewClient(logger, "querier")
+	result := map[string]string{}
+	err := client.Post("https://example.com", make(chan string), &result, nil)
+	require.Error(t, err)
+	require.ErrorContains(t, err, "json: unsupported type: chan string")
+}
