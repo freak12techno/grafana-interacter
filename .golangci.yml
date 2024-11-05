@@ -45,3 +45,4 @@ linters:
     - perfsprint
     - testpackage
     - interfacebloat
+    - dupword
