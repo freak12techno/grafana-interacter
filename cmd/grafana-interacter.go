@@ -12,10 +12,6 @@ import (
 var version = "unknown"
 
 func ExecuteMain(configPath string) {
-	if configPath == "" {
-		logger.GetDefaultLogger().Panic().Msg("Cannot start without config")
-	}
-
 	filesystem := &fs.OsFS{}
 	config := pkg.LoadConfig(filesystem, configPath)
 	if err := config.Validate(); err != nil {
@@ -59,18 +55,14 @@ func main() {
 	}
 
 	rootCmd.PersistentFlags().StringVar(&configPath, "config", "", "Config file path")
-	if err := rootCmd.MarkPersistentFlagRequired("config"); err != nil {
-		logger.GetDefaultLogger().Fatal().Err(err).Msg("Could not set flag as required")
-	}
+	_ = rootCmd.MarkPersistentFlagRequired("config")
 
 	validateConfigCmd.PersistentFlags().StringVar(&configPath, "config", "", "Config file path")
-	if err := validateConfigCmd.MarkPersistentFlagRequired("config"); err != nil {
-		logger.GetDefaultLogger().Fatal().Err(err).Msg("Could not set flag as required")
-	}
+	_ = validateConfigCmd.MarkPersistentFlagRequired("config")
 
 	rootCmd.AddCommand(validateConfigCmd)
 
 	if err := rootCmd.Execute(); err != nil {
-		logger.GetDefaultLogger().Fatal().Err(err).Msg("Could not start application")
+		logger.GetDefaultLogger().Panic().Err(err).Msg("Could not start application")
 	}
 }

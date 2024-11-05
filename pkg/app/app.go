@@ -26,6 +26,8 @@ type App struct {
 	Logger          *zerolog.Logger
 	Bot             *tele.Bot
 	Version         string
+
+	StopChannel chan bool
 }
 
 func NewApp(config *configPkg.Config, version string) *App {
@@ -45,7 +47,7 @@ func NewApp(config *configPkg.Config, version string) *App {
 		},
 	})
 	if err != nil {
-		logger.Fatal().Err(err).Msg("Could not start Telegram bot")
+		logger.Panic().Err(err).Msg("Could not start Telegram bot")
 	}
 
 	if len(config.Telegram.Admins) > 0 {
@@ -62,6 +64,7 @@ func NewApp(config *configPkg.Config, version string) *App {
 		TemplateManager: templateManager,
 		Bot:             bot,
 		Version:         version,
+		StopChannel:     make(chan bool),
 	}
 }
 
@@ -94,7 +97,11 @@ func (a *App) Start() {
 
 	a.Logger.Info().Msg("Telegram bot listening")
 
-	a.Bot.Start()
+	go a.Bot.Start()
+
+	<-a.StopChannel
+	a.Logger.Info().Msg("Shutting down...")
+	a.Bot.Stop()
 }
 
 func (a *App) BotReply(c tele.Context, msg string, opts ...interface{}) error {
@@ -123,4 +130,8 @@ func (a *App) BotReply(c tele.Context, msg string, opts ...interface{}) error {
 	}
 
 	return nil
+}
+
+func (a *App) Stop() {
+	a.StopChannel <- true
 }
