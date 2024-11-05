@@ -45,7 +45,7 @@ func NewApp(config *configPkg.Config, version string) *App {
 		},
 	})
 	if err != nil {
-		logger.Fatal().Err(err).Msg("Could not start Telegram bot")
+		logger.Panic().Err(err).Msg("Could not start Telegram bot")
 	}
 
 	if len(config.Telegram.Admins) > 0 {
