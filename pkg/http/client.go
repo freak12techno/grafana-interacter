@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/rs/zerolog"
@@ -12,6 +13,7 @@ import (
 type Auth struct {
 	Username string
 	Password string
+	Token    string
 }
 
 type Client struct {
@@ -34,7 +36,14 @@ func (c *Client) Get(
 	target interface{},
 	auth *Auth,
 ) error {
-	return c.doQuery(http.MethodGet, url, nil, auth, target, true)
+	return c.doQueryAndDecode(http.MethodGet, url, nil, auth, target, true)
+}
+
+func (c *Client) GetRaw(
+	url string,
+	auth *Auth,
+) (io.ReadCloser, error) {
+	return c.doQuery(http.MethodGet, url, nil, auth)
 }
 
 func (c *Client) Post(
@@ -43,18 +52,17 @@ func (c *Client) Post(
 	target interface{},
 	auth *Auth,
 ) error {
-	return c.doQuery(http.MethodPost, url, body, auth, target, true)
+	return c.doQueryAndDecode(http.MethodPost, url, body, auth, target, true)
 }
 
 func (c *Client) Delete(
 	url string,
-	target interface{},
 	auth *Auth,
 ) error {
-	return c.doQuery(http.MethodDelete, url, nil, auth, target, false)
+	return c.doQueryAndDecode(http.MethodDelete, url, nil, auth, nil, false)
 }
 
-func (c *Client) doQuery(
+func (c *Client) doQueryAndDecode(
 	method string,
 	url string,
 	body interface{},
@@ -62,6 +70,26 @@ func (c *Client) doQuery(
 	target interface{},
 	parseResponse bool,
 ) error {
+	res, err := c.doQuery(method, url, body, auth)
+	if err != nil {
+		return err
+	}
+
+	defer res.Close()
+
+	if parseResponse {
+		return json.NewDecoder(res).Decode(target)
+	}
+
+	return nil
+}
+
+func (c *Client) doQuery(
+	method string,
+	url string,
+	body interface{},
+	auth *Auth,
+) (io.ReadCloser, error) {
 	var transport http.RoundTripper
 
 	transportRaw, ok := http.DefaultTransport.(*http.Transport)
@@ -80,7 +108,7 @@ func (c *Client) doQuery(
 		buffer := new(bytes.Buffer)
 
 		if encodeErr := json.NewEncoder(buffer).Encode(body); encodeErr != nil {
-			return encodeErr
+			return nil, encodeErr
 		}
 
 		req, err = http.NewRequest(method, url, buffer)
@@ -89,14 +117,18 @@ func (c *Client) doQuery(
 	}
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	req.Header.Set("User-Agent", "grafana-interacter")
 	req.Header.Set("Content-Type", "application/json")
 
 	if auth != nil {
-		req.SetBasicAuth(auth.Username, auth.Password)
+		if auth.Token != "" {
+			req.Header.Set("Authorization", "Bearer "+auth.Token)
+		} else {
+			req.SetBasicAuth(auth.Username, auth.Password)
+		}
 	}
 
 	c.Logger.Debug().
@@ -107,9 +139,8 @@ func (c *Client) doQuery(
 	res, err := client.Do(req)
 	if err != nil {
 		c.Logger.Warn().Str("url", url).Err(err).Msg("Query failed")
-		return err
+		return nil, err
 	}
-	defer res.Body.Close()
 
 	if res.StatusCode >= http.StatusBadRequest {
 		c.Logger.Error().
@@ -117,12 +148,8 @@ func (c *Client) doQuery(
 			Str("method", method).
 			Int("status", res.StatusCode).
 			Msg("Got error code")
-		return fmt.Errorf("Could not fetch request. Status code: %d", res.StatusCode)
+		return nil, fmt.Errorf("Could not fetch request. Status code: %d", res.StatusCode)
 	}
 
-	if parseResponse {
-		return json.NewDecoder(res.Body).Decode(target)
-	}
-
-	return nil
+	return res.Body, nil
 }

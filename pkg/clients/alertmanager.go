@@ -90,8 +90,7 @@ func (g *Alertmanager) GetSilence(silenceID string) (types.Silence, error) {
 
 func (g *Alertmanager) DeleteSilence(silenceID string) error {
 	url := g.RelativeLink("/api/v2/silence/" + silenceID)
-	result := map[string]string{}
-	return g.Client.Delete(url, &result, g.GetAuth())
+	return g.Client.Delete(url, g.GetAuth())
 }
 
 func (g *Alertmanager) RelativeLink(url string) string {
