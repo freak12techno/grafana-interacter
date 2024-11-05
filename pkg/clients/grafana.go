@@ -1,18 +1,16 @@
 package clients
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
 	"main/pkg/config"
 	"main/pkg/constants"
+	"main/pkg/http"
 	"main/pkg/types"
 	"main/pkg/utils"
 	"main/pkg/utils/generic"
-	"net/http"
 	"strconv"
 
 	"github.com/rs/zerolog"
@@ -22,17 +20,15 @@ import (
 type Grafana struct {
 	Config config.GrafanaConfig
 	Logger zerolog.Logger
+	Client *http.Client
 }
 
 func InitGrafana(config config.GrafanaConfig, logger *zerolog.Logger) *Grafana {
 	return &Grafana{
 		Config: config,
 		Logger: logger.With().Str("component", "grafana").Logger(),
+		Client: http.NewClient(logger, "grafana"),
 	}
-}
-
-func (g *Grafana) UseAuth() bool {
-	return g.Config.User != "" && g.Config.Password != ""
 }
 
 func (g *Grafana) GetUnsilencePrefix() string {
@@ -59,6 +55,18 @@ func (g *Grafana) GetMutesDurations() []string {
 	return g.Config.MutesDurations
 }
 
+func (g *Grafana) GetAuth() *http.Auth {
+	if g.Config.User == "" && g.Config.Password == "" && g.Config.Token == "" {
+		return nil
+	}
+
+	return &http.Auth{
+		Username: g.Config.User,
+		Password: g.Config.Password,
+		Token:    g.Config.Token,
+	}
+}
+
 func (g *Grafana) RenderPanel(panel *types.PanelStruct, qs map[string]string) (io.ReadCloser, error) {
 	params := generic.MergeMaps(g.Config.RenderOptions, qs)
 	params["panelId"] = strconv.Itoa(panel.PanelID)
@@ -69,20 +77,20 @@ func (g *Grafana) RenderPanel(panel *types.PanelStruct, qs map[string]string) (i
 		utils.SerializeQueryString(params),
 	))
 
-	return g.Query(url)
+	return g.Client.GetRaw(url, g.GetAuth())
 }
 
 func (g *Grafana) GetAllDashboards() (types.GrafanaDashboardsInfo, error) {
 	url := g.RelativeLink("/api/search?type=dash-db")
 	dashboards := types.GrafanaDashboardsInfo{}
-	err := g.QueryAndDecode(url, &dashboards)
+	err := g.Client.Get(url, &dashboards, g.GetAuth())
 	return dashboards, err
 }
 
 func (g *Grafana) GetDashboard(dashboardUID string) (*types.GrafanaDashboardResponse, error) {
 	url := g.RelativeLink("/api/dashboards/uid/" + dashboardUID)
 	dashboards := &types.GrafanaDashboardResponse{}
-	err := g.QueryAndDecode(url, &dashboards)
+	err := g.Client.Get(url, &dashboards, g.GetAuth())
 	return dashboards, err
 }
 
@@ -100,17 +108,17 @@ func (g *Grafana) GetAllPanels() (types.PanelsStruct, error) {
 		dashboard := d
 
 		group.Go(func() error {
-			enrichedDashboard, err := g.GetDashboard(dashboard.UID)
-			if err == nil {
+			enrichedDashboard, dashboardErr := g.GetDashboard(dashboard.UID)
+			if dashboardErr == nil {
 				dashboardsEnriched[index] = *enrichedDashboard
 			}
 
-			return err
+			return dashboardErr
 		})
 	}
 
-	if err := group.Wait(); err != nil {
-		return nil, err
+	if groupErr := group.Wait(); groupErr != nil {
+		return nil, groupErr
 	}
 
 	panelsCount := 0
@@ -162,14 +170,14 @@ func (g *Grafana) GetDatasourceLink(ds types.GrafanaDatasource) template.HTML {
 func (g *Grafana) GetDatasources() ([]types.GrafanaDatasource, error) {
 	datasources := []types.GrafanaDatasource{}
 	url := g.RelativeLink("/api/datasources")
-	err := g.QueryAndDecode(url, &datasources)
+	err := g.Client.Get(url, &datasources, g.GetAuth())
 	return datasources, err
 }
 
 func (g *Grafana) GetAlertingRules() (types.GrafanaAlertGroups, error) {
 	rules := types.GrafanaAlertRulesResponse{}
 	url := g.RelativeLink("/api/prometheus/grafana/api/v1/rules")
-	err := g.QueryAndDecode(url, &rules)
+	err := g.Client.Get(url, &rules, g.GetAuth())
 	if err != nil {
 		return nil, err
 	}
@@ -180,27 +188,27 @@ func (g *Grafana) GetAlertingRules() (types.GrafanaAlertGroups, error) {
 func (g *Grafana) CreateSilence(silence types.Silence) (types.SilenceCreateResponse, error) {
 	url := g.RelativeLink("/api/alertmanager/grafana/api/v2/silences")
 	res := types.SilenceCreateResponse{}
-	err := g.QueryAndDecodePost(url, silence, &res)
+	err := g.Client.Post(url, silence, &res, g.GetAuth())
 	return res, err
 }
 
 func (g *Grafana) GetSilences() (types.Silences, error) {
 	silences := types.Silences{}
 	url := g.RelativeLink("/api/alertmanager/grafana/api/v2/silences")
-	err := g.QueryAndDecode(url, &silences)
+	err := g.Client.Get(url, &silences, g.GetAuth())
 	return silences, err
 }
 
 func (g *Grafana) GetSilence(silenceID string) (types.Silence, error) {
 	silence := types.Silence{}
 	url := g.RelativeLink("/api/alertmanager/grafana/api/v2/silence/" + silenceID)
-	err := g.QueryAndDecode(url, &silence)
+	err := g.Client.Get(url, &silence, g.GetAuth())
 	return silence, err
 }
 
 func (g *Grafana) DeleteSilence(silenceID string) error {
 	url := g.RelativeLink("/api/alertmanager/grafana/api/v2/silence/" + silenceID)
-	return g.QueryDelete(url)
+	return g.Client.Delete(url, g.GetAuth())
 }
 
 func (g *Grafana) GetSilenceMatchingAlerts(silence types.Silence) ([]types.AlertmanagerAlert, error) {
@@ -210,109 +218,6 @@ func (g *Grafana) GetSilenceMatchingAlerts(silence types.Silence) ([]types.Alert
 	)
 	url := g.RelativeLink(relativeUrl)
 	var res []types.AlertmanagerAlert
-	err := g.QueryAndDecode(url, &res)
+	err := g.Client.Get(url, &res, g.GetAuth())
 	return res, err
-}
-
-/* Query functions */
-
-func (g *Grafana) Query(url string) (io.ReadCloser, error) {
-	return g.DoQuery("GET", url, nil)
-}
-
-func (g *Grafana) QueryPost(url string, body interface{}) (io.ReadCloser, error) {
-	return g.DoQuery("POST", url, body)
-}
-
-func (g *Grafana) QueryDelete(url string) error {
-	_, err := g.DoQuery("DELETE", url, nil)
-	return err
-}
-
-func (g *Grafana) QueryAndDecode(url string, output interface{}) error {
-	body, err := g.Query(url)
-	if err != nil {
-		return err
-	}
-
-	defer body.Close()
-	return json.NewDecoder(body).Decode(&output)
-}
-
-func (g *Grafana) QueryAndDecodePost(url string, postBody interface{}, output interface{}) error {
-	body, err := g.QueryPost(url, postBody)
-	if err != nil {
-		return err
-	}
-
-	defer body.Close()
-	return json.NewDecoder(body).Decode(&output)
-}
-
-func (g *Grafana) DoQuery(method string, url string, body interface{}) (io.ReadCloser, error) {
-	var transport http.RoundTripper
-
-	transportRaw, ok := http.DefaultTransport.(*http.Transport)
-	if ok {
-		transport = transportRaw.Clone()
-	} else {
-		transport = http.DefaultTransport
-	}
-
-	client := &http.Client{
-		Transport: transport,
-	}
-
-	var req *http.Request
-	var err error
-
-	if body != nil {
-		buffer := new(bytes.Buffer)
-
-		if err := json.NewEncoder(buffer).Encode(body); err != nil {
-			return nil, err
-		}
-
-		req, err = http.NewRequest(method, url, buffer)
-	} else {
-		req, err = http.NewRequest(method, url, nil)
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	g.Logger.Trace().
-		Str("url", url).
-		Str("method", method).
-		Msg("Doing a Grafana API query")
-
-	if g.Config.Token != "" {
-		req.Header.Set("Authorization", "Bearer "+g.Config.Token)
-	} else if g.UseAuth() {
-		req.SetBasicAuth(g.Config.User, g.Config.Password)
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		g.Logger.Error().
-			Str("url", url).
-			Str("method", method).
-			Err(err).
-			Msg("Error querying Grafana")
-		return nil, err
-	}
-
-	if resp.StatusCode >= http.StatusBadRequest {
-		g.Logger.Error().
-			Str("url", url).
-			Str("method", method).
-			Int("status", resp.StatusCode).
-			Msg("Got error code from Grafana")
-		return nil, fmt.Errorf("Could not fetch request. Status code: %d", resp.StatusCode)
-	}
-
-	return resp.Body, nil
 }
