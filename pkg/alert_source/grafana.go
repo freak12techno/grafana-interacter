@@ -28,7 +28,7 @@ func (g *Grafana) Name() string {
 }
 
 func (g *Grafana) Enabled() bool {
-	return g.Config.Silences.Bool
+	return g.Config.Alerts.Bool
 }
 
 func (g *Grafana) GetAuth() *http.Auth {

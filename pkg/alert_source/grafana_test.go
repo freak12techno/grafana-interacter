@@ -19,7 +19,7 @@ func TestGrafanaBasic(t *testing.T) {
 	config := configPkg.GrafanaConfig{
 		URL:            "http://localhost:9090",
 		MutesDurations: []string{"1h"},
-		Silences:       null.BoolFrom(true),
+		Alerts:         null.BoolFrom(true),
 	}
 	client := InitGrafana(config, logger)
 
