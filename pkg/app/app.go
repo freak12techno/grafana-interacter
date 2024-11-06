@@ -1,6 +1,7 @@
 package app
 
 import (
+	"main/pkg/alert_source"
 	"main/pkg/clients"
 	configPkg "main/pkg/config"
 	"main/pkg/constants"
@@ -22,7 +23,7 @@ type App struct {
 	Config          *configPkg.Config
 	Grafana         *clients.Grafana
 	Alertmanager    *silence_manager.Alertmanager
-	Prometheus      *clients.Prometheus
+	Prometheus      *alert_source.Prometheus
 	TemplateManager *templates.TemplateManager
 	Logger          *zerolog.Logger
 	Bot             *tele.Bot
@@ -37,7 +38,7 @@ func NewApp(config *configPkg.Config, version string) *App {
 	logger := loggerPkg.GetLogger(config.Log)
 	grafana := clients.InitGrafana(config.Grafana, logger)
 	alertmanager := silence_manager.InitAlertmanager(config.Alertmanager, logger)
-	prometheus := clients.InitPrometheus(config.Prometheus, logger)
+	prometheus := alert_source.InitPrometheus(config.Prometheus, logger)
 	templateManager := templates.NewTemplateManager(timezone, templatesList.Templates)
 
 	bot, err := tele.NewBot(tele.Settings{

@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"main/pkg/alert_source"
 	"main/pkg/silence_manager"
 	"main/pkg/types"
 	"main/pkg/types/render"
@@ -34,7 +35,7 @@ func (a *App) HandleNewSilenceViaCommand(silenceManager silence_manager.SilenceM
 
 func (a *App) HandlePrepareNewSilenceFromCallback(
 	silenceManager silence_manager.SilenceManager,
-	alertSource types.AlertSource,
+	alertSource alert_source.AlertSource,
 ) func(c tele.Context) error {
 	return func(c tele.Context) error {
 		a.Logger.Info().
@@ -87,7 +88,7 @@ func (a *App) HandlePrepareNewSilenceFromCallback(
 
 func (a *App) HandleCallbackNewSilence(
 	silenceManager silence_manager.SilenceManager,
-	alertSource types.AlertSource,
+	alertSource alert_source.AlertSource,
 ) func(c tele.Context) error {
 	return func(c tele.Context) error {
 		a.Logger.Info().
