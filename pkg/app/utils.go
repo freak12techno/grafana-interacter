@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"main/pkg/types"
+	"main/pkg/types/render"
 	"main/pkg/utils"
 	"strings"
 	"time"
@@ -83,4 +84,18 @@ func (a *App) GetAllAlertingRules() (types.GrafanaAlertGroups, error) {
 	}
 
 	return rules, nil
+}
+
+func (a *App) ReplyRender(
+	c tele.Context,
+	templateName string,
+	renderStruct render.RenderStruct,
+) error {
+	template, err := a.TemplateManager.Render(templateName, renderStruct)
+	if err != nil {
+		a.Logger.Error().Str("template", templateName).Err(err).Msg("Error rendering template")
+		return c.Reply(fmt.Sprintf("Error rendering template: %s", err))
+	}
+
+	return a.BotReply(c, template)
 }

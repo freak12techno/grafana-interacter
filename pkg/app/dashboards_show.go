@@ -38,7 +38,7 @@ func (a *App) HandleShowDashboard(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Could not get dashboard: %s", err))
 	}
 
-	template, err := a.TemplateManager.Render("dashboards_show", render.RenderStruct{
+	return a.ReplyRender(c, "dashboards_show", render.RenderStruct{
 		Grafana:      a.Grafana,
 		Alertmanager: a.Alertmanager,
 		Data: types.DashboardStruct{
@@ -52,10 +52,4 @@ func (a *App) HandleShowDashboard(c tele.Context) error {
 			}),
 		},
 	})
-	if err != nil {
-		a.Logger.Error().Err(err).Msg("Error rendering dashboards_show template")
-		return c.Reply(fmt.Sprintf("Error rendering template: %s", err))
-	}
-
-	return a.BotReply(c, template)
 }

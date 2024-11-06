@@ -18,15 +18,9 @@ func (a *App) HandleListDatasources(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error querying datasources: %s", err))
 	}
 
-	template, err := a.TemplateManager.Render("datasources_list", render.RenderStruct{
+	return a.ReplyRender(c, "datasources_list", render.RenderStruct{
 		Grafana:      a.Grafana,
 		Alertmanager: a.Alertmanager,
 		Data:         datasources,
 	})
-	if err != nil {
-		a.Logger.Error().Err(err).Msg("Error rendering datasources_list template")
-		return c.Reply(fmt.Sprintf("Error rendering template: %s", err))
-	}
-
-	return a.BotReply(c, template)
 }
