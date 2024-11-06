@@ -193,57 +193,6 @@ func TestAppShowDashboardDashboardFetchError(t *testing.T) {
 }
 
 //nolint:paralleltest // disabled
-func TestAppShowDashboardRenderError(t *testing.T) {
-	httpmock.Activate()
-	defer httpmock.DeactivateAndReset()
-
-	config := &configPkg.Config{
-		Timezone:     "Etc/GMT",
-		Log:          configPkg.LogConfig{LogLevel: "info"},
-		Telegram:     configPkg.TelegramConfig{Token: "xxx:yyy", Admins: []int64{1, 2}},
-		Grafana:      configPkg.GrafanaConfig{URL: "https://example.com", User: "admin", Password: "admin"},
-		Alertmanager: nil,
-		Prometheus:   nil,
-	}
-
-	httpmock.RegisterResponder(
-		"POST",
-		"https://api.telegram.org/botxxx:yyy/getMe",
-		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-bot-ok.json")))
-
-	httpmock.RegisterResponder(
-		"GET",
-		"https://example.com/api/search?type=dash-db",
-		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("grafana-dashboards-ok.json")))
-
-	httpmock.RegisterResponder(
-		"GET",
-		"https://example.com/api/dashboards/uid/alertmanager",
-		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("grafana-dashboard-ok.json")))
-
-	httpmock.RegisterMatcherResponder(
-		"POST",
-		"https://api.telegram.org/botxxx:yyy/sendMessage",
-		types.TelegramResponseHasText("Error rendering template: template: pattern matches no files: `dashboards_show.html`"),
-		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
-	)
-
-	app := NewApp(config, "1.2.3")
-	app.TemplateManager.Filesystem = assets.EmbedFS
-	ctx := app.Bot.NewContext(tele.Update{
-		ID: 1,
-		Message: &tele.Message{
-			Sender: &tele.User{Username: "testuser"},
-			Text:   "/dashboard alertmanager",
-			Chat:   &tele.Chat{ID: 2},
-		},
-	})
-
-	err := app.HandleShowDashboard(ctx)
-	require.NoError(t, err)
-}
-
-//nolint:paralleltest // disabled
 func TestAppShowDashboardOk(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()

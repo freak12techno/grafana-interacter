@@ -116,6 +116,9 @@ func TestAppBotSendMultilineFail(t *testing.T) {
 
 	err := app.BotReply(ctx, strings.Repeat("a", 5000))
 	require.Error(t, err)
+
+	err = app.BotReply(ctx, strings.Repeat("a", 10))
+	require.Error(t, err)
 }
 
 //nolint:paralleltest // disabled
