@@ -2,13 +2,14 @@ package app
 
 import (
 	"errors"
-	"github.com/jarcoal/httpmock"
-	"github.com/stretchr/testify/require"
-	tele "gopkg.in/telebot.v3"
 	"main/assets"
 	configPkg "main/pkg/config"
 	"main/pkg/types"
 	"testing"
+
+	"github.com/jarcoal/httpmock"
+	"github.com/stretchr/testify/require"
+	tele "gopkg.in/telebot.v3"
 )
 
 //nolint:paralleltest // disabled
