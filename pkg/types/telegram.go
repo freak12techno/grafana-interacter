@@ -13,8 +13,12 @@ type TelegramResponse struct {
 	Text   string `json:"text"`
 }
 
+func TelegramResponseHasBytes(text []byte) httpmock.Matcher {
+	return TelegramResponseHasText(string(text))
+}
+
 func TelegramResponseHasText(text string) httpmock.Matcher {
-	return httpmock.NewMatcher(text,
+	return httpmock.NewMatcher("TelegramResponseHasText",
 		func(req *http.Request) bool {
 			response := TelegramResponse{}
 			err := json.NewDecoder(req.Body).Decode(&response)

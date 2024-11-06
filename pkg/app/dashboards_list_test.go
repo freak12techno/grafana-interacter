@@ -84,7 +84,7 @@ func TestAppDashboardListOk(t *testing.T) {
 	httpmock.RegisterMatcherResponder(
 		"POST",
 		"https://api.telegram.org/botxxx:yyy/sendMessage",
-		types.TelegramResponseHasText("\n<strong>Dashboards list</strong>\n- <a href='https://example.com/d/alertmanager/alertmanager'>Alertmanager</a>\n"),
+		types.TelegramResponseHasBytes(assets.GetBytesOrPanic("responses/dashboards-list-ok.html")),
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
 	)
 

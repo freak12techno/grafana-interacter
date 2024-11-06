@@ -84,7 +84,7 @@ func TestAppDatasourceListOk(t *testing.T) {
 	httpmock.RegisterMatcherResponder(
 		"POST",
 		"https://api.telegram.org/botxxx:yyy/sendMessage",
-		types.TelegramResponseHasText("\n<strong>Datasources</strong>\n- <a href='https://example.com/datasources/edit/prometheus'>Prometheus</a> (type <code>prometheus</code>)\n"),
+		types.TelegramResponseHasBytes(assets.GetBytesOrPanic("responses/datasource-list-ok.html")),
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
 	)
 
