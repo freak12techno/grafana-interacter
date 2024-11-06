@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"main/pkg/constants"
+	"main/pkg/silence_manager"
 	"main/pkg/types"
 	"main/pkg/types/render"
 	"main/pkg/utils/generic"
@@ -11,7 +12,7 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-func (a *App) HandleListSilences(silenceManager types.SilenceManager) func(c tele.Context) error {
+func (a *App) HandleListSilences(silenceManager silence_manager.SilenceManager) func(c tele.Context) error {
 	return func(c tele.Context) error {
 		a.Logger.Info().
 			Str("sender", c.Sender().Username).
@@ -23,7 +24,7 @@ func (a *App) HandleListSilences(silenceManager types.SilenceManager) func(c tel
 	}
 }
 
-func (a *App) HandleListSilencesFromCallback(silenceManager types.SilenceManager) func(c tele.Context) error {
+func (a *App) HandleListSilencesFromCallback(silenceManager silence_manager.SilenceManager) func(c tele.Context) error {
 	return func(c tele.Context) error {
 		callback := c.Callback()
 
@@ -44,7 +45,7 @@ func (a *App) HandleListSilencesFromCallback(silenceManager types.SilenceManager
 
 func (a *App) HandleListSilencesWithPagination(
 	c tele.Context,
-	silenceManager types.SilenceManager,
+	silenceManager silence_manager.SilenceManager,
 	page int,
 	editPrevious bool,
 ) error {
@@ -52,7 +53,7 @@ func (a *App) HandleListSilencesWithPagination(
 		return c.Reply(silenceManager.Name() + " is disabled.")
 	}
 
-	silencesWithAlerts, err := types.GetSilencesWithAlerts(silenceManager)
+	silencesWithAlerts, err := silence_manager.GetSilencesWithAlerts(silenceManager)
 	if err != nil {
 		return c.Reply(fmt.Sprintf("Error fetching silences: %s\n", err))
 	}

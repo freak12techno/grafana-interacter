@@ -1,7 +1,8 @@
-package types
+package silence_manager
 
 import (
 	"errors"
+	"main/pkg/types"
 	"testing"
 	"time"
 
@@ -25,10 +26,10 @@ func TestGetSilencesWithAlertsFetchSilenceError(t *testing.T) {
 
 	manager := NewStubSilenceManager()
 	manager.GetSilenceMatchingAlertsError = errors.New("custom error")
-	_, err := manager.CreateSilence(Silence{
+	_, err := manager.CreateSilence(types.Silence{
 		ID:     "silence",
 		EndsAt: time.Now().Add(time.Hour),
-		Matchers: SilenceMatchers{
+		Matchers: types.SilenceMatchers{
 			{IsEqual: true, IsRegex: false, Name: "key", Value: "value"},
 		},
 	})
@@ -44,10 +45,10 @@ func TestGetSilencesWithAlertsOk(t *testing.T) {
 	t.Parallel()
 
 	manager := NewStubSilenceManager()
-	_, err := manager.CreateSilence(Silence{
+	_, err := manager.CreateSilence(types.Silence{
 		ID:     "silence",
 		EndsAt: time.Now().Add(time.Hour),
-		Matchers: SilenceMatchers{
+		Matchers: types.SilenceMatchers{
 			{IsEqual: true, IsRegex: false, Name: "key", Value: "value"},
 		},
 	})

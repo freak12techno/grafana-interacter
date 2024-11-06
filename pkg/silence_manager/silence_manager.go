@@ -1,17 +1,18 @@
-package types
+package silence_manager
 
 import (
 	"fmt"
+	"main/pkg/types"
 	"main/pkg/utils/generic"
 	"sync"
 	"time"
 )
 
 type SilenceManager interface {
-	GetSilences() (Silences, error)
-	GetSilence(silenceID string) (Silence, error)
-	CreateSilence(silence Silence) (SilenceCreateResponse, error)
-	GetSilenceMatchingAlerts(silence Silence) ([]AlertmanagerAlert, error)
+	GetSilences() (types.Silences, error)
+	GetSilence(silenceID string) (types.Silence, error)
+	CreateSilence(silence types.Silence) (types.SilenceCreateResponse, error)
+	GetSilenceMatchingAlerts(silence types.Silence) ([]types.AlertmanagerAlert, error)
 	DeleteSilence(silenceID string) error
 	GetPaginatedSilencesListPrefix() string
 	GetSilencePrefix() string
@@ -21,17 +22,17 @@ type SilenceManager interface {
 	GetMutesDurations() []string
 }
 
-func GetSilencesWithAlerts(manager SilenceManager) ([]SilenceWithAlerts, error) {
+func GetSilencesWithAlerts(manager SilenceManager) ([]types.SilenceWithAlerts, error) {
 	silences, err := manager.GetSilences()
 	if err != nil {
-		return []SilenceWithAlerts{}, err
+		return []types.SilenceWithAlerts{}, err
 	}
 
-	silences = generic.Filter(silences, func(s Silence) bool {
+	silences = generic.Filter(silences, func(s types.Silence) bool {
 		return s.EndsAt.After(time.Now())
 	})
 
-	silencesWithAlerts := make([]SilenceWithAlerts, len(silences))
+	silencesWithAlerts := make([]types.SilenceWithAlerts, len(silences))
 
 	var wg sync.WaitGroup
 	var mutex sync.Mutex
@@ -39,7 +40,7 @@ func GetSilencesWithAlerts(manager SilenceManager) ([]SilenceWithAlerts, error) 
 
 	for index, silence := range silences {
 		wg.Add(1)
-		go func(index int, silence Silence) {
+		go func(index int, silence types.Silence) {
 			defer wg.Done()
 
 			alerts, alertsErr := manager.GetSilenceMatchingAlerts(silence)
@@ -51,7 +52,7 @@ func GetSilencesWithAlerts(manager SilenceManager) ([]SilenceWithAlerts, error) 
 			}
 
 			mutex.Lock()
-			silencesWithAlerts[index] = SilenceWithAlerts{
+			silencesWithAlerts[index] = types.SilenceWithAlerts{
 				Silence:       silence,
 				AlertsPresent: true,
 				Alerts:        alerts,
@@ -63,7 +64,7 @@ func GetSilencesWithAlerts(manager SilenceManager) ([]SilenceWithAlerts, error) 
 	wg.Wait()
 
 	if len(errs) > 0 {
-		return []SilenceWithAlerts{}, fmt.Errorf("Error getting alerts for silence on %d silences!", len(errs))
+		return []types.SilenceWithAlerts{}, fmt.Errorf("Error getting alerts for silence on %d silences!", len(errs))
 	}
 
 	return silencesWithAlerts, nil

@@ -1,4 +1,4 @@
-package clients
+package silence_manager
 
 import (
 	"errors"

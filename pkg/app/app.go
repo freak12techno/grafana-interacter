@@ -5,6 +5,7 @@ import (
 	configPkg "main/pkg/config"
 	"main/pkg/constants"
 	loggerPkg "main/pkg/logger"
+	"main/pkg/silence_manager"
 	"main/pkg/templates"
 	"strings"
 	"time"
@@ -20,7 +21,7 @@ const MaxMessageSize = 4096
 type App struct {
 	Config          *configPkg.Config
 	Grafana         *clients.Grafana
-	Alertmanager    *clients.Alertmanager
+	Alertmanager    *silence_manager.Alertmanager
 	Prometheus      *clients.Prometheus
 	TemplateManager *templates.TemplateManager
 	Logger          *zerolog.Logger
@@ -35,7 +36,7 @@ func NewApp(config *configPkg.Config, version string) *App {
 
 	logger := loggerPkg.GetLogger(config.Log)
 	grafana := clients.InitGrafana(config.Grafana, logger)
-	alertmanager := clients.InitAlertmanager(config.Alertmanager, logger)
+	alertmanager := silence_manager.InitAlertmanager(config.Alertmanager, logger)
 	prometheus := clients.InitPrometheus(config.Prometheus, logger)
 	templateManager := templates.NewTemplateManager(timezone, templatesList.Templates)
 

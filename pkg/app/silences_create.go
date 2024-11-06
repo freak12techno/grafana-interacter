@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"main/pkg/silence_manager"
 	"main/pkg/types"
 	"main/pkg/types/render"
 	"main/pkg/utils"
@@ -10,7 +11,7 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-func (a *App) HandleNewSilenceViaCommand(silenceManager types.SilenceManager) func(c tele.Context) error {
+func (a *App) HandleNewSilenceViaCommand(silenceManager silence_manager.SilenceManager) func(c tele.Context) error {
 	return func(c tele.Context) error {
 		a.Logger.Info().
 			Str("sender", c.Sender().Username).
@@ -32,7 +33,7 @@ func (a *App) HandleNewSilenceViaCommand(silenceManager types.SilenceManager) fu
 }
 
 func (a *App) HandlePrepareNewSilenceFromCallback(
-	silenceManager types.SilenceManager,
+	silenceManager silence_manager.SilenceManager,
 	alertSource types.AlertSource,
 ) func(c tele.Context) error {
 	return func(c tele.Context) error {
@@ -85,7 +86,7 @@ func (a *App) HandlePrepareNewSilenceFromCallback(
 }
 
 func (a *App) HandleCallbackNewSilence(
-	silenceManager types.SilenceManager,
+	silenceManager silence_manager.SilenceManager,
 	alertSource types.AlertSource,
 ) func(c tele.Context) error {
 	return func(c tele.Context) error {
@@ -121,7 +122,7 @@ func (a *App) HandleCallbackNewSilence(
 
 func (a *App) HandleNewSilenceGeneric(
 	c tele.Context,
-	silenceManager types.SilenceManager,
+	silenceManager silence_manager.SilenceManager,
 	silenceInfo *types.Silence,
 ) error {
 	silenceResponse, silenceErr := silenceManager.CreateSilence(*silenceInfo)
