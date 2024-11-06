@@ -6,6 +6,7 @@ toolchain go1.23.1
 
 require (
 	github.com/creasty/defaults v1.8.0
+	github.com/guregu/null/v5 v5.0.0
 	github.com/jarcoal/httpmock v1.3.1
 	github.com/rs/zerolog v1.33.0
 	github.com/spf13/cobra v1.8.1

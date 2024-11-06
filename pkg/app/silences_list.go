@@ -69,8 +69,7 @@ func (a *App) HandleListSilencesWithPagination(
 	}
 
 	template, renderErr := a.TemplateManager.Render("silences_list", render.RenderStruct{
-		Grafana:      a.Grafana,
-		Alertmanager: a.Alertmanager,
+		Grafana: a.Grafana,
 		Data: types.SilencesListStruct{
 			Silences:      chunk,
 			ShowHeader:    true,

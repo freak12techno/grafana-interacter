@@ -13,8 +13,7 @@ func (a *App) HandleHelp(c tele.Context) error {
 		Msg("Got help query")
 
 	return a.ReplyRender(c, "help", render.RenderStruct{
-		Grafana:      a.Grafana,
-		Alertmanager: a.Alertmanager,
-		Data:         a.Version,
+		Grafana: a.Grafana,
+		Data:    a.Version,
 	})
 }

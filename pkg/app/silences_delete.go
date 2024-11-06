@@ -70,9 +70,8 @@ func (a *App) HandleDeleteSilenceGeneric(
 	}
 
 	template, renderErr := a.TemplateManager.Render("silences_delete", render.RenderStruct{
-		Grafana:      a.Grafana,
-		Alertmanager: a.Alertmanager,
-		Data:         silence,
+		Grafana: a.Grafana,
+		Data:    silence,
 	})
 
 	if renderErr != nil {

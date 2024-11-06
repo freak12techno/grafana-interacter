@@ -6,7 +6,6 @@ import (
 	"html/template"
 	"io"
 	"main/pkg/config"
-	"main/pkg/constants"
 	"main/pkg/http"
 	"main/pkg/types"
 	"main/pkg/utils"
@@ -29,26 +28,6 @@ func InitGrafana(config config.GrafanaConfig, logger *zerolog.Logger) *Grafana {
 		Logger: logger.With().Str("component", "grafana").Logger(),
 		Client: http.NewClient(logger, "grafana"),
 	}
-}
-
-func (g *Grafana) GetUnsilencePrefix() string {
-	return constants.GrafanaUnsilencePrefix
-}
-
-func (g *Grafana) GetSilencePrefix() string {
-	return constants.GrafanaSilencePrefix
-}
-
-func (g *Grafana) GetPaginatedSilencesListPrefix() string {
-	return constants.GrafanaPaginatedSilencesList
-}
-
-func (g *Grafana) Name() string {
-	return "Grafana"
-}
-
-func (g *Grafana) Enabled() bool {
-	return true
 }
 
 func (g *Grafana) GetMutesDurations() []string {
@@ -172,52 +151,4 @@ func (g *Grafana) GetDatasources() ([]types.GrafanaDatasource, error) {
 	url := g.RelativeLink("/api/datasources")
 	err := g.Client.Get(url, &datasources, g.GetAuth())
 	return datasources, err
-}
-
-func (g *Grafana) GetAlertingRules() (types.GrafanaAlertGroups, error) {
-	rules := types.GrafanaAlertRulesResponse{}
-	url := g.RelativeLink("/api/prometheus/grafana/api/v1/rules")
-	err := g.Client.Get(url, &rules, g.GetAuth())
-	if err != nil {
-		return nil, err
-	}
-
-	return rules.Data.Groups, nil
-}
-
-func (g *Grafana) CreateSilence(silence types.Silence) (types.SilenceCreateResponse, error) {
-	url := g.RelativeLink("/api/alertmanager/grafana/api/v2/silences")
-	res := types.SilenceCreateResponse{}
-	err := g.Client.Post(url, silence, &res, g.GetAuth())
-	return res, err
-}
-
-func (g *Grafana) GetSilences() (types.Silences, error) {
-	silences := types.Silences{}
-	url := g.RelativeLink("/api/alertmanager/grafana/api/v2/silences")
-	err := g.Client.Get(url, &silences, g.GetAuth())
-	return silences, err
-}
-
-func (g *Grafana) GetSilence(silenceID string) (types.Silence, error) {
-	silence := types.Silence{}
-	url := g.RelativeLink("/api/alertmanager/grafana/api/v2/silence/" + silenceID)
-	err := g.Client.Get(url, &silence, g.GetAuth())
-	return silence, err
-}
-
-func (g *Grafana) DeleteSilence(silenceID string) error {
-	url := g.RelativeLink("/api/alertmanager/grafana/api/v2/silence/" + silenceID)
-	return g.Client.Delete(url, g.GetAuth())
-}
-
-func (g *Grafana) GetSilenceMatchingAlerts(silence types.Silence) ([]types.AlertmanagerAlert, error) {
-	relativeUrl := fmt.Sprintf(
-		"/api/alertmanager/grafana/api/v2/alerts?%s&silenced=true&inhibited=true&active=true",
-		silence.GetFilterQueryString(),
-	)
-	url := g.RelativeLink(relativeUrl)
-	var res []types.AlertmanagerAlert
-	err := g.Client.Get(url, &res, g.GetAuth())
-	return res, err
 }

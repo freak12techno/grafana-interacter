@@ -15,12 +15,13 @@ func (a *App) HandleListFiringAlerts(c tele.Context) error {
 		Str("text", c.Text()).
 		Msg("Got firing alerts query")
 
-	grafanaGroups, err := a.Grafana.GetAlertingRules()
+	// TODO: fix
+	grafanaGroups, err := a.AlertSources[0].GetAlertingRules()
 	if err != nil {
 		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
 	}
 
-	prometheusGroups, err := a.Prometheus.GetAlertingRules()
+	prometheusGroups, err := a.AlertSources[1].GetAlertingRules()
 	if err != nil {
 		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
 	}
@@ -98,9 +99,8 @@ func (a *App) HandleListFiringAlerts(c tele.Context) error {
 
 	for _, batch := range batches {
 		template, renderErr := a.TemplateManager.Render("alerts_firing", render.RenderStruct{
-			Grafana:      a.Grafana,
-			Alertmanager: a.Alertmanager,
-			Data:         batch,
+			Grafana: a.Grafana,
+			Data:    batch,
 		})
 		if renderErr != nil {
 			a.Logger.Error().Err(renderErr).Msg("Error rendering alerts_firing template")

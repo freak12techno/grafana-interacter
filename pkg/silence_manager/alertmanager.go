@@ -40,6 +40,10 @@ func (g *Alertmanager) GetSilencePrefix() string {
 	return constants.AlertmanagerSilencePrefix
 }
 
+func (g *Alertmanager) GetPrepareSilencePrefix() string {
+	return constants.AlertmanagerPrepareSilencePrefix
+}
+
 func (g *Alertmanager) GetPaginatedSilencesListPrefix() string {
 	return constants.AlertmanagerPaginatedSilencesList
 }

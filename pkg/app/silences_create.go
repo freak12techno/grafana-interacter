@@ -60,9 +60,8 @@ func (a *App) HandlePrepareNewSilenceFromCallback(
 
 		matchers := types.QueryMatcherFromKeyValueMap(labels)
 		template, renderErr := a.TemplateManager.Render("silence_prepare_create", render.RenderStruct{
-			Grafana:      a.Grafana,
-			Alertmanager: a.Alertmanager,
-			Data:         matchers,
+			Grafana: a.Grafana,
+			Data:    matchers,
 		})
 		if renderErr != nil {
 			a.Logger.Error().Err(renderErr).Msg("Error rendering silence_prepare_create template")
@@ -142,8 +141,7 @@ func (a *App) HandleNewSilenceGeneric(
 	}
 
 	template, renderErr := a.TemplateManager.Render("silences_create", render.RenderStruct{
-		Grafana:      a.Grafana,
-		Alertmanager: a.Alertmanager,
+		Grafana: a.Grafana,
 		Data: types.SilenceWithAlerts{
 			Silence:       silence,
 			AlertsPresent: alerts != nil,

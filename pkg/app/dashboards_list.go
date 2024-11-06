@@ -19,8 +19,7 @@ func (a *App) HandleListDashboards(c tele.Context) error {
 	}
 
 	return a.ReplyRender(c, "dashboards_list", render.RenderStruct{
-		Grafana:      a.Grafana,
-		Alertmanager: a.Alertmanager,
-		Data:         dashboards,
+		Grafana: a.Grafana,
+		Data:    dashboards,
 	})
 }

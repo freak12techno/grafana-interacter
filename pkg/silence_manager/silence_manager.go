@@ -16,6 +16,7 @@ type SilenceManager interface {
 	DeleteSilence(silenceID string) error
 	GetPaginatedSilencesListPrefix() string
 	GetSilencePrefix() string
+	GetPrepareSilencePrefix() string
 	GetUnsilencePrefix() string
 	Name() string
 	Enabled() bool

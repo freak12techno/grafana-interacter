@@ -3,6 +3,8 @@ package config
 import (
 	"fmt"
 	"time"
+
+	"github.com/guregu/null/v5"
 )
 
 type Config struct {
@@ -29,6 +31,8 @@ type GrafanaConfig struct {
 	User           string            `default:"admin"                                                 yaml:"user"`
 	Password       string            `default:"admin"                                                 yaml:"password"`
 	Token          string            `yaml:"token"`
+	Silences       null.Bool         `default:"true"                                                  yaml:"silences"`
+	Alerts         null.Bool         `default:"true"                                                  yaml:"alerts"`
 	RenderOptions  map[string]string `default:"{\"orgId\":\"1\",\"from\":\"now\",\"to\":\"now-30m\"}" yaml:"render_options"`
 	MutesDurations []string          `default:"[\"1h\",\"8h\",\"24h\",\"168h\",\"99999h\"]"           yaml:"mutes_durations"`
 }
