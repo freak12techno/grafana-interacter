@@ -5,7 +5,6 @@ import (
 )
 
 type RenderStruct struct {
-	Grafana      *clients.Grafana
-	Alertmanager *clients.Alertmanager
-	Data         interface{}
+	Grafana *clients.Grafana
+	Data    interface{}
 }

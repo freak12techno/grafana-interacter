@@ -1,4 +1,4 @@
-package clients
+package alert_source
 
 import (
 	"main/pkg/config"

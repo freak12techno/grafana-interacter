@@ -32,8 +32,7 @@ func (a *App) HandleSingleAlert(c tele.Context) error {
 	}
 
 	return a.ReplyRender(c, "alert", render.RenderStruct{
-		Grafana:      a.Grafana,
-		Alertmanager: a.Alertmanager,
-		Data:         rule,
+		Grafana: a.Grafana,
+		Data:    rule,
 	})
 }

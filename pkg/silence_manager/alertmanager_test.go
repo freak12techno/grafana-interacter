@@ -1,4 +1,4 @@
-package clients
+package silence_manager
 
 import (
 	"errors"
@@ -25,6 +25,7 @@ func TestAlertmanagerBasic(t *testing.T) {
 	require.Equal(t, constants.AlertmanagerSilencePrefix, client.GetSilencePrefix())
 	require.Equal(t, constants.AlertmanagerUnsilencePrefix, client.GetUnsilencePrefix())
 	require.Equal(t, constants.AlertmanagerPaginatedSilencesList, client.GetPaginatedSilencesListPrefix())
+	require.Equal(t, constants.AlertmanagerPrepareSilencePrefix, client.GetPrepareSilencePrefix())
 	require.Equal(t, []string{"1h"}, client.GetMutesDurations())
 }
 

@@ -2,14 +2,14 @@ package app
 
 import (
 	"fmt"
-	"main/pkg/types"
+	"main/pkg/silence_manager"
 	"main/pkg/types/render"
 	"strings"
 
 	tele "gopkg.in/telebot.v3"
 )
 
-func (a *App) HandleDeleteSilenceViaCommand(silenceManager types.SilenceManager) func(c tele.Context) error {
+func (a *App) HandleDeleteSilenceViaCommand(silenceManager silence_manager.SilenceManager) func(c tele.Context) error {
 	return func(c tele.Context) error {
 		a.Logger.Info().
 			Str("sender", c.Sender().Username).
@@ -31,7 +31,7 @@ func (a *App) HandleDeleteSilenceViaCommand(silenceManager types.SilenceManager)
 	}
 }
 
-func (a *App) HandleCallbackDeleteSilence(silenceManager types.SilenceManager) func(c tele.Context) error {
+func (a *App) HandleCallbackDeleteSilence(silenceManager silence_manager.SilenceManager) func(c tele.Context) error {
 	return func(c tele.Context) error {
 		a.Logger.Info().
 			Str("sender", c.Sender().Username).
@@ -47,7 +47,7 @@ func (a *App) HandleCallbackDeleteSilence(silenceManager types.SilenceManager) f
 
 func (a *App) HandleDeleteSilenceGeneric(
 	c tele.Context,
-	silenceManager types.SilenceManager,
+	silenceManager silence_manager.SilenceManager,
 	silenceID string,
 ) error {
 	silences, silencesFetchErr := silenceManager.GetSilences()
@@ -70,9 +70,8 @@ func (a *App) HandleDeleteSilenceGeneric(
 	}
 
 	template, renderErr := a.TemplateManager.Render("silences_delete", render.RenderStruct{
-		Grafana:      a.Grafana,
-		Alertmanager: a.Alertmanager,
-		Data:         silence,
+		Grafana: a.Grafana,
+		Data:    silence,
 	})
 
 	if renderErr != nil {

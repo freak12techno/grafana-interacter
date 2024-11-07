@@ -1,7 +1,8 @@
-package types
+package silence_manager
 
 import (
 	"errors"
+	"main/pkg/types"
 )
 
 type StubSilenceManager struct {
@@ -12,21 +13,21 @@ type StubSilenceManager struct {
 
 	Disabled bool
 
-	Silences map[string]Silence
+	Silences map[string]types.Silence
 }
 
 func NewStubSilenceManager() *StubSilenceManager {
 	return &StubSilenceManager{
-		Silences: make(map[string]Silence),
+		Silences: make(map[string]types.Silence),
 	}
 }
 
-func (m *StubSilenceManager) GetSilences() (Silences, error) {
+func (m *StubSilenceManager) GetSilences() (types.Silences, error) {
 	if m.GetSilencesError != nil {
 		return nil, m.GetSilencesError
 	}
 
-	silences := make([]Silence, len(m.Silences))
+	silences := make([]types.Silence, len(m.Silences))
 	index := 0
 
 	for _, silence := range m.Silences {
@@ -37,34 +38,34 @@ func (m *StubSilenceManager) GetSilences() (Silences, error) {
 	return silences, nil
 }
 
-func (m *StubSilenceManager) GetSilence(silenceID string) (Silence, error) {
+func (m *StubSilenceManager) GetSilence(silenceID string) (types.Silence, error) {
 	if m.GetSilenceError != nil {
-		return Silence{}, m.GetSilenceError
+		return types.Silence{}, m.GetSilenceError
 	}
 
 	if silence, ok := m.Silences[silenceID]; ok {
 		return silence, nil
 	}
 
-	return Silence{}, errors.New("Silence was not found!")
+	return types.Silence{}, errors.New("Silence was not found!")
 }
 
-func (m *StubSilenceManager) CreateSilence(silence Silence) (SilenceCreateResponse, error) {
+func (m *StubSilenceManager) CreateSilence(silence types.Silence) (types.SilenceCreateResponse, error) {
 	if m.CreateSilenceError != nil {
-		return SilenceCreateResponse{}, m.CreateSilenceError
+		return types.SilenceCreateResponse{}, m.CreateSilenceError
 	}
 
 	m.Silences[silence.ID] = silence
 
-	return SilenceCreateResponse{SilenceID: silence.ID}, nil
+	return types.SilenceCreateResponse{SilenceID: silence.ID}, nil
 }
 
-func (m *StubSilenceManager) GetSilenceMatchingAlerts(silence Silence) ([]AlertmanagerAlert, error) {
+func (m *StubSilenceManager) GetSilenceMatchingAlerts(silence types.Silence) ([]types.AlertmanagerAlert, error) {
 	if m.GetSilenceMatchingAlertsError != nil {
 		return nil, m.GetSilenceMatchingAlertsError
 	}
 
-	return []AlertmanagerAlert{}, nil
+	return []types.AlertmanagerAlert{}, nil
 }
 
 func (m *StubSilenceManager) DeleteSilence(silenceID string) error {
@@ -86,6 +87,10 @@ func (m *StubSilenceManager) GetUnsilencePrefix() string {
 
 func (m *StubSilenceManager) GetPaginatedSilencesListPrefix() string {
 	return "stub_paginate_silences"
+}
+
+func (m *StubSilenceManager) GetPrepareSilencePrefix() string {
+	return "stub_prepare_silence"
 }
 
 func (m *StubSilenceManager) Name() string {

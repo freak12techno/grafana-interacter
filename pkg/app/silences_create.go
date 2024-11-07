@@ -2,6 +2,8 @@ package app
 
 import (
 	"fmt"
+	"main/pkg/alert_source"
+	"main/pkg/silence_manager"
 	"main/pkg/types"
 	"main/pkg/types/render"
 	"main/pkg/utils"
@@ -10,7 +12,7 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-func (a *App) HandleNewSilenceViaCommand(silenceManager types.SilenceManager) func(c tele.Context) error {
+func (a *App) HandleNewSilenceViaCommand(silenceManager silence_manager.SilenceManager) func(c tele.Context) error {
 	return func(c tele.Context) error {
 		a.Logger.Info().
 			Str("sender", c.Sender().Username).
@@ -32,8 +34,8 @@ func (a *App) HandleNewSilenceViaCommand(silenceManager types.SilenceManager) fu
 }
 
 func (a *App) HandlePrepareNewSilenceFromCallback(
-	silenceManager types.SilenceManager,
-	alertSource types.AlertSource,
+	silenceManager silence_manager.SilenceManager,
+	alertSource alert_source.AlertSource,
 ) func(c tele.Context) error {
 	return func(c tele.Context) error {
 		a.Logger.Info().
@@ -58,9 +60,8 @@ func (a *App) HandlePrepareNewSilenceFromCallback(
 
 		matchers := types.QueryMatcherFromKeyValueMap(labels)
 		template, renderErr := a.TemplateManager.Render("silence_prepare_create", render.RenderStruct{
-			Grafana:      a.Grafana,
-			Alertmanager: a.Alertmanager,
-			Data:         matchers,
+			Grafana: a.Grafana,
+			Data:    matchers,
 		})
 		if renderErr != nil {
 			a.Logger.Error().Err(renderErr).Msg("Error rendering silence_prepare_create template")
@@ -85,8 +86,8 @@ func (a *App) HandlePrepareNewSilenceFromCallback(
 }
 
 func (a *App) HandleCallbackNewSilence(
-	silenceManager types.SilenceManager,
-	alertSource types.AlertSource,
+	silenceManager silence_manager.SilenceManager,
+	alertSource alert_source.AlertSource,
 ) func(c tele.Context) error {
 	return func(c tele.Context) error {
 		a.Logger.Info().
@@ -121,7 +122,7 @@ func (a *App) HandleCallbackNewSilence(
 
 func (a *App) HandleNewSilenceGeneric(
 	c tele.Context,
-	silenceManager types.SilenceManager,
+	silenceManager silence_manager.SilenceManager,
 	silenceInfo *types.Silence,
 ) error {
 	silenceResponse, silenceErr := silenceManager.CreateSilence(*silenceInfo)
@@ -140,8 +141,7 @@ func (a *App) HandleNewSilenceGeneric(
 	}
 
 	template, renderErr := a.TemplateManager.Render("silences_create", render.RenderStruct{
-		Grafana:      a.Grafana,
-		Alertmanager: a.Alertmanager,
+		Grafana: a.Grafana,
 		Data: types.SilenceWithAlerts{
 			Silence:       silence,
 			AlertsPresent: alerts != nil,

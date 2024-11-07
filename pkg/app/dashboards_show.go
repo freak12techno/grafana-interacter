@@ -39,8 +39,7 @@ func (a *App) HandleShowDashboard(c tele.Context) error {
 	}
 
 	return a.ReplyRender(c, "dashboards_show", render.RenderStruct{
-		Grafana:      a.Grafana,
-		Alertmanager: a.Alertmanager,
+		Grafana: a.Grafana,
 		Data: types.DashboardStruct{
 			Dashboard: *dashboard,
 			Panels: generic.Map(dashboardEnriched.Dashboard.Panels, func(p types.GrafanaPanel) types.PanelStruct {

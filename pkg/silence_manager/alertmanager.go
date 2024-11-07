@@ -1,4 +1,4 @@
-package clients
+package silence_manager
 
 import (
 	"fmt"
@@ -38,6 +38,10 @@ func (g *Alertmanager) GetUnsilencePrefix() string {
 
 func (g *Alertmanager) GetSilencePrefix() string {
 	return constants.AlertmanagerSilencePrefix
+}
+
+func (g *Alertmanager) GetPrepareSilencePrefix() string {
+	return constants.AlertmanagerPrepareSilencePrefix
 }
 
 func (g *Alertmanager) GetPaginatedSilencesListPrefix() string {
