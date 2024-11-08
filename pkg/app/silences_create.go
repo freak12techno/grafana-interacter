@@ -75,7 +75,7 @@ func (a *App) HandlePrepareNewSilenceFromCallback(
 		for index, mute := range mutesDurations {
 			rows[index] = menu.Row(menu.Data(
 				fmt.Sprintf("⌛ Silence for %s", mute),
-				silenceManager.GetSilencePrefix(),
+				silenceManager.Prefixes().Silence,
 				mute+" "+callback.Data,
 			))
 		}
@@ -143,7 +143,7 @@ func (a *App) HandleNewSilenceGeneric(
 	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
 	menu.Inline(menu.Row(menu.Data(
 		"❌Unsilence",
-		silenceManager.GetUnsilencePrefix(),
+		silenceManager.Prefixes().Unsilence,
 		silence.ID,
 	)))
 

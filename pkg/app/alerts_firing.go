@@ -133,7 +133,7 @@ func (a *App) HandleListFiringAlertsWithPagination(
 	for _, alert := range chunk {
 		button := menu.Data(
 			fmt.Sprintf("🔇Silence alert #%d", index+1),
-			silenceManager.GetPrepareSilencePrefix(),
+			silenceManager.Prefixes().PrepareSilence,
 			alert.Alert.GetCallbackHash(),
 		)
 

@@ -83,10 +83,12 @@ func (a *App) HandleListSilencesWithPagination(
 
 	rows := make([]tele.Row, 0)
 
+	prefixes := silenceManager.Prefixes()
+
 	for _, silence := range chunk {
 		button := menu.Data(
 			fmt.Sprintf("❌Unsilence %s", silence.Silence.ID),
-			silenceManager.GetUnsilencePrefix(),
+			prefixes.Unsilence,
 			silence.Silence.ID,
 		)
 
@@ -98,7 +100,7 @@ func (a *App) HandleListSilencesWithPagination(
 		if page >= 1 {
 			buttons = append(buttons, menu.Data(
 				fmt.Sprintf("⬅️Page %d", page),
-				silenceManager.GetPaginatedSilencesListPrefix(),
+				prefixes.PaginatedSilencesList,
 				strconv.Itoa(page-1),
 			))
 		}
@@ -106,7 +108,7 @@ func (a *App) HandleListSilencesWithPagination(
 		if page < len(silencesGrouped)-1 {
 			buttons = append(buttons, menu.Data(
 				fmt.Sprintf("➡️Page %d", page+2),
-				silenceManager.GetPaginatedSilencesListPrefix(),
+				prefixes.PaginatedSilencesList,
 				strconv.Itoa(page+1),
 			))
 		}

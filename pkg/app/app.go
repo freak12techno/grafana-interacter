@@ -109,13 +109,14 @@ func (a *App) Start() {
 		alertSource := alertSourceWithSilenceManager.AlertSource
 		silenceManager := alertSourceWithSilenceManager.SilenceManager
 		alertSourcePrefixes := alertSourceWithSilenceManager.AlertSource.Prefixes()
+		silencesPrefixes := silenceManager.Prefixes()
 
 		a.Bot.Handle("\f"+alertSourcePrefixes.PaginatedFiringAlerts, a.HandleListFiringAlertsFromCallback(alertSource, silenceManager))
 
-		a.Bot.Handle("\f"+silenceManager.GetPaginatedSilencesListPrefix(), a.HandleListSilencesFromCallback(silenceManager))
-		a.Bot.Handle("\f"+silenceManager.GetUnsilencePrefix(), a.HandleCallbackDeleteSilence(silenceManager))
-		a.Bot.Handle("\f"+silenceManager.GetPrepareSilencePrefix(), a.HandlePrepareNewSilenceFromCallback(silenceManager, alertSource))
-		a.Bot.Handle("\f"+silenceManager.GetSilencePrefix(), a.HandleCallbackNewSilence(silenceManager, alertSource))
+		a.Bot.Handle("\f"+silencesPrefixes.PaginatedSilencesList, a.HandleListSilencesFromCallback(silenceManager))
+		a.Bot.Handle("\f"+silencesPrefixes.Unsilence, a.HandleCallbackDeleteSilence(silenceManager))
+		a.Bot.Handle("\f"+silencesPrefixes.PrepareSilence, a.HandlePrepareNewSilenceFromCallback(silenceManager, alertSource))
+		a.Bot.Handle("\f"+silencesPrefixes.Silence, a.HandleCallbackNewSilence(silenceManager, alertSource))
 	}
 
 	a.Logger.Info().Msg("Telegram bot listening")

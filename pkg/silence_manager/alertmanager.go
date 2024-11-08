@@ -32,20 +32,13 @@ func (g *Alertmanager) Name() string {
 	return "Alertmanager"
 }
 
-func (g *Alertmanager) GetUnsilencePrefix() string {
-	return constants.AlertmanagerUnsilencePrefix
-}
-
-func (g *Alertmanager) GetSilencePrefix() string {
-	return constants.AlertmanagerSilencePrefix
-}
-
-func (g *Alertmanager) GetPrepareSilencePrefix() string {
-	return constants.AlertmanagerPrepareSilencePrefix
-}
-
-func (g *Alertmanager) GetPaginatedSilencesListPrefix() string {
-	return constants.AlertmanagerPaginatedSilencesList
+func (g *Alertmanager) Prefixes() Prefixes {
+	return Prefixes{
+		PaginatedSilencesList: constants.AlertmanagerPaginatedSilencesList,
+		Silence:               constants.AlertmanagerSilencePrefix,
+		PrepareSilence:        constants.AlertmanagerPrepareSilencePrefix,
+		Unsilence:             constants.AlertmanagerUnsilencePrefix,
+	}
 }
 
 func (g *Alertmanager) GetMutesDurations() []string {

@@ -77,20 +77,13 @@ func (m *StubSilenceManager) DeleteSilence(silenceID string) error {
 	}
 }
 
-func (m *StubSilenceManager) GetSilencePrefix() string {
-	return "stub_silence"
-}
-
-func (m *StubSilenceManager) GetUnsilencePrefix() string {
-	return "stub_unsilence"
-}
-
-func (m *StubSilenceManager) GetPaginatedSilencesListPrefix() string {
-	return "stub_paginate_silences"
-}
-
-func (m *StubSilenceManager) GetPrepareSilencePrefix() string {
-	return "stub_prepare_silence"
+func (m *StubSilenceManager) Prefixes() Prefixes {
+	return Prefixes{
+		Silence:               "stub_silence",
+		Unsilence:             "stub_unsilence",
+		PaginatedSilencesList: "stub_paginated_silences_list",
+		PrepareSilence:        "stub_prepare_silence",
+	}
 }
 
 func (m *StubSilenceManager) Name() string {

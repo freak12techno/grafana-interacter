@@ -8,16 +8,20 @@ import (
 	"time"
 )
 
+type Prefixes struct {
+	PaginatedSilencesList string
+	Silence               string
+	PrepareSilence        string
+	Unsilence             string
+}
+
 type SilenceManager interface {
 	GetSilences() (types.Silences, error)
 	GetSilence(silenceID string) (types.Silence, error)
 	CreateSilence(silence types.Silence) (types.SilenceCreateResponse, error)
 	GetSilenceMatchingAlerts(silence types.Silence) ([]types.AlertmanagerAlert, error)
 	DeleteSilence(silenceID string) error
-	GetPaginatedSilencesListPrefix() string
-	GetSilencePrefix() string
-	GetPrepareSilencePrefix() string
-	GetUnsilencePrefix() string
+	Prefixes() Prefixes
 	Name() string
 	Enabled() bool
 	GetMutesDurations() []string
