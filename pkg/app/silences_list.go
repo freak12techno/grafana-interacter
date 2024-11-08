@@ -68,7 +68,7 @@ func (a *App) HandleListSilencesWithPagination(
 		chunk = silencesGrouped[page]
 	}
 
-	template, renderErr := a.TemplateManager.Render("silences_list", render.RenderStruct{
+	templateData := render.RenderStruct{
 		Grafana: a.Grafana,
 		Data: types.SilencesListStruct{
 			Silences:      chunk,
@@ -77,11 +77,6 @@ func (a *App) HandleListSilencesWithPagination(
 			End:           page*constants.SilencesInOneMessage + len(chunk),
 			SilencesCount: len(silencesWithAlerts),
 		},
-	})
-
-	if renderErr != nil {
-		a.Logger.Error().Err(renderErr).Msg("Error rendering silences_list template")
-		return c.Reply(fmt.Sprintf("Error rendering template: %s", renderErr))
 	}
 
 	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
@@ -124,18 +119,8 @@ func (a *App) HandleListSilencesWithPagination(
 	menu.Inline(rows...)
 
 	if editPrevious {
-		if editErr := c.Edit(template, menu, tele.ModeHTML, tele.NoPreview); editErr != nil {
-			a.Logger.Error().Err(editErr).Msg("Error deleting previous message")
-			return editErr
-		}
-
-		return nil
+		return a.EditRenderWithMarkup(c, "silences_list", templateData, menu)
 	}
 
-	if sendErr := a.BotReply(c, template, menu); sendErr != nil {
-		a.Logger.Error().Err(sendErr).Msg("Error sending message")
-		return sendErr
-	}
-
-	return nil
+	return a.ReplyRenderWithMarkup(c, "silences_list", templateData, menu)
 }

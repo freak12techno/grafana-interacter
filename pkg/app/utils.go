@@ -71,8 +71,8 @@ func (a *App) GenerateSilenceForAlert(
 func (a *App) GetAllAlertingRules() (types.GrafanaAlertGroups, error) {
 	rules := make(types.GrafanaAlertGroups, 0)
 
-	for _, alertSource := range a.AlertSources {
-		alertSourceRules, err := alertSource.GetAlertingRules()
+	for _, alertSource := range a.AlertSourcesWithSilenceManager {
+		alertSourceRules, err := alertSource.AlertSource.GetAlertingRules()
 		if err != nil {
 			return nil, err
 		}
@@ -95,4 +95,40 @@ func (a *App) ReplyRender(
 	}
 
 	return a.BotReply(c, template)
+}
+
+func (a *App) ReplyRenderWithMarkup(
+	c tele.Context,
+	templateName string,
+	renderStruct render.RenderStruct,
+	replyMarkup *tele.ReplyMarkup,
+) error {
+	template, err := a.TemplateManager.Render(templateName, renderStruct)
+	if err != nil {
+		a.Logger.Error().Str("template", templateName).Err(err).Msg("Error rendering template")
+		return c.Reply(fmt.Sprintf("Error rendering template: %s", err))
+	}
+
+	return a.BotReply(c, template, replyMarkup)
+}
+
+func (a *App) EditRenderWithMarkup(
+	c tele.Context,
+	templateName string,
+	renderStruct render.RenderStruct,
+	replyMarkup *tele.ReplyMarkup,
+) error {
+	template, renderErr := a.TemplateManager.Render(templateName, renderStruct)
+
+	if renderErr != nil {
+		a.Logger.Error().Str("template", templateName).Err(renderErr).Msg("Error rendering template")
+		return c.Reply(fmt.Sprintf("Error rendering template: %s", renderErr))
+	}
+
+	if editErr := c.Edit(template, replyMarkup, tele.ModeHTML, tele.NoPreview); editErr != nil {
+		a.Logger.Error().Err(editErr).Msg("Error editing message")
+		return editErr
+	}
+
+	return nil
 }

@@ -140,19 +140,6 @@ func (a *App) HandleNewSilenceGeneric(
 		return c.Reply(fmt.Sprintf("Error getting alerts for silence: %s", alertsErr))
 	}
 
-	template, renderErr := a.TemplateManager.Render("silences_create", render.RenderStruct{
-		Grafana: a.Grafana,
-		Data: types.SilenceWithAlerts{
-			Silence:       silence,
-			AlertsPresent: alerts != nil,
-			Alerts:        alerts,
-		},
-	})
-	if renderErr != nil {
-		a.Logger.Error().Err(renderErr).Msg("Error rendering silences_create template")
-		return c.Reply(fmt.Sprintf("Error rendering template: %s", renderErr))
-	}
-
 	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
 	menu.Inline(menu.Row(menu.Data(
 		"❌Unsilence",
@@ -160,5 +147,12 @@ func (a *App) HandleNewSilenceGeneric(
 		silence.ID,
 	)))
 
-	return a.BotReply(c, template, menu)
+	return a.ReplyRenderWithMarkup(c, "silences_create", render.RenderStruct{
+		Grafana: a.Grafana,
+		Data: types.SilenceWithAlerts{
+			Silence:       silence,
+			AlertsPresent: alerts != nil,
+			Alerts:        alerts,
+		},
+	}, menu)
 }

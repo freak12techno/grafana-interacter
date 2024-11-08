@@ -69,15 +69,8 @@ func (a *App) HandleDeleteSilenceGeneric(
 		return c.Reply(fmt.Sprintf("Error deleting silence: %s", silenceErr))
 	}
 
-	template, renderErr := a.TemplateManager.Render("silences_delete", render.RenderStruct{
+	return a.ReplyRender(c, "silences_delete", render.RenderStruct{
 		Grafana: a.Grafana,
 		Data:    silence,
 	})
-
-	if renderErr != nil {
-		a.Logger.Error().Err(renderErr).Msg("Error rendering silences_delete template")
-		return c.Reply(fmt.Sprintf("Error rendering template: %s", renderErr))
-	}
-
-	return a.BotReply(c, template)
 }

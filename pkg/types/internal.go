@@ -40,20 +40,17 @@ type AlertsListStruct struct {
 }
 
 type FiringAlert struct {
-	GroupName        string
-	GroupAlertsCount int
-	AlertName        string
-	Alert            GrafanaAlert
-	ShowAlertName    bool
+	GroupName     string
+	AlertRuleName string
+	Alert         GrafanaAlert
 }
 
 type FiringAlertsListStruct struct {
-	GrafanaAlerts         []FiringAlert
-	PrometheusAlerts      []FiringAlert
-	ShowGrafanaHeader     bool
-	ShowPrometheusHeader  bool
-	GrafanaAlertsCount    int
-	PrometheusAlertsCount int
+	AlertSourceName string
+	Alerts          []FiringAlert
+	AlertsCount     int
+	Start           int
+	End             int
 }
 
 type SilencesListStruct struct {
