@@ -13,7 +13,7 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-func (a *App) HandleChooseAlertSourceForListAlerts(c tele.Context) error {
+func (a *App) HandleChooseAlertSourceForListFiringAlerts(c tele.Context) error {
 	a.Logger.Info().
 		Str("sender", c.Sender().Username).
 		Str("text", c.Text()).
@@ -178,8 +178,8 @@ func (a *App) HandleListFiringAlertsWithPagination(
 	}
 
 	if editPrevious {
-		return a.EditRenderWithMarkup(c, "alerts_firing", templateData, menu)
+		return a.EditRender(c, "alerts_firing", templateData, menu)
 	}
 
-	return a.ReplyRenderWithMarkup(c, "alerts_firing", templateData, menu)
+	return a.ReplyRender(c, "alerts_firing", templateData, menu)
 }

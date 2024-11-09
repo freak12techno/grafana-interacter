@@ -3,6 +3,7 @@ package types
 import (
 	"main/pkg/utils/normalize"
 	"strings"
+	"time"
 )
 
 type DashboardStruct struct {
@@ -59,4 +60,13 @@ type SilencesListStruct struct {
 	Start         int
 	End           int
 	SilencesCount int
+}
+
+type SingleAlertStruct struct {
+	Alert      *GrafanaAlertRule
+	RenderTime time.Time
+}
+
+func (s SingleAlertStruct) GetAlertFiringFor(alert GrafanaAlert) time.Duration {
+	return s.RenderTime.Sub(alert.ActiveAt)
 }

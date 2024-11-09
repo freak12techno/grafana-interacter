@@ -16,7 +16,7 @@ type GrafanaAlertRulesResponse struct {
 }
 
 type GrafanaAlertRulesData struct {
-	Groups []GrafanaAlertGroup `json:"groups"`
+	Groups GrafanaAlertGroups `json:"groups"`
 }
 
 type GrafanaAlertGroup struct {

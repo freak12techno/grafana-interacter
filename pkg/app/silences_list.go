@@ -121,8 +121,8 @@ func (a *App) HandleListSilencesWithPagination(
 	menu.Inline(rows...)
 
 	if editPrevious {
-		return a.EditRenderWithMarkup(c, "silences_list", templateData, menu)
+		return a.EditRender(c, "silences_list", templateData, menu)
 	}
 
-	return a.ReplyRenderWithMarkup(c, "silences_list", templateData, menu)
+	return a.ReplyRender(c, "silences_list", templateData, menu)
 }

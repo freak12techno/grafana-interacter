@@ -1,13 +1,15 @@
-<strong>Alert rule: </strong> {{ .Data.Name }}
-<strong>Alerts ({{ len .Data.Alerts }}): </strong>
-{{- if not .Data.Alerts }}
+{{- $alertInfo := .Data }}
+<strong>Alert rule: </strong> {{ .Data.Alert.Name }}
+<strong>Alerts ({{ len .Data.Alert.Alerts }}): </strong>
+{{- if not .Data.Alert.Alerts }}
 No matching alerts.
 {{- end }}
 
-{{- range $alertId, $alert := .Data.Alerts }}
+{{- range $alertId, $alert := .Data.Alert.Alerts }}
 
 - {{ GetEmojiByStatus $alert.State }}
-<strong>Firing for:</strong> {{ FormatDuration $alert.ActiveSince }} (since {{ FormatDate $alert.ActiveAt }})
+{{- $firingFor := $alertInfo.GetAlertFiringFor $alert }}
+<strong>Firing for:</strong> {{ FormatDuration $firingFor }} (since {{ FormatDate $alert.ActiveAt }})
 {{- if $alert.Value }}
 <strong>Value: </strong>{{ StrToFloat64 $alert.Value }}
 {{- end }}

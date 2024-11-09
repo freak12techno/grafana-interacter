@@ -147,7 +147,7 @@ func (a *App) HandleNewSilenceGeneric(
 		silence.ID,
 	)))
 
-	return a.ReplyRenderWithMarkup(c, "silences_create", render.RenderStruct{
+	return a.ReplyRender(c, "silences_create", render.RenderStruct{
 		Grafana: a.Grafana,
 		Data: types.SilenceWithAlerts{
 			Silence:       silence,

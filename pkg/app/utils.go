@@ -87,6 +87,7 @@ func (a *App) ReplyRender(
 	c tele.Context,
 	templateName string,
 	renderStruct render.RenderStruct,
+	opts ...interface{},
 ) error {
 	template, err := a.TemplateManager.Render(templateName, renderStruct)
 	if err != nil {
@@ -94,30 +95,17 @@ func (a *App) ReplyRender(
 		return c.Reply(fmt.Sprintf("Error rendering template: %s", err))
 	}
 
-	return a.BotReply(c, template)
+	return a.BotReply(c, template, opts...)
 }
 
-func (a *App) ReplyRenderWithMarkup(
+func (a *App) EditRender(
 	c tele.Context,
 	templateName string,
 	renderStruct render.RenderStruct,
-	replyMarkup *tele.ReplyMarkup,
+	opts ...interface{},
 ) error {
-	template, err := a.TemplateManager.Render(templateName, renderStruct)
-	if err != nil {
-		a.Logger.Error().Str("template", templateName).Err(err).Msg("Error rendering template")
-		return c.Reply(fmt.Sprintf("Error rendering template: %s", err))
-	}
+	opts = append(opts, tele.ModeHTML, tele.NoPreview)
 
-	return a.BotReply(c, template, replyMarkup)
-}
-
-func (a *App) EditRenderWithMarkup(
-	c tele.Context,
-	templateName string,
-	renderStruct render.RenderStruct,
-	replyMarkup *tele.ReplyMarkup,
-) error {
 	template, renderErr := a.TemplateManager.Render(templateName, renderStruct)
 
 	if renderErr != nil {
@@ -125,7 +113,7 @@ func (a *App) EditRenderWithMarkup(
 		return c.Reply(fmt.Sprintf("Error rendering template: %s", renderErr))
 	}
 
-	if editErr := c.Edit(template, replyMarkup, tele.ModeHTML, tele.NoPreview); editErr != nil {
+	if editErr := c.Edit(template, opts...); editErr != nil {
 		a.Logger.Error().Err(editErr).Msg("Error editing message")
 		return editErr
 	}

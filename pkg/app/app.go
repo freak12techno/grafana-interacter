@@ -92,7 +92,7 @@ func (a *App) Start() {
 	a.Bot.Handle("/render", a.HandleRenderPanel)
 	a.Bot.Handle("/datasources", a.HandleListDatasources)
 	a.Bot.Handle("/alerts", a.HandleListAlerts)
-	a.Bot.Handle("/firing", a.HandleChooseAlertSourceForListAlerts)
+	a.Bot.Handle("/firing", a.HandleChooseAlertSourceForListFiringAlerts)
 	a.Bot.Handle("/alert", a.HandleSingleAlert)
 
 	// TODO: fix
@@ -148,7 +148,7 @@ func (a *App) BotReply(c tele.Context, msg string, opts ...interface{}) error {
 		sb.WriteString(line + "\n")
 	}
 
-	if err := c.Reply(sb.String(), opts...); err != nil {
+	if err := c.Reply(strings.TrimSpace(sb.String()), opts...); err != nil {
 		a.Logger.Error().Err(err).Msg("Could not send Telegram message")
 		return err
 	}
