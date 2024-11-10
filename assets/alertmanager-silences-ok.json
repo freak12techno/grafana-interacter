@@ -23,5 +23,220 @@
       }
     ],
     "startsAt": "2024-10-30T17:27:18.203Z"
+  },
+  {
+    "id": "af780078-c86b-4c0d-bfbb-3edd72922f6c",
+    "status": {
+      "state": "active"
+    },
+    "updatedAt": "2024-10-30T18:31:08.944Z",
+    "comment": "Muted using grafana-interacter for 300h0m0s by Sergey | 🐹 Quokka Stake",
+    "createdBy": "Sergey | 🐹 Quokka Stake",
+    "endsAt": "2024-11-12T10:01:08.933+03:30",
+    "matchers": [
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "network",
+        "value": "pion"
+      },
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "alertname",
+        "value": "CosmosNodeNotLatestBinary"
+      }
+    ],
+    "startsAt": "2024-10-30T18:31:08.944Z"
+  },
+  {
+    "id": "ea59c497-a98d-4bc4-8a06-4ec72f69606c",
+    "status": {
+      "state": "active"
+    },
+    "updatedAt": "2024-11-10T12:02:26.815Z",
+    "comment": "Muted using grafana-interacter for 168h0m0s by Sergey | 🐹 Quokka Stake",
+    "createdBy": "Sergey | 🐹 Quokka Stake",
+    "endsAt": "2024-11-17T15:02:26.637+03:00",
+    "matchers": [
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "job",
+        "value": "cosmos-transactions-bot"
+      },
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "node",
+        "value": "https://example.com"
+      },
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "severity",
+        "value": "warning"
+      },
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "alertname",
+        "value": "CosmosTransactionBotNoNewEventsFromNode"
+      },
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "chain",
+        "value": "sentinel"
+      },
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "host",
+        "value": "monitoring"
+      },
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "instance",
+        "value": "localhost:9580"
+      }
+    ],
+    "startsAt": "2024-11-10T12:02:26.815Z"
+  },
+  {
+    "id": "b933d4be-caf0-4305-bcfa-05ef3c927c3d",
+    "status": {
+      "state": "active"
+    },
+    "updatedAt": "2024-11-10T12:04:00.086Z",
+    "comment": "Muted using grafana-interacter for 168h0m0s by Sergey | 🐹 Quokka Stake",
+    "createdBy": "Sergey | 🐹 Quokka Stake",
+    "endsAt": "2024-11-17T15:03:59.975+03:00",
+    "matchers": [
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "node",
+        "value": "https://example.com"
+      },
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "severity",
+        "value": "warning"
+      },
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "alertname",
+        "value": "CosmosTransactionBotNoNewEventsFromNode"
+      },
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "chain",
+        "value": "sentinel"
+      },
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "host",
+        "value": "monitoring"
+      },
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "instance",
+        "value": "localhost:9580"
+      },
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "job",
+        "value": "cosmos-transactions-bot"
+      }
+    ],
+    "startsAt": "2024-11-10T12:04:00.086Z"
+  },
+  {
+    "id": "cae22969-f02d-4239-84a7-620cb79e1d55",
+    "status": {
+      "state": "active"
+    },
+    "updatedAt": "2024-11-10T13:06:50.616Z",
+    "comment": "Muted using grafana-interacter for 168h0m0s by Sergey | 🐹 Quokka Stake",
+    "createdBy": "Sergey | 🐹 Quokka Stake",
+    "endsAt": "2024-11-17T16:36:50.612+03:30",
+    "matchers": [
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "alertname",
+        "value": "MissedBlocksCheckerNoNewEventsFromNode"
+      },
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "chain",
+        "value": "sentinel"
+      },
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "host",
+        "value": "monitoring"
+      },
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "instance",
+        "value": "localhost:9570"
+      },
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "job",
+        "value": "missed-blocks-checker"
+      },
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "node",
+        "value": "https://example.com"
+      },
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "severity",
+        "value": "warning"
+      }
+    ],
+    "startsAt": "2024-11-10T13:06:50.616Z"
+  },
+  {
+    "id": "58b180a3-d8a1-44b4-b121-3ad00913fb95",
+    "status": {
+      "state": "active"
+    },
+    "updatedAt": "2024-10-31T17:26:00.184Z",
+    "comment": "Muted using grafana-interacter for 900h0m0s by Sergey | 🐹 Quokka Stake",
+    "createdBy": "Sergey | 🐹 Quokka Stake",
+    "endsAt": "2024-12-08T08:56:00.179+03:30",
+    "matchers": [
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "chain",
+        "value": "decentr"
+      },
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "alertname",
+        "value": "CosmosTransactionBotNoNewEventsFromNode"
+      }
+    ],
+    "startsAt": "2024-10-31T17:26:00.184Z"
   }
 ]

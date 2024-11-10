@@ -12,6 +12,49 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
+func (a *App) HandleChooseSilenceManagerForListSilences(c tele.Context) error {
+	a.Logger.Info().
+		Str("sender", c.Sender().Username).
+		Str("text", c.Text()).
+		Msg("Got choosing a datasource for list silences query")
+
+	silenceManagers := generic.Filter(a.AlertSourcesWithSilenceManager, func(a AlertSourceWithSilenceManager) bool {
+		return a.SilenceManager.Enabled()
+	})
+
+	if len(silenceManagers) == 0 {
+		return a.BotReply(c, "No silence managers configured!")
+	}
+
+	if len(silenceManagers) == 1 {
+		return a.HandleListSilencesWithPagination(
+			c,
+			silenceManagers[0].SilenceManager,
+			0,
+			false,
+		)
+	}
+
+	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
+	rows := make([]tele.Row, 0)
+	index := 0
+
+	for _, source := range silenceManagers {
+		button := menu.Data(
+			source.SilenceManager.Name(),
+			source.SilenceManager.Prefixes().PaginatedSilencesList,
+			"0", // page
+		)
+
+		rows = append(rows, menu.Row(button))
+		index += 1
+	}
+
+	menu.Inline(rows...)
+
+	return a.BotReply(c, "Choose a silence manager to get silences from:", menu)
+}
+
 func (a *App) HandleListSilences(silenceManager silence_manager.SilenceManager) func(c tele.Context) error {
 	return func(c tele.Context) error {
 		a.Logger.Info().
