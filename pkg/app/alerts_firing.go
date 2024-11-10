@@ -9,6 +9,7 @@ import (
 	"main/pkg/types/render"
 	"main/pkg/utils/generic"
 	"strconv"
+	"time"
 
 	tele "gopkg.in/telebot.v3"
 )
@@ -42,10 +43,6 @@ func (a *App) HandleChooseAlertSourceForListFiringAlerts(c tele.Context) error {
 	index := 0
 
 	for _, source := range alertSources {
-		if !source.AlertSource.Enabled() {
-			continue
-		}
-
 		button := menu.Data(
 			source.AlertSource.Name(),
 			source.AlertSource.Prefixes().PaginatedFiringAlerts,
@@ -99,22 +96,7 @@ func (a *App) HandleListFiringAlertsWithPagination(
 		return c.Reply(fmt.Sprintf("Error fetching alerts: %s!\n", err))
 	}
 
-	alerts = alerts.FilterFiringOrPendingAlertGroups()
-
-	firingAlerts := make([]types.FiringAlert, 0)
-
-	for _, alertGroup := range alerts {
-		for _, alertRule := range alertGroup.Rules {
-			for _, alert := range alertRule.Alerts {
-				firingAlerts = append(firingAlerts, types.FiringAlert{
-					GroupName:     alertGroup.Name,
-					Alert:         alert,
-					AlertRuleName: alertRule.Name,
-				})
-			}
-		}
-	}
-
+	firingAlerts := alerts.FilterFiringOrPendingAlertGroups().ToFiringAlerts()
 	alertsGrouped := generic.SplitArrayIntoChunks(firingAlerts, constants.AlertsInOneMessage)
 	if len(alertsGrouped) == 0 {
 		alertsGrouped = [][]types.FiringAlert{{}}
@@ -174,6 +156,7 @@ func (a *App) HandleListFiringAlertsWithPagination(
 			AlertsCount:     len(firingAlerts),
 			Start:           page*constants.AlertsInOneMessage + 1,
 			End:             page*constants.AlertsInOneMessage + len(chunk),
+			RenderTime:      time.Now(),
 		},
 	}
 

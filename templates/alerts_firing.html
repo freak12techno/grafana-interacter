@@ -1,3 +1,4 @@
+{{- $alertsInfo := .Data }}
 {{- if not .Data.Alerts }}
 No firing alerts.
 {{- else }}
@@ -5,7 +6,8 @@ No firing alerts.
 
 {{- range $alertId, $alert := .Data.Alerts }}
 - {{ GetEmojiByStatus $alert.Alert.State }} {{ $alert.GroupName }} -> {{ $alert.AlertRuleName }}:
-<strong>Firing for:</strong> {{ FormatDuration $alert.Alert.ActiveSince }} (since {{ FormatDate $alert.Alert.ActiveAt }})
+{{- $firingFor := $alertsInfo.GetAlertFiringFor $alert }}
+<strong>Firing for:</strong> {{ FormatDuration $firingFor }} (since {{ FormatDate $alert.Alert.ActiveAt }})
 {{- if $alert.Alert.Value }}
 <strong>Value: </strong>{{ StrToFloat64 $alert.Alert.Value }}
 {{- end }}

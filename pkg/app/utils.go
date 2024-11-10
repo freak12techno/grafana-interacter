@@ -113,7 +113,7 @@ func (a *App) EditRender(
 		return c.Reply(fmt.Sprintf("Error rendering template: %s", renderErr))
 	}
 
-	if editErr := c.Edit(template, opts...); editErr != nil {
+	if editErr := c.Edit(strings.TrimSpace(template), opts...); editErr != nil {
 		a.Logger.Error().Err(editErr).Msg("Error editing message")
 		return editErr
 	}

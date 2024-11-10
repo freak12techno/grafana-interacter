@@ -52,6 +52,11 @@ type FiringAlertsListStruct struct {
 	AlertsCount     int
 	Start           int
 	End             int
+	RenderTime      time.Time
+}
+
+func (f FiringAlertsListStruct) GetAlertFiringFor(alert FiringAlert) time.Duration {
+	return f.RenderTime.Sub(alert.Alert.ActiveAt)
 }
 
 type SilencesListStruct struct {
