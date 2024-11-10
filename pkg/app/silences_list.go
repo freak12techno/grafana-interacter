@@ -68,7 +68,7 @@ func (a *App) HandleListSilencesWithPagination(
 		chunk = silencesGrouped[page]
 	}
 
-	template, renderErr := a.TemplateManager.Render("silences_list", render.RenderStruct{
+	templateData := render.RenderStruct{
 		Grafana: a.Grafana,
 		Data: types.SilencesListStruct{
 			Silences:      chunk,
@@ -77,21 +77,18 @@ func (a *App) HandleListSilencesWithPagination(
 			End:           page*constants.SilencesInOneMessage + len(chunk),
 			SilencesCount: len(silencesWithAlerts),
 		},
-	})
-
-	if renderErr != nil {
-		a.Logger.Error().Err(renderErr).Msg("Error rendering silences_list template")
-		return c.Reply(fmt.Sprintf("Error rendering template: %s", renderErr))
 	}
 
 	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
 
 	rows := make([]tele.Row, 0)
 
+	prefixes := silenceManager.Prefixes()
+
 	for _, silence := range chunk {
 		button := menu.Data(
 			fmt.Sprintf("❌Unsilence %s", silence.Silence.ID),
-			silenceManager.GetUnsilencePrefix(),
+			prefixes.Unsilence,
 			silence.Silence.ID,
 		)
 
@@ -103,7 +100,7 @@ func (a *App) HandleListSilencesWithPagination(
 		if page >= 1 {
 			buttons = append(buttons, menu.Data(
 				fmt.Sprintf("⬅️Page %d", page),
-				silenceManager.GetPaginatedSilencesListPrefix(),
+				prefixes.PaginatedSilencesList,
 				strconv.Itoa(page-1),
 			))
 		}
@@ -111,7 +108,7 @@ func (a *App) HandleListSilencesWithPagination(
 		if page < len(silencesGrouped)-1 {
 			buttons = append(buttons, menu.Data(
 				fmt.Sprintf("➡️Page %d", page+2),
-				silenceManager.GetPaginatedSilencesListPrefix(),
+				prefixes.PaginatedSilencesList,
 				strconv.Itoa(page+1),
 			))
 		}
@@ -124,18 +121,8 @@ func (a *App) HandleListSilencesWithPagination(
 	menu.Inline(rows...)
 
 	if editPrevious {
-		if editErr := c.Edit(template, menu, tele.ModeHTML, tele.NoPreview); editErr != nil {
-			a.Logger.Error().Err(editErr).Msg("Error deleting previous message")
-			return editErr
-		}
-
-		return nil
+		return a.EditRender(c, "silences_list", templateData, menu)
 	}
 
-	if sendErr := a.BotReply(c, template, menu); sendErr != nil {
-		a.Logger.Error().Err(sendErr).Msg("Error sending message")
-		return sendErr
-	}
-
-	return nil
+	return a.ReplyRender(c, "silences_list", templateData, menu)
 }

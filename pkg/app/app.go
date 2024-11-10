@@ -18,6 +18,11 @@ import (
 
 const MaxMessageSize = 4096
 
+type AlertSourceWithSilenceManager struct {
+	AlertSource    alert_source.AlertSource
+	SilenceManager silence_manager.SilenceManager
+}
+
 type App struct {
 	Config          *configPkg.Config
 	Grafana         *clients.Grafana
@@ -26,8 +31,7 @@ type App struct {
 	Bot             *tele.Bot
 	Version         string
 
-	AlertSources    []alert_source.AlertSource
-	SilenceManagers []silence_manager.SilenceManager
+	AlertSourcesWithSilenceManager []AlertSourceWithSilenceManager
 
 	StopChannel chan bool
 }
@@ -55,26 +59,28 @@ func NewApp(config *configPkg.Config, version string) *App {
 		bot.Use(middleware.Whitelist(config.Telegram.Admins...))
 	}
 
-	alertSources := []alert_source.AlertSource{
-		alert_source.InitGrafana(config.Grafana, logger),
-		alert_source.InitPrometheus(config.Prometheus, logger),
-	}
-
-	silenceManager := []silence_manager.SilenceManager{
-		silence_manager.InitGrafana(config.Grafana, logger),
-		silence_manager.InitAlertmanager(config.Alertmanager, logger),
+	alertSourcesWithSilenceManagers := []AlertSourceWithSilenceManager{
+		// Built-in Grafana alerting and silences
+		{
+			AlertSource:    alert_source.InitGrafana(config.Grafana, logger),
+			SilenceManager: silence_manager.InitGrafana(config.Grafana, logger),
+		},
+		// External Prometheus alerts source and Alertmanager silence manager
+		{
+			AlertSource:    alert_source.InitPrometheus(config.Prometheus, logger),
+			SilenceManager: silence_manager.InitAlertmanager(config.Alertmanager, logger),
+		},
 	}
 
 	return &App{
-		Config:          config,
-		Logger:          logger,
-		Grafana:         grafana,
-		TemplateManager: templateManager,
-		AlertSources:    alertSources,
-		SilenceManagers: silenceManager,
-		Bot:             bot,
-		Version:         version,
-		StopChannel:     make(chan bool),
+		Config:                         config,
+		Logger:                         logger,
+		Grafana:                        grafana,
+		TemplateManager:                templateManager,
+		AlertSourcesWithSilenceManager: alertSourcesWithSilenceManagers,
+		Bot:                            bot,
+		Version:                        version,
+		StopChannel:                    make(chan bool),
 	}
 }
 
@@ -86,26 +92,31 @@ func (a *App) Start() {
 	a.Bot.Handle("/render", a.HandleRenderPanel)
 	a.Bot.Handle("/datasources", a.HandleListDatasources)
 	a.Bot.Handle("/alerts", a.HandleListAlerts)
-	a.Bot.Handle("/firing", a.HandleListFiringAlerts)
+	a.Bot.Handle("/firing", a.HandleChooseAlertSourceForListFiringAlerts)
 	a.Bot.Handle("/alert", a.HandleSingleAlert)
 
 	// TODO: fix
-	a.Bot.Handle("/silences", a.HandleListSilences(a.SilenceManagers[0]))
-	a.Bot.Handle("/silence", a.HandleNewSilenceViaCommand(a.SilenceManagers[0]))
-	a.Bot.Handle("/unsilence", a.HandleDeleteSilenceViaCommand(a.SilenceManagers[0]))
-	a.Bot.Handle("/alertmanager_silences", a.HandleListSilences(a.SilenceManagers[1]))
-	a.Bot.Handle("/alertmanager_silence", a.HandleNewSilenceViaCommand(a.SilenceManagers[1]))
-	a.Bot.Handle("/alertmanager_unsilence", a.HandleDeleteSilenceViaCommand(a.SilenceManagers[1]))
+	a.Bot.Handle("/silences", a.HandleListSilences(a.AlertSourcesWithSilenceManager[0].SilenceManager))
+	a.Bot.Handle("/silence", a.HandleNewSilenceViaCommand(a.AlertSourcesWithSilenceManager[0].SilenceManager))
+	a.Bot.Handle("/unsilence", a.HandleDeleteSilenceViaCommand(a.AlertSourcesWithSilenceManager[0].SilenceManager))
+	a.Bot.Handle("/alertmanager_silences", a.HandleListSilences(a.AlertSourcesWithSilenceManager[1].SilenceManager))
+	a.Bot.Handle("/alertmanager_silence", a.HandleNewSilenceViaCommand(a.AlertSourcesWithSilenceManager[1].SilenceManager))
+	a.Bot.Handle("/alertmanager_unsilence", a.HandleDeleteSilenceViaCommand(a.AlertSourcesWithSilenceManager[1].SilenceManager))
 
 	// Callbacks
 
-	for index, alertSource := range a.AlertSources {
-		silenceManager := a.SilenceManagers[index]
+	for _, alertSourceWithSilenceManager := range a.AlertSourcesWithSilenceManager {
+		alertSource := alertSourceWithSilenceManager.AlertSource
+		silenceManager := alertSourceWithSilenceManager.SilenceManager
+		alertSourcePrefixes := alertSourceWithSilenceManager.AlertSource.Prefixes()
+		silencesPrefixes := silenceManager.Prefixes()
 
-		a.Bot.Handle("\f"+silenceManager.GetPaginatedSilencesListPrefix(), a.HandleListSilencesFromCallback(silenceManager))
-		a.Bot.Handle("\f"+silenceManager.GetUnsilencePrefix(), a.HandleCallbackDeleteSilence(silenceManager))
-		a.Bot.Handle("\f"+silenceManager.GetPrepareSilencePrefix(), a.HandlePrepareNewSilenceFromCallback(silenceManager, alertSource))
-		a.Bot.Handle("\f"+silenceManager.GetSilencePrefix(), a.HandleCallbackNewSilence(silenceManager, alertSource))
+		a.Bot.Handle("\f"+alertSourcePrefixes.PaginatedFiringAlerts, a.HandleListFiringAlertsFromCallback(alertSource, silenceManager))
+
+		a.Bot.Handle("\f"+silencesPrefixes.PaginatedSilencesList, a.HandleListSilencesFromCallback(silenceManager))
+		a.Bot.Handle("\f"+silencesPrefixes.Unsilence, a.HandleCallbackDeleteSilence(silenceManager))
+		a.Bot.Handle("\f"+silencesPrefixes.PrepareSilence, a.HandlePrepareNewSilenceFromCallback(silenceManager, alertSource))
+		a.Bot.Handle("\f"+silencesPrefixes.Silence, a.HandleCallbackNewSilence(silenceManager, alertSource))
 	}
 
 	a.Logger.Info().Msg("Telegram bot listening")
@@ -137,7 +148,7 @@ func (a *App) BotReply(c tele.Context, msg string, opts ...interface{}) error {
 		sb.WriteString(line + "\n")
 	}
 
-	if err := c.Reply(sb.String(), opts...); err != nil {
+	if err := c.Reply(strings.TrimSpace(sb.String()), opts...); err != nil {
 		a.Logger.Error().Err(err).Msg("Could not send Telegram message")
 		return err
 	}

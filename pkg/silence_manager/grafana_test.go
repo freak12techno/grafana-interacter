@@ -4,7 +4,6 @@ import (
 	"errors"
 	"main/assets"
 	configPkg "main/pkg/config"
-	"main/pkg/constants"
 	loggerPkg "main/pkg/logger"
 	"main/pkg/types"
 	"testing"
@@ -27,10 +26,6 @@ func TestGrafanaBasic(t *testing.T) {
 
 	require.True(t, client.Enabled())
 	require.Equal(t, "Grafana", client.Name())
-	require.Equal(t, constants.GrafanaSilencePrefix, client.GetSilencePrefix())
-	require.Equal(t, constants.GrafanaUnsilencePrefix, client.GetUnsilencePrefix())
-	require.Equal(t, constants.GrafanaPaginatedSilencesList, client.GetPaginatedSilencesListPrefix())
-	require.Equal(t, constants.GrafanaPrepareSilencePrefix, client.GetPrepareSilencePrefix())
 	require.Equal(t, []string{"1h"}, client.GetMutesDurations())
 }
 

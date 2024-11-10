@@ -1,47 +1,21 @@
-{{- if and (not .Data.GrafanaAlerts) (not .Data.PrometheusAlerts) }}
+{{- $alertsInfo := .Data }}
+{{- if not .Data.Alerts }}
 No firing alerts.
+{{- else }}
+<strong>{{ .Data.AlertSourceName }} alerts</strong> ({{.Data.Start}} - {{ .Data.End }} of {{ .Data.AlertsCount }}):
+
+{{- range $alertId, $alert := .Data.Alerts }}
+- {{ GetEmojiByStatus $alert.Alert.State }} {{ $alert.GroupName }} -> {{ $alert.AlertRuleName }}:
+{{- $firingFor := $alertsInfo.GetAlertFiringFor $alert }}
+<strong>Firing for:</strong> {{ FormatDuration $firingFor }} (since {{ FormatDate $alert.Alert.ActiveAt }})
+{{- if $alert.Alert.Value }}
+<strong>Value: </strong>{{ StrToFloat64 $alert.Alert.Value }}
+{{- end }}
+<strong>Labels: </strong>
+{{- range $key, $label := $alert.Alert.Labels }}
+{{- if ne $key "alertname" }}
+  {{ $key }} = {{ $label }}
+{{- end }}
+{{- end }}
 {{ end }}
-
-{{- if .Data.ShowGrafanaHeader }}
-{{- if .Data.GrafanaAlerts }}
-<strong>Grafana alerts ({{ .Data.GrafanaAlertsCount }}):</strong>
-{{- end }}
-{{- end }}
-{{- range $alertId, $alert := .Data.GrafanaAlerts }}
-{{- if $alert.ShowAlertName }}
-- {{ GetEmojiByStatus $alert.Alert.State }} {{ $alert.GroupName }} -> {{ $alert.AlertName }} ({{ $alert.GroupAlertsCount }}):
-{{- end }}
-<strong>Firing for:</strong> {{ FormatDuration $alert.Alert.ActiveSince }} (since {{ FormatDate $alert.Alert.ActiveAt }})
-{{- if $alert.Alert.Value }}
-<strong>Value: </strong>{{ StrToFloat64 $alert.Alert.Value }}
-{{- end }}
-<strong>Labels: </strong>
-{{- range $key, $label := $alert.Alert.Labels }}
-{{- if ne $key "alertname" }}
-  {{ $key }} = {{ $label }}
-{{- end }}
-{{- end }}
-{{- end }}
-
-
-
-{{- if .Data.ShowPrometheusHeader }}
-{{- if .Data.PrometheusAlerts }}
-<strong>Prometheus alerts ({{ .Data.PrometheusAlertsCount }}):</strong>
-{{- end }}
-{{- end }}
-{{- range $alertId, $alert := .Data.PrometheusAlerts }}
-{{- if $alert.ShowAlertName }}
-- {{ GetEmojiByStatus $alert.Alert.State }} {{ $alert.GroupName }} -> {{ $alert.AlertName }} ({{ $alert.GroupAlertsCount }}):
-{{- end }}
-<strong>Firing for:</strong> {{ FormatDuration $alert.Alert.ActiveSince }} (since {{ FormatDate $alert.Alert.ActiveAt }})
-{{- if $alert.Alert.Value }}
-<strong>Value: </strong>{{ StrToFloat64 $alert.Alert.Value }}
-{{- end }}
-<strong>Labels: </strong>
-{{- range $key, $label := $alert.Alert.Labels }}
-{{- if ne $key "alertname" }}
-  {{ $key }} = {{ $label }}
-{{- end }}
-{{- end }}
 {{ end }}

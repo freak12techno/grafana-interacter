@@ -16,7 +16,7 @@ type GrafanaAlertRulesResponse struct {
 }
 
 type GrafanaAlertRulesData struct {
-	Groups []GrafanaAlertGroup `json:"groups"`
+	Groups GrafanaAlertGroups `json:"groups"`
 }
 
 type GrafanaAlertGroup struct {
@@ -103,7 +103,7 @@ func (g GrafanaAlertGroups) FindLabelsByHash(hash string) (map[string]string, bo
 	return nil, false
 }
 
-func (g GrafanaAlertGroups) FilterFiringOrPendingAlertGroups() []GrafanaAlertGroup {
+func (g GrafanaAlertGroups) FilterFiringOrPendingAlertGroups() GrafanaAlertGroups {
 	var returnGroups GrafanaAlertGroups
 
 	alertingStatuses := []string{"firing", "alerting", "pending"}
@@ -149,6 +149,24 @@ func (g GrafanaAlertGroups) FilterFiringOrPendingAlertGroups() []GrafanaAlertGro
 	}
 
 	return returnGroups
+}
+
+func (g GrafanaAlertGroups) ToFiringAlerts() []FiringAlert {
+	firingAlerts := make([]FiringAlert, 0)
+
+	for _, alertGroup := range g {
+		for _, alertRule := range alertGroup.Rules {
+			for _, alert := range alertRule.Alerts {
+				firingAlerts = append(firingAlerts, FiringAlert{
+					GroupName:     alertGroup.Name,
+					Alert:         alert,
+					AlertRuleName: alertRule.Name,
+				})
+			}
+		}
+	}
+
+	return firingAlerts
 }
 
 type AlertmanagerAlert struct {

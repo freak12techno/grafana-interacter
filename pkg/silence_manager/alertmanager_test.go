@@ -4,7 +4,6 @@ import (
 	"errors"
 	"main/assets"
 	configPkg "main/pkg/config"
-	"main/pkg/constants"
 	loggerPkg "main/pkg/logger"
 	"main/pkg/types"
 	"testing"
@@ -22,10 +21,6 @@ func TestAlertmanagerBasic(t *testing.T) {
 
 	require.True(t, client.Enabled())
 	require.Equal(t, "Alertmanager", client.Name())
-	require.Equal(t, constants.AlertmanagerSilencePrefix, client.GetSilencePrefix())
-	require.Equal(t, constants.AlertmanagerUnsilencePrefix, client.GetUnsilencePrefix())
-	require.Equal(t, constants.AlertmanagerPaginatedSilencesList, client.GetPaginatedSilencesListPrefix())
-	require.Equal(t, constants.AlertmanagerPrepareSilencePrefix, client.GetPrepareSilencePrefix())
 	require.Equal(t, []string{"1h"}, client.GetMutesDurations())
 }
 

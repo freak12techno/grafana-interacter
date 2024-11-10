@@ -20,6 +20,7 @@ func TestGrafanaGetAllDashboardsFailed(t *testing.T) {
 	logger := loggerPkg.GetNopLogger()
 	config := configPkg.GrafanaConfig{URL: "https://example.com", User: "admin", Password: "admin"}
 	client := InitGrafana(config, logger)
+	require.Empty(t, client.GetMutesDurations())
 
 	httpmock.RegisterResponder(
 		"GET",

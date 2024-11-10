@@ -71,8 +71,8 @@ func (a *App) GenerateSilenceForAlert(
 func (a *App) GetAllAlertingRules() (types.GrafanaAlertGroups, error) {
 	rules := make(types.GrafanaAlertGroups, 0)
 
-	for _, alertSource := range a.AlertSources {
-		alertSourceRules, err := alertSource.GetAlertingRules()
+	for _, alertSource := range a.AlertSourcesWithSilenceManager {
+		alertSourceRules, err := alertSource.AlertSource.GetAlertingRules()
 		if err != nil {
 			return nil, err
 		}
@@ -87,6 +87,7 @@ func (a *App) ReplyRender(
 	c tele.Context,
 	templateName string,
 	renderStruct render.RenderStruct,
+	opts ...interface{},
 ) error {
 	template, err := a.TemplateManager.Render(templateName, renderStruct)
 	if err != nil {
@@ -94,5 +95,28 @@ func (a *App) ReplyRender(
 		return c.Reply(fmt.Sprintf("Error rendering template: %s", err))
 	}
 
-	return a.BotReply(c, template)
+	return a.BotReply(c, template, opts...)
+}
+
+func (a *App) EditRender(
+	c tele.Context,
+	templateName string,
+	renderStruct render.RenderStruct,
+	opts ...interface{},
+) error {
+	opts = append(opts, tele.ModeHTML, tele.NoPreview)
+
+	template, renderErr := a.TemplateManager.Render(templateName, renderStruct)
+
+	if renderErr != nil {
+		a.Logger.Error().Str("template", templateName).Err(renderErr).Msg("Error rendering template")
+		return c.Reply(fmt.Sprintf("Error rendering template: %s", renderErr))
+	}
+
+	if editErr := c.Edit(strings.TrimSpace(template), opts...); editErr != nil {
+		a.Logger.Error().Err(editErr).Msg("Error editing message")
+		return editErr
+	}
+
+	return nil
 }

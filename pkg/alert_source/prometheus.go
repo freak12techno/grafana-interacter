@@ -2,6 +2,7 @@ package alert_source
 
 import (
 	"main/pkg/config"
+	"main/pkg/constants"
 	"main/pkg/http"
 	"main/pkg/types"
 
@@ -28,6 +29,12 @@ func (p *Prometheus) Enabled() bool {
 
 func (p *Prometheus) Name() string {
 	return "Prometheus"
+}
+
+func (g *Prometheus) Prefixes() Prefixes {
+	return Prefixes{
+		PaginatedFiringAlerts: constants.PrometheusPaginatedFiringAlertsList,
+	}
 }
 
 func (p *Prometheus) GetAuth() *http.Auth {

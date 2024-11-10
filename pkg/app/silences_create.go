@@ -75,7 +75,7 @@ func (a *App) HandlePrepareNewSilenceFromCallback(
 		for index, mute := range mutesDurations {
 			rows[index] = menu.Row(menu.Data(
 				fmt.Sprintf("⌛ Silence for %s", mute),
-				silenceManager.GetSilencePrefix(),
+				silenceManager.Prefixes().Silence,
 				mute+" "+callback.Data,
 			))
 		}
@@ -140,25 +140,19 @@ func (a *App) HandleNewSilenceGeneric(
 		return c.Reply(fmt.Sprintf("Error getting alerts for silence: %s", alertsErr))
 	}
 
-	template, renderErr := a.TemplateManager.Render("silences_create", render.RenderStruct{
+	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
+	menu.Inline(menu.Row(menu.Data(
+		"❌Unsilence",
+		silenceManager.Prefixes().Unsilence,
+		silence.ID,
+	)))
+
+	return a.ReplyRender(c, "silences_create", render.RenderStruct{
 		Grafana: a.Grafana,
 		Data: types.SilenceWithAlerts{
 			Silence:       silence,
 			AlertsPresent: alerts != nil,
 			Alerts:        alerts,
 		},
-	})
-	if renderErr != nil {
-		a.Logger.Error().Err(renderErr).Msg("Error rendering silences_create template")
-		return c.Reply(fmt.Sprintf("Error rendering template: %s", renderErr))
-	}
-
-	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
-	menu.Inline(menu.Row(menu.Data(
-		"❌Unsilence",
-		silenceManager.GetUnsilencePrefix(),
-		silence.ID,
-	)))
-
-	return a.BotReply(c, template, menu)
+	}, menu)
 }

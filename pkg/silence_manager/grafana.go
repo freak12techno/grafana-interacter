@@ -24,20 +24,13 @@ func InitGrafana(config config.GrafanaConfig, logger *zerolog.Logger) *Grafana {
 	}
 }
 
-func (g *Grafana) GetUnsilencePrefix() string {
-	return constants.GrafanaUnsilencePrefix
-}
-
-func (g *Grafana) GetSilencePrefix() string {
-	return constants.GrafanaSilencePrefix
-}
-
-func (g *Grafana) GetPaginatedSilencesListPrefix() string {
-	return constants.GrafanaPaginatedSilencesList
-}
-
-func (g *Grafana) GetPrepareSilencePrefix() string {
-	return constants.GrafanaPrepareSilencePrefix
+func (g *Grafana) Prefixes() Prefixes {
+	return Prefixes{
+		PaginatedSilencesList: constants.GrafanaPaginatedSilencesList,
+		Silence:               constants.GrafanaSilencePrefix,
+		PrepareSilence:        constants.GrafanaPrepareSilencePrefix,
+		Unsilence:             constants.GrafanaUnsilencePrefix,
+	}
 }
 
 func (g *Grafana) Name() string {

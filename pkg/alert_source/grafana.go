@@ -3,6 +3,7 @@ package alert_source
 import (
 	"fmt"
 	"main/pkg/config"
+	"main/pkg/constants"
 	"main/pkg/http"
 	"main/pkg/types"
 
@@ -40,6 +41,12 @@ func (g *Grafana) GetAuth() *http.Auth {
 		Username: g.Config.User,
 		Password: g.Config.Password,
 		Token:    g.Config.Token,
+	}
+}
+
+func (g *Grafana) Prefixes() Prefixes {
+	return Prefixes{
+		PaginatedFiringAlerts: constants.GrafanaPaginatedFiringAlertsList,
 	}
 }
 

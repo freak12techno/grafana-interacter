@@ -3,33 +3,126 @@
   "data": {
     "groups": [
       {
-        "name": "BlackboxExporterAlerts",
-        "file": "/etc/prometheus/rules.d/blackbox-exporter.yml",
+        "name": "CosmosNodeExporter",
+        "file": "/etc/prometheus/rules.d/cosmos-node-exporter.yml",
         "rules": [
           {
-            "state": "inactive",
-            "name": "BlackboxProbeFailed",
-            "query": "probe_success == 0",
-            "duration": 300,
+            "state": "firing",
+            "name": "CosmosNodeNotLatestBinary",
+            "query": "cosmos_node_exporter_is_latest == 0 and on (instance, host) cosmos_node_exporter_upgrade_coming == 0",
+            "duration": 60,
             "keepFiringFor": 0,
             "labels": {
-              "severity": "critical"
+              "severity": "warning"
             },
             "annotations": {
-              "description": "Probe failed",
-              "summary": "Blackbox probe failed (instance {{ $labels.instance }})"
+              "description": "Tendermint node is not running the latest binary (host {{ $labels.host }}): github version {{ $labels.remote_version }}, local version: {{ $labels.local_version }})",
+              "summary": "Tendermint node is not running the latest binary"
             },
-            "alerts": [],
+            "alerts": [
+              {
+                "labels": {
+                  "alertname": "CosmosNodeNotLatestBinary",
+                  "datacenter": "ip-projects",
+                  "host": "neutron-monitoring",
+                  "hosting": "ip-projects",
+                  "instance": "1.2.3.4:9500",
+                  "job": "cosmos-node-exporter",
+                  "local_version": "4.2.4",
+                  "network": "neutron",
+                  "node": "neutron-monitoring",
+                  "remote_version": "5.0.0",
+                  "severity": "warning",
+                  "type": "monitoring"
+                },
+                "annotations": {
+                  "description": "Tendermint node is not running the latest binary (host neutron-monitoring): github version 5.0.0, local version: 4.2.4)",
+                  "summary": "Tendermint node is not running the latest binary"
+                },
+                "state": "firing",
+                "activeAt": "2024-10-30T15:13:38.401046123Z",
+                "value": "0e+00"
+              },
+              {
+                "labels": {
+                  "alertname": "CosmosNodeNotLatestBinary",
+                  "datacenter": "home",
+                  "host": "neutron-validator",
+                  "hosting": "proxmox-2",
+                  "instance": "1.2.3.4:9510",
+                  "job": "cosmos-node-exporter",
+                  "local_version": "4.2.4",
+                  "network": "neutron",
+                  "node": "neutron-validator",
+                  "remote_version": "5.0.0",
+                  "severity": "warning",
+                  "type": "validator"
+                },
+                "annotations": {
+                  "description": "Tendermint node is not running the latest binary (host neutron-validator): github version 5.0.0, local version: 4.2.4)",
+                  "summary": "Tendermint node is not running the latest binary"
+                },
+                "state": "firing",
+                "activeAt": "2024-11-07T23:00:08.401046123Z",
+                "value": "0e+00"
+              },
+              {
+                "labels": {
+                  "alertname": "CosmosNodeNotLatestBinary",
+                  "datacenter": "home",
+                  "host": "pion-testnet",
+                  "hosting": "proxmox-3",
+                  "instance": "1.2.3.4:9502",
+                  "job": "cosmos-node-exporter",
+                  "local_version": "5.0.0-rc0",
+                  "network": "pion",
+                  "node": "pion-testnet",
+                  "remote_version": "5.0.0",
+                  "severity": "warning",
+                  "type": "testnet"
+                },
+                "annotations": {
+                  "description": "Tendermint node is not running the latest binary (host pion-testnet): github version 5.0.0, local version: 5.0.0-rc0)",
+                  "summary": "Tendermint node is not running the latest binary"
+                },
+                "state": "firing",
+                "activeAt": "2024-10-30T15:14:38.401046123Z",
+                "value": "0e+00"
+              },
+              {
+                "labels": {
+                  "alertname": "CosmosNodeNotLatestBinary",
+                  "datacenter": "home",
+                  "host": "cosmos-testnet",
+                  "hosting": "proxmox-1",
+                  "instance": "1.2.3.4:9505",
+                  "job": "cosmos-node-exporter",
+                  "local_version": "v21.0.0-rc1",
+                  "network": "cosmos",
+                  "node": "cosmos-testnet",
+                  "remote_version": "21.0.0",
+                  "severity": "warning",
+                  "type": "testnet"
+                },
+                "annotations": {
+                  "description": "Tendermint node is not running the latest binary (host cosmos-testnet): github version 21.0.0, local version: v21.0.0-rc1)",
+                  "summary": "Tendermint node is not running the latest binary"
+                },
+                "state": "firing",
+                "activeAt": "2024-11-08T17:02:08.401046123Z",
+                "value": "0e+00"
+              }
+            ],
             "health": "ok",
-            "evaluationTime": 0.000205286,
-            "lastEvaluation": "2024-11-04T23:00:09.617125776+01:00",
+            "evaluationTime": 0.000486372,
+            "lastEvaluation": "2024-11-08T22:07:23.40239289+01:00",
             "type": "alerting"
           }
         ],
         "interval": 15,
         "limit": 0,
-        "evaluationTime": 0.001109495,
-        "lastEvaluation": "2024-11-04T23:00:09.617114674+01:00"
+        "evaluationTime": 0.000301299,
+        "lastEvaluation": "2024-11-08T22:07:25.652311984+01:00"
       }
     ]
   }

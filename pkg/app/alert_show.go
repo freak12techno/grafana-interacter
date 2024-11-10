@@ -2,8 +2,10 @@ package app
 
 import (
 	"fmt"
+	"main/pkg/types"
 	"main/pkg/types/render"
 	"strings"
+	"time"
 
 	tele "gopkg.in/telebot.v3"
 )
@@ -33,6 +35,9 @@ func (a *App) HandleSingleAlert(c tele.Context) error {
 
 	return a.ReplyRender(c, "alert", render.RenderStruct{
 		Grafana: a.Grafana,
-		Data:    rule,
+		Data: types.SingleAlertStruct{
+			Alert:      rule,
+			RenderTime: time.Now(),
+		},
 	})
 }

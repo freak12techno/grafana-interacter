@@ -14,27 +14,22 @@ func (a *App) HandleListAlerts(c tele.Context) error {
 		Str("text", c.Text()).
 		Msg("Got alerts query")
 
-	grafanaGroups, err := a.AlertSources[0].GetAlertingRules()
+	// TODO: fix
+	grafanaGroups, err := a.AlertSourcesWithSilenceManager[0].AlertSource.GetAlertingRules()
 	if err != nil {
 		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
 	}
 
-	prometheusGroups, err := a.AlertSources[1].GetAlertingRules()
+	prometheusGroups, err := a.AlertSourcesWithSilenceManager[1].AlertSource.GetAlertingRules()
 	if err != nil {
 		return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
 	}
 
-	template, err := a.TemplateManager.Render("alerts_list", render.RenderStruct{
+	return a.ReplyRender(c, "alerts_list", render.RenderStruct{
 		Grafana: a.Grafana,
 		Data: types.AlertsListStruct{
 			GrafanaGroups:    grafanaGroups,
 			PrometheusGroups: prometheusGroups,
 		},
 	})
-	if err != nil {
-		a.Logger.Error().Err(err).Msg("Error rendering alerts_list template")
-		return c.Reply(fmt.Sprintf("Error rendering template: %s", err))
-	}
-
-	return a.BotReply(c, template)
 }
