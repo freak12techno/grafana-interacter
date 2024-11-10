@@ -38,6 +38,7 @@ func (g *Alertmanager) Prefixes() Prefixes {
 		Silence:               constants.AlertmanagerSilencePrefix,
 		PrepareSilence:        constants.AlertmanagerPrepareSilencePrefix,
 		Unsilence:             constants.AlertmanagerUnsilencePrefix,
+		ListSilencesCommand:   constants.AlertmanagerListSilencesCommand,
 	}
 }
 

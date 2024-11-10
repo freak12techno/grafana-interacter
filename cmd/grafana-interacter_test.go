@@ -6,7 +6,6 @@ import (
 
 	"github.com/jarcoal/httpmock"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,7 +19,6 @@ func TestValidateConfigNoConfigProvided(t *testing.T) {
 
 	os.Args = []string{"cmd", "validate-config"}
 	main()
-	assert.True(t, true)
 }
 
 //nolint:paralleltest // disabled
@@ -33,7 +31,6 @@ func TestValidateConfigFailedToLoad(t *testing.T) {
 
 	os.Args = []string{"cmd", "validate-config", "--config", "../assets/config-not-found.yml"}
 	main()
-	assert.True(t, true)
 }
 
 //nolint:paralleltest // disabled
@@ -46,14 +43,12 @@ func TestValidateConfigInvalid(t *testing.T) {
 
 	os.Args = []string{"cmd", "validate-config", "--config", "../assets/config-invalid.yml"}
 	main()
-	assert.True(t, true)
 }
 
 //nolint:paralleltest // disabled
 func TestValidateConfigValid(t *testing.T) {
 	os.Args = []string{"cmd", "validate-config", "--config", "../assets/config-valid.yml"}
 	main()
-	assert.True(t, true)
 }
 
 //nolint:paralleltest // disabled
@@ -66,7 +61,6 @@ func TestStartNoConfigProvided(t *testing.T) {
 
 	os.Args = []string{"cmd"}
 	main()
-	assert.True(t, true)
 }
 
 //nolint:paralleltest // disabled
@@ -79,7 +73,6 @@ func TestStartConfigInvalid(t *testing.T) {
 
 	os.Args = []string{"cmd", "--config", "../assets/config-invalid.yml"}
 	main()
-	assert.True(t, true)
 }
 
 //nolint:paralleltest // disabled
@@ -95,5 +88,4 @@ func TestStartConfigProvided(t *testing.T) {
 
 	os.Args = []string{"cmd", "--config", "../assets/config-valid.yml"}
 	main()
-	assert.True(t, true)
 }
