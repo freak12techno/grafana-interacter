@@ -19,7 +19,6 @@ linters:
     - dupl
     - funlen
     - wsl
-    - gomnd
     - unparam
     - err113
     - nestif
