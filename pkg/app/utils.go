@@ -60,11 +60,7 @@ func (a *App) GenerateSilenceForAlert(
 	}
 
 	matchers := types.QueryMatcherFromKeyValueMap(labels)
-	silenceInfo, silenceErr := utils.ParseSilenceWithDuration("callback", matchers, c.Sender().FirstName, duration)
-	if silenceErr != "" {
-		return nil, fmt.Errorf("Error parsing silence option: %s\n", silenceErr)
-	}
-
+	silenceInfo, _ := utils.ParseSilenceWithDuration("callback", matchers, c.Sender().FirstName, duration)
 	return silenceInfo, nil
 }
 
