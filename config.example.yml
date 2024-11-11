@@ -15,6 +15,14 @@ telegram:
   # If not provided, anyone can access this bot, so it's not recommended skipping it.
   admins: [1, 2]
 grafana:
+  # Whether to use Grafana as an alert source (see firing alerts, etc.).
+  # If you use Prometheus as an alert source and are not using Grafana alerts, you might set it to false.
+  # Defaults to true.
+  alerts: true
+  # Whether to use Grafana as a silence manager (see, create and manage silences).
+  # If you're using external Alertmanager as a silence manager, you might set it to false.
+  # Defaults to true.
+  silences: true
   # URL of the remote Grafana to do queries against.
   url: http://localhost:3000
    # Grafana credentials. You can authorize either with login/password, as below...
@@ -47,9 +55,16 @@ grafana:
     - 24h
     - 168h
     - 99999h
+# Optional Prometheus config, if you're using Prometheus alerts.
+prometheus:
+  # URL of the remote Prometheus
+  url: http://localhost:9090
+  # Prometheus credentials
+  user: admin
+  password: admin
 # Optional config if you use external Alertmanager, used for getting silences list and creating new ones.
 alertmanager:
-  # URL of the remote Grafana to do queries against. Defaults to http://localhost:9093
+  # URL of the remote Alertmanager to do queries against. Defaults to http://localhost:9093
   url: http://localhost:9093
   # Alertmanager credentials
   user: admin

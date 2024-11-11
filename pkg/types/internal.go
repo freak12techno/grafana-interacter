@@ -35,9 +35,13 @@ func (s PanelsStruct) FindByName(name string) (*PanelStruct, bool) {
 	return nil, false
 }
 
+type AlertsListForAlertSourceStruct struct {
+	AlertSourceName string
+	AlertGroups     []GrafanaAlertGroup
+}
+
 type AlertsListStruct struct {
-	GrafanaGroups    []GrafanaAlertGroup
-	PrometheusGroups []GrafanaAlertGroup
+	AlertSources []AlertsListForAlertSourceStruct
 }
 
 type FiringAlert struct {

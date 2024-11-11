@@ -1,19 +1,15 @@
-<strong>Grafana alerts:</strong>
-{{- if not .Data.GrafanaGroups }}
-<strong>No Grafana alerts</strong>
+{{- if not .Data }}
+No alert sources configured!
+{{- else }}
+{{- range .Data }}
+<strong>{{ .AlertSourceName }} alerts:</strong>
+{{- if not .AlertGroups }}
+No {{ .AlertSourceName }} alerts
 {{- end }}
-{{- range $groupId, $group := .Data.GrafanaGroups }}
+{{- range $groupId, $group := .AlertGroups }}
 {{- range $ruleId, $rule := $group.Rules }}
 - {{ GetEmojiByStatus $rule.State }} {{ $group.Name }} -> {{ $rule.Name }}
 {{- end }}
 {{- end }}
-
-<strong>Prometheus alerts:</strong>
-{{- if not .Data.PrometheusGroups }}
-<strong>No Prometheus alerts</strong>
-{{- end }}
-{{- range $groupId, $group := .Data.PrometheusGroups }}
-{{- range $ruleId, $rule := $group.Rules }}
-- {{ GetEmojiByStatus $rule.State }} {{ $group.Name }} -> {{ $rule.Name }}
-{{- end }}
-{{- end }}
+{{ end }}
+{{ end }}
