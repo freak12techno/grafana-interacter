@@ -26,7 +26,7 @@ func (a *App) HandleNewSilenceViaCommand(silenceManager silence_manager.SilenceM
 
 		silenceInfo, err := utils.ParseSilenceFromCommand(c.Text(), c.Sender().FirstName)
 		if err != "" {
-			return c.Reply(fmt.Sprintf("Error parsing silence option: %s\n", err))
+			return c.Reply(err)
 		}
 
 		return a.HandleNewSilenceGeneric(c, silenceManager, silenceInfo)
@@ -59,15 +59,6 @@ func (a *App) HandlePrepareNewSilenceFromCallback(
 		}
 
 		matchers := types.QueryMatcherFromKeyValueMap(labels)
-		template, renderErr := a.TemplateManager.Render("silence_prepare_create", render.RenderStruct{
-			Grafana: a.Grafana,
-			Data:    matchers,
-		})
-		if renderErr != nil {
-			a.Logger.Error().Err(renderErr).Msg("Error rendering silence_prepare_create template")
-			return c.Reply(fmt.Sprintf("Error rendering template: %s", renderErr))
-		}
-
 		menu := &tele.ReplyMarkup{ResizeKeyboard: true}
 		mutesDurations := silenceManager.GetMutesDurations()
 		rows := make([]tele.Row, len(mutesDurations))
@@ -81,7 +72,13 @@ func (a *App) HandlePrepareNewSilenceFromCallback(
 		}
 
 		menu.Inline(rows...)
-		return a.BotReply(c, template, menu)
+
+		matchers.Sort()
+
+		return a.ReplyRender(c, "silence_prepare_create", render.RenderStruct{
+			Grafana: a.Grafana,
+			Data:    matchers,
+		}, menu)
 	}
 }
 

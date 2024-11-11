@@ -21,4 +21,6 @@ const (
 	AlertmanagerPrepareSilencePrefix    = "alertmanager_prepare_silence_"
 	GrafanaListSilencesCommand          = "grafana_silences"
 	AlertmanagerListSilencesCommand     = "alertmanager_silences"
+	GrafanaSilenceCommand               = "grafana_silence"
+	AlertmanagerSilenceCommand          = "alertmanager_silence"
 )

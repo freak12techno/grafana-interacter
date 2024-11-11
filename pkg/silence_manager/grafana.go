@@ -31,6 +31,7 @@ func (g *Grafana) Prefixes() Prefixes {
 		PrepareSilence:        constants.GrafanaPrepareSilencePrefix,
 		Unsilence:             constants.GrafanaUnsilencePrefix,
 		ListSilencesCommand:   constants.GrafanaListSilencesCommand,
+		SilenceCommand:        constants.GrafanaSilenceCommand,
 	}
 }
 

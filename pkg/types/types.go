@@ -3,6 +3,7 @@ package types
 import (
 	"fmt"
 	"main/pkg/constants"
+	"sort"
 	"strings"
 	"unicode"
 )
@@ -26,7 +27,7 @@ func (matcher *QueryMatcher) Serialize() string {
 	return fmt.Sprintf("%s %s %s", matcher.Key, matcher.Operator, matcher.Value)
 }
 
-func QueryMatcherFromKeyValueString(source string) []QueryMatcher {
+func QueryMatcherFromKeyValueString(source string) QueryMatchers {
 	lastQuote := rune(0)
 	f := func(c rune) bool {
 		switch {
@@ -76,7 +77,7 @@ func QueryMatcherFromKeyValueString(source string) []QueryMatcher {
 	return matchers
 }
 
-func QueryMatcherFromKeyValueMap(source map[string]string) []QueryMatcher {
+func QueryMatcherFromKeyValueMap(source map[string]string) QueryMatchers {
 	matchers := make([]QueryMatcher, len(source))
 	index := 0
 
@@ -90,6 +91,14 @@ func QueryMatcherFromKeyValueMap(source map[string]string) []QueryMatcher {
 	}
 
 	return matchers
+}
+
+type QueryMatchers []QueryMatcher
+
+func (q QueryMatchers) Sort() {
+	sort.Slice(q, func(i, j int) bool {
+		return q[i].Key < q[j].Key
+	})
 }
 
 func MatcherFromQueryMatcher(queryMatcher QueryMatcher) *SilenceMatcher {
