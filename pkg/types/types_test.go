@@ -16,15 +16,15 @@ func TestQueryMatcherSerialize(t *testing.T) {
 func TestQueryMatcherFromKeyValueString(t *testing.T) {
 	t.Parallel()
 
-	require.Equal(t, []QueryMatcher{
+	require.Equal(t, QueryMatchers{
 		{Key: "key", Operator: "=", Value: "value"},
 	}, QueryMatcherFromKeyValueString("key=value"))
 
-	require.Equal(t, []QueryMatcher{
+	require.Equal(t, QueryMatchers{
 		{Key: "key", Operator: "=", Value: "value"},
 	}, QueryMatcherFromKeyValueString("key=\"value\""))
 
-	require.Equal(t, []QueryMatcher{
+	require.Equal(t, QueryMatchers{
 		{Key: "key", Operator: "=", Value: "value"},
 		{Key: "alertname", Operator: "=", Value: "alertname"},
 	}, QueryMatcherFromKeyValueString("key=value alertname"))
@@ -33,7 +33,7 @@ func TestQueryMatcherFromKeyValueString(t *testing.T) {
 func TestQueryMatcherFromKeyValueMap(t *testing.T) {
 	t.Parallel()
 
-	require.Equal(t, []QueryMatcher{
+	require.Equal(t, QueryMatchers{
 		{Key: "key", Operator: "=", Value: "value"},
 	}, QueryMatcherFromKeyValueMap(map[string]string{
 		"key": "value",

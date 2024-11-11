@@ -97,9 +97,7 @@ func (a *App) Start() {
 	a.Bot.Handle("/silences", a.HandleChooseSilenceManagerForListSilences)
 
 	// TODO: fix
-	a.Bot.Handle("/silence", a.HandleNewSilenceViaCommand(a.AlertSourcesWithSilenceManager[0].SilenceManager))
 	a.Bot.Handle("/unsilence", a.HandleDeleteSilenceViaCommand(a.AlertSourcesWithSilenceManager[0].SilenceManager))
-	a.Bot.Handle("/alertmanager_silence", a.HandleNewSilenceViaCommand(a.AlertSourcesWithSilenceManager[1].SilenceManager))
 	a.Bot.Handle("/alertmanager_unsilence", a.HandleDeleteSilenceViaCommand(a.AlertSourcesWithSilenceManager[1].SilenceManager))
 
 	// Callbacks
@@ -111,6 +109,7 @@ func (a *App) Start() {
 		silencesPrefixes := silenceManager.Prefixes()
 
 		a.Bot.Handle("/"+silencesPrefixes.ListSilencesCommand, a.HandleListSilences(silenceManager))
+		a.Bot.Handle("/"+silencesPrefixes.SilenceCommand, a.HandleNewSilenceViaCommand(silenceManager))
 
 		// Callbacks
 		a.Bot.Handle("\f"+alertSourcePrefixes.PaginatedFiringAlerts, a.HandleListFiringAlertsFromCallback(alertSource, silenceManager))

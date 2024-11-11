@@ -14,6 +14,7 @@ type Prefixes struct {
 	PrepareSilence        string
 	Unsilence             string
 	ListSilencesCommand   string
+	SilenceCommand        string
 }
 
 type SilenceManager interface {

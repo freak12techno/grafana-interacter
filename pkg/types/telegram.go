@@ -46,6 +46,10 @@ func TelegramResponseHasText(text string) httpmock.Matcher {
 		})
 }
 
+func TelegramResponseHasBytesAndMarkup(text []byte, keyboard TelegramInlineKeyboardResponse) httpmock.Matcher {
+	return TelegramResponseHasTextAndMarkup(string(text), keyboard)
+}
+
 func TelegramResponseHasTextAndMarkup(text string, keyboard TelegramInlineKeyboardResponse) httpmock.Matcher {
 	return httpmock.NewMatcher("TelegramResponseHasTextAndMarkup",
 		func(req *http.Request) bool {
