@@ -39,24 +39,11 @@ func (m *StubSilenceManager) GetSilences() (types.Silences, error) {
 }
 
 func (m *StubSilenceManager) GetSilence(silenceID string) (types.Silence, error) {
-	if m.GetSilenceError != nil {
-		return types.Silence{}, m.GetSilenceError
-	}
-
-	if silence, ok := m.Silences[silenceID]; ok {
-		return silence, nil
-	}
-
 	return types.Silence{}, errors.New("Silence was not found!")
 }
 
 func (m *StubSilenceManager) CreateSilence(silence types.Silence) (types.SilenceCreateResponse, error) {
-	if m.CreateSilenceError != nil {
-		return types.SilenceCreateResponse{}, m.CreateSilenceError
-	}
-
 	m.Silences[silence.ID] = silence
-
 	return types.SilenceCreateResponse{SilenceID: silence.ID}, nil
 }
 
@@ -69,12 +56,7 @@ func (m *StubSilenceManager) GetSilenceMatchingAlerts(silence types.Silence) ([]
 }
 
 func (m *StubSilenceManager) DeleteSilence(silenceID string) error {
-	if _, ok := m.Silences[silenceID]; ok {
-		delete(m.Silences, silenceID)
-		return nil
-	} else {
-		return errors.New("Silence was not found!")
-	}
+	return nil
 }
 
 func (m *StubSilenceManager) Prefixes() Prefixes {
