@@ -4,6 +4,7 @@ import (
 	"main/pkg/alert_source"
 	"main/pkg/clients"
 	configPkg "main/pkg/config"
+	"main/pkg/constants"
 	loggerPkg "main/pkg/logger"
 	"main/pkg/silence_manager"
 	"main/pkg/templates"
@@ -85,6 +86,7 @@ func NewApp(config *configPkg.Config, version string) *App {
 }
 
 func (a *App) Start() {
+	// Commands
 	a.Bot.Handle("/start", a.HandleHelp)
 	a.Bot.Handle("/help", a.HandleHelp)
 	a.Bot.Handle("/dashboards", a.HandleListDashboards)
@@ -95,6 +97,11 @@ func (a *App) Start() {
 	a.Bot.Handle("/firing", a.HandleChooseAlertSourceForListFiringAlerts)
 	a.Bot.Handle("/alert", a.HandleSingleAlert)
 	a.Bot.Handle("/silences", a.HandleChooseSilenceManagerForListSilences)
+
+	// Callbacks
+	a.Bot.Handle("\f"+constants.GrafanaRenderChooseDashboardPrefix, a.HandleRenderChooseDashboardFromCallback)
+	a.Bot.Handle("\f"+constants.GrafanaRenderChoosePanelPrefix, a.HandleRenderPanelChoosePanelFromCallback)
+	a.Bot.Handle("\f"+constants.GrafanaRenderRenderPanelPrefix, a.HandleRenderPanelFromCallback)
 
 	for _, alertSourceWithSilenceManager := range a.AlertSourcesWithSilenceManager {
 		alertSource := alertSourceWithSilenceManager.AlertSource

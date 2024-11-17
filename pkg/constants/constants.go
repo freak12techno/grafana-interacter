@@ -6,8 +6,10 @@ const (
 	SilenceMatcherEqual         string = "="
 	SilenceMatcherNotEqual      string = "!="
 
-	SilencesInOneMessage = 5
-	AlertsInOneMessage   = 3
+	SilencesInOneMessage   = 5
+	AlertsInOneMessage     = 3
+	DashboardsInOneMessage = 5
+	PanelsInOneMessage     = 5
 
 	GrafanaPaginatedFiringAlertsList    = "grafana_paginated_firing_alerts_list_"
 	PrometheusPaginatedFiringAlertsList = "prometheus_paginated_firing_alerts_list_"
@@ -25,4 +27,8 @@ const (
 	AlertmanagerSilenceCommand          = "alertmanager_silence"
 	GrafanaUnsilenceCommand             = "grafana_unsilence"
 	AlertmanagerUnsilenceCommand        = "alertmanager_unsilence"
+
+	GrafanaRenderChooseDashboardPrefix = "grafana_render_choose_dashboard_"
+	GrafanaRenderChoosePanelPrefix     = "grafana_render_choose_panel_"
+	GrafanaRenderRenderPanelPrefix     = "grafana_render_render_panel"
 )

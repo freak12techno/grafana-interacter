@@ -5,7 +5,6 @@ import (
 	"main/assets"
 	configPkg "main/pkg/config"
 	loggerPkg "main/pkg/logger"
-	"main/pkg/types"
 	"testing"
 
 	"github.com/jarcoal/httpmock"
@@ -213,13 +212,10 @@ func TestGrafanaRenderPanelFailed(t *testing.T) {
 		"https://example.com/render/d-solo/dashboard/dashboard?panelId=1",
 		httpmock.NewErrorResponder(errors.New("custom error")))
 
-	alerts, err := client.RenderPanel(&types.PanelStruct{
-		DashboardID: "dashboard",
-		PanelID:     1,
-	}, map[string]string{})
+	render, err := client.RenderPanel(1, "dashboard", map[string]string{})
 	require.Error(t, err)
 	require.ErrorContains(t, err, "custom error")
-	require.Empty(t, alerts)
+	require.Empty(t, render)
 }
 
 //nolint:paralleltest
@@ -236,10 +232,7 @@ func TestGrafanaRenderPanelOk(t *testing.T) {
 		"https://example.com/render/d-solo/dashboard/dashboard?panelId=1",
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("render.jpeg")))
 
-	render, err := client.RenderPanel(&types.PanelStruct{
-		DashboardID: "dashboard",
-		PanelID:     1,
-	}, map[string]string{})
+	render, err := client.RenderPanel(1, "dashboard", map[string]string{})
 	defer func() {
 		_ = render.Close()
 	}()

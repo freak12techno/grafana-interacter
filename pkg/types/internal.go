@@ -65,10 +65,24 @@ func (f FiringAlertsListStruct) GetAlertFiringFor(alert FiringAlert) time.Durati
 
 type SilencesListStruct struct {
 	Silences      []SilenceWithAlerts
-	ShowHeader    bool
 	Start         int
 	End           int
 	SilencesCount int
+}
+
+type DashboardsListStruct struct {
+	Dashboards      []GrafanaDashboardInfo
+	Start           int
+	End             int
+	DashboardsCount int
+}
+
+type PanelsListStruct struct {
+	Dashboard   GrafanaSingleDashboard
+	Panels      []GrafanaPanel
+	Start       int
+	End         int
+	PanelsCount int
 }
 
 type SingleAlertStruct struct {
