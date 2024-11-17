@@ -122,7 +122,7 @@ func TestGrafanaGetAllPanelsPanelFail(t *testing.T) {
 	httpmock.RegisterResponder(
 		"GET",
 		"https://example.com/api/search?type=dash-db",
-		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("grafana-dashboards-ok.json")))
+		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("grafana-dashboards-ok-single.json")))
 
 	httpmock.RegisterResponder(
 		"GET",
@@ -147,7 +147,7 @@ func TestGrafanaGetAllPanelsOk(t *testing.T) {
 	httpmock.RegisterResponder(
 		"GET",
 		"https://example.com/api/search?type=dash-db",
-		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("grafana-dashboards-ok.json")))
+		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("grafana-dashboards-ok-single.json")))
 
 	httpmock.RegisterResponder(
 		"GET",

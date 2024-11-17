@@ -59,10 +59,11 @@ func (a *App) HandleRenderPanelChooseDashboard(
 		return c.Reply(fmt.Sprintf("Error fetching dashboards: %s\n", err))
 	}
 
-	dashboardsGrouped := generic.SplitArrayIntoChunks(dashboards, constants.DashboardsInOneMessage)
-	if len(dashboardsGrouped) == 0 {
-		dashboardsGrouped = [][]types.GrafanaDashboardInfo{{}}
+	if len(dashboards) == 0 {
+		return c.Reply("No dashboards configured!")
 	}
+
+	dashboardsGrouped := generic.SplitArrayIntoChunks(dashboards, constants.DashboardsInOneMessage)
 
 	chunk := []types.GrafanaDashboardInfo{}
 	if page < len(dashboardsGrouped) {
@@ -148,10 +149,11 @@ func (a *App) HandleRenderPanelChoosePanelFromCallback(c tele.Context) error {
 		return c.Reply(fmt.Sprintf("Error fetching dashboard: %s\n", err))
 	}
 
-	panelsGrouped := generic.SplitArrayIntoChunks(dashboard.Dashboard.Panels, constants.PanelsInOneMessage)
-	if len(panelsGrouped) == 0 {
-		panelsGrouped = [][]types.GrafanaPanel{{}}
+	if len(dashboard.Dashboard.Panels) == 0 {
+		return c.Reply("This dashboard has no panels!")
 	}
+
+	panelsGrouped := generic.SplitArrayIntoChunks(dashboard.Dashboard.Panels, constants.PanelsInOneMessage)
 
 	chunk := []types.GrafanaPanel{}
 	if page < len(panelsGrouped) {

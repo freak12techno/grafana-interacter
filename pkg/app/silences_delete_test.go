@@ -235,7 +235,7 @@ func TestAppDeleteSilenceSilenceExpired(t *testing.T) {
 		ID: 1,
 		Message: &tele.Message{
 			Sender: &tele.User{Username: "testuser"},
-			Text:   "/grafana_unsilence af780078-c86b-4c0d-bfbb-3edd72922f6c",
+			Text:   "/grafana_unsilence af780078-c86b-4c0d-bfbb-3edd72922f6d",
 			Chat:   &tele.Chat{ID: 2},
 		},
 	})

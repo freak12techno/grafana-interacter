@@ -5,7 +5,6 @@ import (
 	"main/pkg/types"
 	"main/pkg/utils/generic"
 	"sync"
-	"time"
 )
 
 type Prefixes struct {
@@ -37,7 +36,7 @@ func GetSilencesWithAlerts(manager SilenceManager) ([]types.SilenceWithAlerts, e
 	}
 
 	silences = generic.Filter(silences, func(s types.Silence) bool {
-		return s.EndsAt.After(time.Now())
+		return s.Status.State == "active"
 	})
 
 	silencesWithAlerts := make([]types.SilenceWithAlerts, len(silences))
