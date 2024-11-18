@@ -46,13 +46,17 @@ func (g *Grafana) GetAuth() *http.Auth {
 	}
 }
 
-func (g *Grafana) RenderPanel(panel *types.PanelStruct, qs map[string]string) (io.ReadCloser, error) {
+func (g *Grafana) RenderPanel(
+	panelID int,
+	dashboardID string,
+	qs map[string]string,
+) (io.ReadCloser, error) {
 	params := generic.MergeMaps(g.Config.RenderOptions, qs)
-	params["panelId"] = strconv.Itoa(panel.PanelID)
+	params["panelId"] = strconv.Itoa(panelID)
 
 	url := g.RelativeLink(fmt.Sprintf(
 		"/render/d-solo/%s/dashboard?%s",
-		panel.DashboardID,
+		dashboardID,
 		utils.SerializeQueryString(params),
 	))
 

@@ -27,7 +27,7 @@
   {
     "id": "af780078-c86b-4c0d-bfbb-3edd72922f6c",
     "status": {
-      "state": "expired"
+      "state": "active"
     },
     "updatedAt": "2024-10-30T18:31:08.944Z",
     "comment": "Muted using grafana-interacter for 300h0m0s by Sergey | 🐹 Quokka Stake",
@@ -238,5 +238,30 @@
       }
     ],
     "startsAt": "2024-10-31T17:26:00.184Z"
+  },
+  {
+    "id": "af780078-c86b-4c0d-bfbb-3edd72922f6d",
+    "status": {
+      "state": "expired"
+    },
+    "updatedAt": "2024-10-30T18:31:08.944Z",
+    "comment": "Muted using grafana-interacter for 300h0m0s by Sergey | 🐹 Quokka Stake",
+    "createdBy": "Sergey | 🐹 Quokka Stake",
+    "endsAt": "2024-11-12T10:01:08.933+03:30",
+    "matchers": [
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "network",
+        "value": "pion"
+      },
+      {
+        "isEqual": true,
+        "isRegex": false,
+        "name": "alertname",
+        "value": "CosmosNodeNotLatestBinary"
+      }
+    ],
+    "startsAt": "2024-10-30T18:31:08.944Z"
   }
 ]

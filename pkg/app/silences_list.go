@@ -115,7 +115,6 @@ func (a *App) HandleListSilencesWithPagination(
 		Grafana: a.Grafana,
 		Data: types.SilencesListStruct{
 			Silences:      chunk,
-			ShowHeader:    true,
 			Start:         page*constants.SilencesInOneMessage + 1,
 			End:           page*constants.SilencesInOneMessage + len(chunk),
 			SilencesCount: len(silencesWithAlerts),

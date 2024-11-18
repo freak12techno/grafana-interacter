@@ -1,0 +1,23 @@
+[
+  {
+    "id": 9,
+    "uid": "alertmanager",
+    "title": "Alertmanager",
+    "uri": "db/alertmanager",
+    "url": "/d/alertmanager/alertmanager",
+    "slug": "",
+    "type": "dash-db",
+    "tags": [
+      "alerting",
+      "alertmanager",
+      "prometheus"
+    ],
+    "isStarred": false,
+    "folderId": 8,
+    "folderUid": "df50f3d7-0010-488e-a4c7-9c512faed337",
+    "folderTitle": "monitoring",
+    "folderUrl": "/dashboards/f/df50f3d7-0010-488e-a4c7-9c512faed337/monitoring",
+    "sortMeta": 0,
+    "isDeleted": false
+  }
+]

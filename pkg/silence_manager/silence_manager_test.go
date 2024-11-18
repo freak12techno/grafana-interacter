@@ -29,6 +29,7 @@ func TestGetSilencesWithAlertsFetchSilenceError(t *testing.T) {
 	_, err := manager.CreateSilence(types.Silence{
 		ID:     "silence",
 		EndsAt: time.Now().Add(time.Hour),
+		Status: types.SilenceStatus{State: "active"},
 		Matchers: types.SilenceMatchers{
 			{IsEqual: true, IsRegex: false, Name: "key", Value: "value"},
 		},
@@ -48,6 +49,7 @@ func TestGetSilencesWithAlertsOk(t *testing.T) {
 	_, err := manager.CreateSilence(types.Silence{
 		ID:     "silence",
 		EndsAt: time.Now().Add(time.Hour),
+		Status: types.SilenceStatus{State: "active"},
 		Matchers: types.SilenceMatchers{
 			{IsEqual: true, IsRegex: false, Name: "key", Value: "value"},
 		},

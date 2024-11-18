@@ -133,7 +133,7 @@ func TestAppShowDashboardDashboardNotFound(t *testing.T) {
 		ID: 1,
 		Message: &tele.Message{
 			Sender: &tele.User{Username: "testuser"},
-			Text:   "/dashboard test",
+			Text:   "/dashboard asdasdasd",
 			Chat:   &tele.Chat{ID: 2},
 		},
 	})
