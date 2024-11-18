@@ -895,7 +895,7 @@ func TestAppRenderPanelFromCallbackPanelNotFound(t *testing.T) {
 }
 
 //nolint:paralleltest // disabled
-func TestAppRenderPanelFromCallbackOk(t *testing.T) {
+func TestAppRenderPanelFromCallbackFailedToRender(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
@@ -916,9 +916,83 @@ func TestAppRenderPanelFromCallbackOk(t *testing.T) {
 	httpmock.RegisterMatcherResponder(
 		"POST",
 		"https://api.telegram.org/botxxx:yyy/sendMessage",
-		types.TelegramResponseHasText("Panel not found!"),
+		types.TelegramResponseHasText("Error rendering panel: Get \"https://example.com/render/d-solo/alertmanager/dashboard?panelId=123\": custom error"),
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
 	)
+
+	httpmock.RegisterResponder(
+		"GET",
+		"https://example.com/api/dashboards/uid/dashboard",
+		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("grafana-dashboard-ok.json")))
+
+	httpmock.RegisterResponder(
+		"GET",
+		"https://example.com/api/search?type=dash-db",
+		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("grafana-dashboards-ok-single.json")))
+
+	httpmock.RegisterResponder(
+		"GET",
+		"https://example.com/api/dashboards/uid/alertmanager",
+		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("grafana-dashboard-ok.json")))
+
+	httpmock.RegisterResponder(
+		"GET",
+		"https://example.com/render/d-solo/alertmanager/dashboard?panelId=123",
+		httpmock.NewErrorResponder(errors.New("custom error")))
+
+	httpmock.RegisterResponder(
+		"POST",
+		"https://api.telegram.org/botxxx:yyy/sendPhoto",
+		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
+	)
+
+	app := NewApp(config, "1.2.3")
+	ctx := app.Bot.NewContext(tele.Update{
+		ID: 1,
+		Message: &tele.Message{
+			Sender: &tele.User{Username: "testuser"},
+			Text:   "/render",
+			Chat:   &tele.Chat{ID: 2},
+			ReplyTo: &tele.Message{
+				Sender: &tele.User{Username: "testuser"},
+				Text:   "/render",
+				Chat:   &tele.Chat{ID: 2},
+			},
+		},
+		Callback: &tele.Callback{
+			Sender: &tele.User{Username: "testuser"},
+			Unique: "\f" + constants.GrafanaRenderRenderPanelPrefix,
+			Data:   "dashboard 123",
+			Message: &tele.Message{
+				Sender: &tele.User{Username: "testuser"},
+				Text:   "/render",
+				Chat:   &tele.Chat{ID: 2},
+			},
+		},
+	})
+
+	err := app.HandleRenderPanelFromCallback(ctx)
+	require.NoError(t, err)
+}
+
+//nolint:paralleltest // disabled
+func TestAppRenderPanelFromCallbackOk(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	config := &configPkg.Config{
+		Timezone:     "Etc/GMT",
+		Log:          configPkg.LogConfig{LogLevel: "info"},
+		Telegram:     configPkg.TelegramConfig{Token: "xxx:yyy", Admins: []int64{1, 2}},
+		Grafana:      configPkg.GrafanaConfig{URL: "https://example.com", Silences: null.BoolFrom(false)},
+		Alertmanager: &configPkg.AlertmanagerConfig{URL: "http://alertmanager.com"},
+		Prometheus:   &configPkg.PrometheusConfig{URL: "https://prometheus.com"},
+	}
+
+	httpmock.RegisterResponder(
+		"POST",
+		"https://api.telegram.org/botxxx:yyy/getMe",
+		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-bot-ok.json")))
 
 	httpmock.RegisterResponder(
 		"GET",
@@ -953,6 +1027,11 @@ func TestAppRenderPanelFromCallbackOk(t *testing.T) {
 			Sender: &tele.User{Username: "testuser"},
 			Text:   "/render",
 			Chat:   &tele.Chat{ID: 2},
+			ReplyTo: &tele.Message{
+				Sender: &tele.User{Username: "testuser"},
+				Text:   "/render",
+				Chat:   &tele.Chat{ID: 2},
+			},
 		},
 		Callback: &tele.Callback{
 			Sender: &tele.User{Username: "testuser"},

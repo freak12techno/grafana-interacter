@@ -238,10 +238,30 @@ func (a *App) HandleRenderPanelFromCallback(c tele.Context) error {
 		return c.Reply("Panel not found!")
 	}
 
-	return a.HandleRenderPanelGeneric(c, types.RenderOptions{
-		Query:  fmt.Sprintf("%s %s", dashboard.Dashboard.Title, panel.Title),
-		Params: map[string]string{},
-	})
+	image, err := a.Grafana.RenderPanel(panel.ID, dashboard.Dashboard.UID, map[string]string{})
+	if err != nil {
+		return c.Reply(fmt.Sprintf("Error rendering panel: %s", err))
+	}
+
+	defer image.Close()
+
+	fileToSend := &tele.Photo{
+		File: tele.FromReader(image),
+		Caption: fmt.Sprintf("Panel: %s", a.Grafana.GetPanelLink(types.PanelStruct{
+			PanelID:      panel.ID,
+			DashboardURL: dashboard.Meta.URL,
+			Name:         panel.Title,
+		})),
+	}
+
+	replyTo := c.Message().ReplyTo
+
+	if deleteErr := a.Bot.Delete(c.Message()); deleteErr != nil {
+		a.Logger.Error().Err(deleteErr).Msg("Failed to delete message")
+	}
+
+	_, sendErr := a.Bot.Reply(replyTo, fileToSend, tele.ModeHTML)
+	return sendErr
 }
 
 func (a *App) HandleRenderPanelGeneric(
@@ -269,5 +289,6 @@ func (a *App) HandleRenderPanelGeneric(
 		File:    tele.FromReader(image),
 		Caption: fmt.Sprintf("Panel: %s", a.Grafana.GetPanelLink(*panel)),
 	}
+
 	return c.Reply(fileToSend, tele.ModeHTML)
 }
