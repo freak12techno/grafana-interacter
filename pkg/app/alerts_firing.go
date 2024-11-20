@@ -107,46 +107,15 @@ func (a *App) HandleListFiringAlertsWithPagination(
 		chunk = alertsGrouped[page]
 	}
 
-	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
-
-	rows := make([]tele.Row, 0)
-	index := 0
-
-	for _, alert := range chunk {
-		button := menu.Data(
-			fmt.Sprintf("🔇Silence alert #%d", index+1),
-			silenceManager.Prefixes().PrepareSilence,
-			alert.Alert.GetCallbackHash(),
-		)
-
-		rows = append(rows, menu.Row(button))
-		index += 1
-	}
-
-	if len(chunk) > 0 {
-		buttons := []tele.Btn{}
-		if page >= 1 {
-			buttons = append(buttons, menu.Data(
-				fmt.Sprintf("⬅️Page %d", page),
-				alertSource.Prefixes().PaginatedFiringAlerts,
-				strconv.Itoa(page-1),
-			))
-		}
-
-		if page < len(alertsGrouped)-1 {
-			buttons = append(buttons, menu.Data(
-				fmt.Sprintf("➡️Page %d", page+2),
-				alertSource.Prefixes().PaginatedFiringAlerts,
-				strconv.Itoa(page+1),
-			))
-		}
-
-		if len(buttons) > 0 {
-			rows = append(rows, menu.Row(buttons...))
-		}
-	}
-
-	menu.Inline(rows...)
+	menu := GenerateMenu(
+		chunk,
+		func(elt types.FiringAlert, index int) string { return fmt.Sprintf("🔇Silence alert #%d", index+1) },
+		silenceManager.Prefixes().PrepareSilence,
+		func(elt types.FiringAlert) string { return elt.Alert.GetCallbackHash() },
+		alertSource.Prefixes().PaginatedFiringAlerts,
+		page,
+		len(alertsGrouped),
+	)
 
 	templateData := render.RenderStruct{
 		Grafana: a.Grafana,
