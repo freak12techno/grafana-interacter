@@ -6,6 +6,7 @@ import (
 	"main/pkg/types"
 	"main/pkg/types/render"
 	"main/pkg/utils"
+	"strconv"
 	"strings"
 	"time"
 
@@ -117,4 +118,86 @@ func (a *App) EditRender(
 	}
 
 	return nil
+}
+
+func DefaultPrevPagePrefix(page int) string {
+	return strconv.Itoa(page - 1)
+}
+
+func DefaultNextPagePrefix(page int) string {
+	return strconv.Itoa(page + 1)
+}
+
+func GenerateMenuWithPagination[T any](
+	chunk []T,
+	textCallback func(T, int) string,
+	elementPrefix string,
+	elementCallback func(T) string,
+	paginationPrefix string,
+	page int,
+	pagesTotal int,
+) *tele.ReplyMarkup {
+	return GenerateMenuWithPaginationAndPagePrefix(
+		chunk,
+		textCallback,
+		elementPrefix,
+		elementCallback,
+		paginationPrefix,
+		page,
+		pagesTotal,
+		DefaultPrevPagePrefix,
+		DefaultNextPagePrefix,
+	)
+}
+
+func GenerateMenuWithPaginationAndPagePrefix[T any](
+	chunk []T,
+	textCallback func(T, int) string,
+	elementPrefix string,
+	elementCallback func(T) string,
+	paginationPrefix string,
+	page int,
+	pagesTotal int,
+	prevPagePrefix func(int) string,
+	nextPagePrefix func(int) string,
+) *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
+
+	rows := make([]tele.Row, 0)
+
+	for index, element := range chunk {
+		button := menu.Data(
+			textCallback(element, index),
+			elementPrefix,
+			elementCallback(element),
+		)
+
+		rows = append(rows, menu.Row(button))
+	}
+
+	if len(chunk) > 0 {
+		buttons := []tele.Btn{}
+		if page >= 1 {
+			buttons = append(buttons, menu.Data(
+				fmt.Sprintf("⬅️Page %d", page),
+				paginationPrefix,
+				prevPagePrefix(page),
+			))
+		}
+
+		if page < pagesTotal-1 {
+			buttons = append(buttons, menu.Data(
+				fmt.Sprintf("➡️Page %d", page+2),
+				paginationPrefix,
+				nextPagePrefix(page),
+			))
+		}
+
+		if len(buttons) > 0 {
+			rows = append(rows, menu.Row(buttons...))
+		}
+	}
+
+	menu.Inline(rows...)
+	return menu
 }

@@ -80,44 +80,15 @@ func (a *App) HandleRenderPanelChooseDashboard(
 		},
 	}
 
-	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
-
-	rows := make([]tele.Row, 0)
-
-	for _, dashboard := range chunk {
-		button := menu.Data(
-			dashboard.Title,
-			constants.GrafanaRenderChoosePanelPrefix,
-			fmt.Sprintf("%s 0", dashboard.UID),
-		)
-
-		rows = append(rows, menu.Row(button))
-	}
-
-	if len(chunk) > 0 {
-		buttons := []tele.Btn{}
-		if page >= 1 {
-			buttons = append(buttons, menu.Data(
-				fmt.Sprintf("⬅️Page %d", page),
-				constants.GrafanaRenderChooseDashboardPrefix,
-				strconv.Itoa(page-1),
-			))
-		}
-
-		if page < len(dashboardsGrouped)-1 {
-			buttons = append(buttons, menu.Data(
-				fmt.Sprintf("➡️Page %d", page+2),
-				constants.GrafanaRenderChooseDashboardPrefix,
-				strconv.Itoa(page+1),
-			))
-		}
-
-		if len(buttons) > 0 {
-			rows = append(rows, menu.Row(buttons...))
-		}
-	}
-
-	menu.Inline(rows...)
+	menu := GenerateMenuWithPagination(
+		chunk,
+		func(elt types.GrafanaDashboardInfo, index int) string { return elt.Title },
+		constants.GrafanaRenderChoosePanelPrefix,
+		func(elt types.GrafanaDashboardInfo) string { return fmt.Sprintf("%s 0", elt.UID) },
+		constants.GrafanaRenderChooseDashboardPrefix,
+		page,
+		len(dashboardsGrouped),
+	)
 
 	if editPrevious {
 		return a.EditRender(c, "render_choose_dashboard", templateData, menu)
@@ -171,44 +142,18 @@ func (a *App) HandleRenderPanelChoosePanelFromCallback(c tele.Context) error {
 		},
 	}
 
-	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
+	menu := GenerateMenuWithPaginationAndPagePrefix(
+		chunk,
+		func(elt types.GrafanaPanel, index int) string { return elt.Title },
+		constants.GrafanaRenderRenderPanelPrefix,
+		func(elt types.GrafanaPanel) string { return fmt.Sprintf("%s %d", dashboard.Dashboard.UID, elt.ID) },
+		constants.GrafanaRenderChoosePanelPrefix,
+		page,
+		len(panelsGrouped),
+		func(page int) string { return fmt.Sprintf("%s %d", dashboard.Dashboard.UID, page-1) },
+		func(page int) string { return fmt.Sprintf("%s %d", dashboard.Dashboard.UID, page+1) },
+	)
 
-	rows := make([]tele.Row, 0)
-
-	for _, panel := range chunk {
-		button := menu.Data(
-			panel.Title,
-			constants.GrafanaRenderRenderPanelPrefix,
-			fmt.Sprintf("%s %d", dashboard.Dashboard.UID, panel.ID),
-		)
-
-		rows = append(rows, menu.Row(button))
-	}
-
-	if len(chunk) > 0 {
-		buttons := []tele.Btn{}
-		if page >= 1 {
-			buttons = append(buttons, menu.Data(
-				fmt.Sprintf("⬅️Page %d", page),
-				constants.GrafanaRenderChoosePanelPrefix,
-				fmt.Sprintf("%s %d", dashboard.Dashboard.UID, page-1),
-			))
-		}
-
-		if page < len(panelsGrouped)-1 {
-			buttons = append(buttons, menu.Data(
-				fmt.Sprintf("➡️Page %d", page+2),
-				constants.GrafanaRenderChoosePanelPrefix,
-				fmt.Sprintf("%s %d", dashboard.Dashboard.UID, page+1),
-			))
-		}
-
-		if len(buttons) > 0 {
-			rows = append(rows, menu.Row(buttons...))
-		}
-	}
-
-	menu.Inline(rows...)
 	return a.EditRender(c, "render_choose_panel", templateData, menu)
 }
 

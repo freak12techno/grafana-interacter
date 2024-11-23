@@ -121,46 +121,19 @@ func (a *App) HandleListSilencesWithPagination(
 		},
 	}
 
-	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
-
-	rows := make([]tele.Row, 0)
-
 	prefixes := silenceManager.Prefixes()
 
-	for _, silence := range chunk {
-		button := menu.Data(
-			fmt.Sprintf("❌Unsilence %s", silence.Silence.ID),
-			prefixes.Unsilence,
-			silence.Silence.ID,
-		)
-
-		rows = append(rows, menu.Row(button))
-	}
-
-	if len(chunk) > 0 {
-		buttons := []tele.Btn{}
-		if page >= 1 {
-			buttons = append(buttons, menu.Data(
-				fmt.Sprintf("⬅️Page %d", page),
-				prefixes.PaginatedSilencesList,
-				strconv.Itoa(page-1),
-			))
-		}
-
-		if page < len(silencesGrouped)-1 {
-			buttons = append(buttons, menu.Data(
-				fmt.Sprintf("➡️Page %d", page+2),
-				prefixes.PaginatedSilencesList,
-				strconv.Itoa(page+1),
-			))
-		}
-
-		if len(buttons) > 0 {
-			rows = append(rows, menu.Row(buttons...))
-		}
-	}
-
-	menu.Inline(rows...)
+	menu := GenerateMenuWithPagination(
+		chunk,
+		func(elt types.SilenceWithAlerts, index int) string {
+			return fmt.Sprintf("❌Unsilence %s", elt.Silence.ID)
+		},
+		prefixes.Unsilence,
+		func(elt types.SilenceWithAlerts) string { return elt.Silence.ID },
+		prefixes.PaginatedSilencesList,
+		page,
+		len(silencesGrouped),
+	)
 
 	if editPrevious {
 		return a.EditRender(c, "silences_list", templateData, menu)
