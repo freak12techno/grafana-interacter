@@ -120,7 +120,15 @@ func (a *App) EditRender(
 	return nil
 }
 
-func GenerateMenu[T any](
+func DefaultPrevPagePrefix(page int) string {
+	return strconv.Itoa(page - 1)
+}
+
+func DefaultNextPagePrefix(page int) string {
+	return strconv.Itoa(page + 1)
+}
+
+func GenerateMenuWithPagination[T any](
 	chunk []T,
 	textCallback func(T, int) string,
 	elementPrefix string,
@@ -128,6 +136,30 @@ func GenerateMenu[T any](
 	paginationPrefix string,
 	page int,
 	pagesTotal int,
+) *tele.ReplyMarkup {
+	return GenerateMenuWithPaginationAndPagePrefix(
+		chunk,
+		textCallback,
+		elementPrefix,
+		elementCallback,
+		paginationPrefix,
+		page,
+		pagesTotal,
+		DefaultPrevPagePrefix,
+		DefaultNextPagePrefix,
+	)
+}
+
+func GenerateMenuWithPaginationAndPagePrefix[T any](
+	chunk []T,
+	textCallback func(T, int) string,
+	elementPrefix string,
+	elementCallback func(T) string,
+	paginationPrefix string,
+	page int,
+	pagesTotal int,
+	prevPagePrefix func(int) string,
+	nextPagePrefix func(int) string,
 ) *tele.ReplyMarkup {
 	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
 
@@ -149,7 +181,7 @@ func GenerateMenu[T any](
 			buttons = append(buttons, menu.Data(
 				fmt.Sprintf("⬅️Page %d", page),
 				paginationPrefix,
-				strconv.Itoa(page-1),
+				prevPagePrefix(page),
 			))
 		}
 
@@ -157,7 +189,7 @@ func GenerateMenu[T any](
 			buttons = append(buttons, menu.Data(
 				fmt.Sprintf("➡️Page %d", page+2),
 				paginationPrefix,
-				strconv.Itoa(page+1),
+				nextPagePrefix(page),
 			))
 		}
 

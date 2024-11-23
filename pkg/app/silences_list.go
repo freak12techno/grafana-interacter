@@ -123,7 +123,7 @@ func (a *App) HandleListSilencesWithPagination(
 
 	prefixes := silenceManager.Prefixes()
 
-	menu := GenerateMenu(
+	menu := GenerateMenuWithPagination(
 		chunk,
 		func(elt types.SilenceWithAlerts, index int) string {
 			return fmt.Sprintf("❌Unsilence %s", elt.Silence.ID)

@@ -107,7 +107,7 @@ func (a *App) HandleListFiringAlertsWithPagination(
 		chunk = alertsGrouped[page]
 	}
 
-	menu := GenerateMenu(
+	menu := GenerateMenuWithPagination(
 		chunk,
 		func(elt types.FiringAlert, index int) string { return fmt.Sprintf("🔇Silence alert #%d", index+1) },
 		silenceManager.Prefixes().PrepareSilence,
