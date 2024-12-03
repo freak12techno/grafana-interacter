@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"main/pkg/alert_source"
+	"main/pkg/constants"
 	"main/pkg/silence_manager"
 	"main/pkg/types"
 	"main/pkg/types/render"
@@ -139,9 +140,12 @@ func (a *App) HandleNewSilenceGeneric(
 
 	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
 	menu.Inline(menu.Row(menu.Data(
+		"✅Confirm",
+		constants.ClearKeyboardPrefix,
+	)), menu.Row(menu.Data(
 		"❌Unsilence",
 		silenceManager.Prefixes().Unsilence,
-		silence.ID,
+		silence.ID+" 1",
 	)))
 
 	return a.ReplyRender(c, "silences_create", render.RenderStruct{

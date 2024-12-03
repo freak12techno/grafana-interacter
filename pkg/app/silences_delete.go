@@ -40,8 +40,14 @@ func (a *App) HandleCallbackDeleteSilence(silenceManager silence_manager.Silence
 
 		callback := c.Callback()
 
-		a.RemoveKeyboardItemByCallback(c, callback)
-		return a.HandleDeleteSilenceGeneric(c, silenceManager, callback.Data)
+		dataSplit := strings.Split(callback.Data, " ")
+		if len(dataSplit) == 2 {
+			_ = a.ClearKeyboard(c)
+		} else {
+			a.RemoveKeyboardItemByCallback(c, callback)
+		}
+
+		return a.HandleDeleteSilenceGeneric(c, silenceManager, dataSplit[0])
 	}
 }
 
