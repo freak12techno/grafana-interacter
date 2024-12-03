@@ -53,7 +53,7 @@ func (a *App) HandlePrepareNewSilenceFromCallback(
 			return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
 		}
 
-		groups = groups.FilterFiringOrPendingAlertGroups()
+		groups = groups.FilterFiringOrPendingAlertGroups(true)
 		labels, found := groups.FindLabelsByHash(callback.Data)
 		if !found {
 			return c.Reply("Alert was not found!")

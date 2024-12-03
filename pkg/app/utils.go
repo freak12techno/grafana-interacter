@@ -80,7 +80,7 @@ func (a *App) GenerateSilenceForAlert(
 		return nil, fmt.Errorf("Invalid duration provided!")
 	}
 
-	groups = groups.FilterFiringOrPendingAlertGroups()
+	groups = groups.FilterFiringOrPendingAlertGroups(true)
 	labels, found := groups.FindLabelsByHash(alertHashToMute)
 	if !found {
 		return nil, errors.New("Alert was not found!")
