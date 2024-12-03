@@ -45,6 +45,30 @@ func (a *App) RemoveKeyboardItemByCallback(c tele.Context, callback *tele.Callba
 	}
 }
 
+func (a *App) ClearKeyboard(c tele.Context) error {
+	a.Logger.Info().
+		Str("sender", c.Sender().Username).
+		Msg("Got new clear keyboard query")
+
+	callback := c.Callback()
+	if callback.Message == nil || callback.Message.ReplyMarkup == nil {
+		return nil
+	}
+
+	if _, err := a.Bot.EditReplyMarkup(
+		callback.Message,
+		nil,
+	); err != nil {
+		a.Logger.Error().
+			Str("sender", c.Sender().Username).
+			Err(err).
+			Msg("Error clearing keyboard when editing a callback")
+		return err
+	}
+
+	return nil
+}
+
 func (a *App) GenerateSilenceForAlert(
 	c tele.Context,
 	groups types.GrafanaAlertGroups,

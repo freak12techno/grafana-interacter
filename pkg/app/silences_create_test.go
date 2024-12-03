@@ -283,13 +283,16 @@ func TestAppCreateSilenceOk(t *testing.T) {
 		"https://api.telegram.org/botxxx:yyy/sendMessage",
 		types.TelegramResponseHasBytesAndMarkup(assets.GetBytesOrPanic("responses/silence-create-ok.html"), types.TelegramInlineKeyboardResponse{
 			InlineKeyboard: [][]types.TelegramInlineKeyboard{
-				{
-					{
-						Unique:       "grafana_unsilence_",
-						Text:         "❌Unsilence",
-						CallbackData: "\fgrafana_unsilence_|4de5faa2-8c0c-4c66-bd31-25c3bf5fa231",
-					},
-				},
+				{{
+					Unique:       "clear_keyboard_",
+					Text:         "✅Confirm",
+					CallbackData: "\fclear_keyboard_",
+				}},
+				{{
+					Unique:       "grafana_unsilence_",
+					Text:         "❌Unsilence",
+					CallbackData: "\fgrafana_unsilence_|4de5faa2-8c0c-4c66-bd31-25c3bf5fa231 1",
+				}},
 			},
 		}),
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),

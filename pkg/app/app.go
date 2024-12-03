@@ -102,6 +102,7 @@ func (a *App) Start() {
 	a.Bot.Handle("\f"+constants.GrafanaRenderChooseDashboardPrefix, a.HandleRenderChooseDashboardFromCallback)
 	a.Bot.Handle("\f"+constants.GrafanaRenderChoosePanelPrefix, a.HandleRenderPanelChoosePanelFromCallback)
 	a.Bot.Handle("\f"+constants.GrafanaRenderRenderPanelPrefix, a.HandleRenderPanelFromCallback)
+	a.Bot.Handle("\f"+constants.ClearKeyboardPrefix, a.ClearKeyboard)
 
 	for _, alertSourceWithSilenceManager := range a.AlertSourcesWithSilenceManager {
 		alertSource := alertSourceWithSilenceManager.AlertSource

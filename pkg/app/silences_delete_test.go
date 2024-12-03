@@ -407,3 +407,61 @@ func TestAppDeleteSilenceCallbackOk(t *testing.T) {
 	err := app.HandleCallbackDeleteSilence(app.AlertSourcesWithSilenceManager[0].SilenceManager)(ctx)
 	require.NoError(t, err)
 }
+
+//nolint:paralleltest // disabled
+func TestAppDeleteSilenceCallbackOkWithDeleteKeyboard(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	config := &configPkg.Config{
+		Timezone: "Etc/GMT",
+		Log:      configPkg.LogConfig{LogLevel: "info"},
+		Telegram: configPkg.TelegramConfig{Token: "xxx:yyy", Admins: []int64{1, 2}},
+		Grafana: configPkg.GrafanaConfig{
+			URL:      "https://example.com",
+			Silences: null.BoolFrom(true),
+		},
+		Alertmanager: nil,
+		Prometheus:   nil,
+	}
+
+	httpmock.RegisterResponder(
+		"POST",
+		"https://api.telegram.org/botxxx:yyy/getMe",
+		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-bot-ok.json")))
+
+	httpmock.RegisterResponder(
+		"GET",
+		"https://example.com/api/alertmanager/grafana/api/v2/silences",
+		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("alertmanager-silences-ok.json")))
+
+	httpmock.RegisterMatcherResponder(
+		"POST",
+		"https://api.telegram.org/botxxx:yyy/sendMessage",
+		types.TelegramResponseHasText("Silence is not found by ID or matchers: 123"),
+		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
+	)
+
+	app := NewApp(config, "1.2.3")
+	ctx := app.Bot.NewContext(tele.Update{
+		ID: 1,
+		Message: &tele.Message{
+			Sender: &tele.User{Username: "testuser"},
+			Text:   "/grafana_unsilence 123",
+			Chat:   &tele.Chat{ID: 2},
+		},
+		Callback: &tele.Callback{
+			Sender: &tele.User{Username: "testuser"},
+			Unique: "\f" + constants.GrafanaUnsilencePrefix,
+			Data:   "123 1",
+			Message: &tele.Message{
+				Sender: &tele.User{Username: "testuser"},
+				Text:   "/grafana_unsilence 123 1",
+				Chat:   &tele.Chat{ID: 2},
+			},
+		},
+	})
+
+	err := app.HandleCallbackDeleteSilence(app.AlertSourcesWithSilenceManager[0].SilenceManager)(ctx)
+	require.NoError(t, err)
+}

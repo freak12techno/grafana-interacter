@@ -31,4 +31,5 @@ const (
 	GrafanaRenderChooseDashboardPrefix = "grafana_render_choose_dashboard_"
 	GrafanaRenderChoosePanelPrefix     = "grafana_render_choose_panel_"
 	GrafanaRenderRenderPanelPrefix     = "grafana_render_render_panel"
+	ClearKeyboardPrefix                = "clear_keyboard_"
 )
