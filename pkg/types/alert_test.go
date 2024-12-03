@@ -128,7 +128,7 @@ func TestFilterFiringOrPendingGrous(t *testing.T) {
 		},
 	}
 
-	groups = groups.FilterFiringOrPendingAlertGroups()
+	groups = groups.FilterFiringOrPendingAlertGroups(true)
 
 	require.Len(t, groups, 1)
 

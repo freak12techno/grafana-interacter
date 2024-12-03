@@ -278,7 +278,7 @@ func TestAppAlertsFiringRenderOk(t *testing.T) {
 	err := json.Unmarshal(alertRulesRaw, &alertRules)
 	require.NoError(t, err)
 
-	alerts := alertRules.Data.Groups.FilterFiringOrPendingAlertGroups().ToFiringAlerts()
+	alerts := alertRules.Data.Groups.FilterFiringOrPendingAlertGroups(true).ToFiringAlerts()
 	require.NotEmpty(t, alerts)
 
 	timeParsed, err := time.Parse(time.RFC3339, "2024-11-08T23:34:01Z")

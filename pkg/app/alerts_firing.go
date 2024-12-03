@@ -96,7 +96,7 @@ func (a *App) HandleListFiringAlertsWithPagination(
 		return c.Reply(fmt.Sprintf("Error fetching alerts: %s!\n", err))
 	}
 
-	firingAlerts := alerts.FilterFiringOrPendingAlertGroups().ToFiringAlerts()
+	firingAlerts := alerts.FilterFiringOrPendingAlertGroups(false).ToFiringAlerts()
 	alertsGrouped := generic.SplitArrayIntoChunks(firingAlerts, constants.AlertsInOneMessage)
 	if len(alertsGrouped) == 0 {
 		alertsGrouped = [][]types.FiringAlert{{}}

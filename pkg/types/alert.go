@@ -103,10 +103,13 @@ func (g GrafanaAlertGroups) FindLabelsByHash(hash string) (map[string]string, bo
 	return nil, false
 }
 
-func (g GrafanaAlertGroups) FilterFiringOrPendingAlertGroups() GrafanaAlertGroups {
+func (g GrafanaAlertGroups) FilterFiringOrPendingAlertGroups(leavePending bool) GrafanaAlertGroups {
 	var returnGroups GrafanaAlertGroups
 
 	alertingStatuses := []string{"firing", "alerting", "pending"}
+	if !leavePending {
+		alertingStatuses = []string{"firing", "alerting"}
+	}
 
 	for _, group := range g {
 		rules := []GrafanaAlertRule{}
