@@ -33,10 +33,10 @@ func GetSilencesWithAlerts(
 	manager SilenceManager,
 	page int,
 	perPage int,
-) ([]types.SilenceWithAlerts, int, error) {
+) ([]types.SilenceWithAlerts, int, int, error) {
 	allSilences, err := manager.GetSilences()
 	if err != nil {
-		return []types.SilenceWithAlerts{}, 0, err
+		return []types.SilenceWithAlerts{}, 0, 0, err
 	}
 
 	allSilences = generic.Filter(allSilences, func(s types.Silence) bool {
@@ -77,8 +77,8 @@ func GetSilencesWithAlerts(
 	wg.Wait()
 
 	if len(errs) > 0 {
-		return []types.SilenceWithAlerts{}, 0, fmt.Errorf("Error getting alerts for silence on %d silences!", len(errs))
+		return []types.SilenceWithAlerts{}, 0, 0, fmt.Errorf("Error getting alerts for silence on %d silences!", len(errs))
 	}
 
-	return silencesWithAlerts, totalPages, nil
+	return silencesWithAlerts, totalPages, len(allSilences), nil
 }

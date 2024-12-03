@@ -96,7 +96,7 @@ func (a *App) HandleListSilencesWithPagination(
 		return c.Reply(silenceManager.Name() + " is disabled.")
 	}
 
-	silencesWithAlerts, totalCount, err := silence_manager.GetSilencesWithAlerts(
+	silencesWithAlerts, totalPages, totalCount, err := silence_manager.GetSilencesWithAlerts(
 		silenceManager,
 		page,
 		constants.SilencesInOneMessage,
@@ -126,7 +126,7 @@ func (a *App) HandleListSilencesWithPagination(
 		func(elt types.SilenceWithAlerts) string { return elt.Silence.ID },
 		prefixes.PaginatedSilencesList,
 		page,
-		totalCount,
+		totalPages,
 	)
 
 	if editPrevious {

@@ -96,35 +96,27 @@ func (a *App) HandleListFiringAlertsWithPagination(
 		return c.Reply(fmt.Sprintf("Error fetching alerts: %s!\n", err))
 	}
 
-	firingAlerts := alerts.FilterFiringOrPendingAlertGroups(false).ToFiringAlerts()
-	alertsGrouped := generic.SplitArrayIntoChunks(firingAlerts, constants.AlertsInOneMessage)
-	if len(alertsGrouped) == 0 {
-		alertsGrouped = [][]types.FiringAlert{{}}
-	}
-
-	chunk := []types.FiringAlert{}
-	if page < len(alertsGrouped) {
-		chunk = alertsGrouped[page]
-	}
+	firingAlertsAll := alerts.FilterFiringOrPendingAlertGroups(false).ToFiringAlerts()
+	firingAlerts, totalPages := generic.Paginate(firingAlertsAll, page, constants.AlertsInOneMessage)
 
 	menu := GenerateMenuWithPagination(
-		chunk,
+		firingAlerts,
 		func(elt types.FiringAlert, index int) string { return fmt.Sprintf("🔇Silence alert #%d", index+1) },
 		silenceManager.Prefixes().PrepareSilence,
 		func(elt types.FiringAlert) string { return elt.Alert.GetCallbackHash() },
 		alertSource.Prefixes().PaginatedFiringAlerts,
 		page,
-		len(alertsGrouped),
+		totalPages,
 	)
 
 	templateData := render.RenderStruct{
 		Grafana: a.Grafana,
 		Data: types.FiringAlertsListStruct{
 			AlertSourceName: alertSource.Name(),
-			Alerts:          chunk,
-			AlertsCount:     len(firingAlerts),
+			Alerts:          firingAlerts,
+			AlertsCount:     len(firingAlertsAll),
 			Start:           page*constants.AlertsInOneMessage + 1,
-			End:             page*constants.AlertsInOneMessage + len(chunk),
+			End:             page*constants.AlertsInOneMessage + len(firingAlerts),
 			RenderTime:      time.Now(),
 		},
 	}
