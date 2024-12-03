@@ -73,3 +73,30 @@ func TestSplitArrayIntoChunks(t *testing.T) {
 	chunks2 := SplitArrayIntoChunks(array, 5)
 	require.Equal(t, [][]int{{1, 2, 3, 4, 5}, {6, 7, 8, 9}}, chunks2)
 }
+
+func TestPaginate(t *testing.T) {
+	t.Parallel()
+
+	var inputs = []struct {
+		name        string
+		input       []int
+		page        int
+		perPage     int
+		result      []int
+		resultPages int
+	}{
+		{"TakeAll", []int{1, 2, 3}, 0, 3, []int{1, 2, 3}, 1},
+		{"FirstPage", []int{1, 2, 3, 4, 5, 6}, 0, 3, []int{1, 2, 3}, 2},
+		{"LastPage", []int{1, 2, 3, 4, 5, 6}, 1, 3, []int{4, 5, 6}, 2},
+		{"Overflow1", []int{1, 2, 3, 4}, 1, 3, []int{4}, 2},
+		{"Overflow2", []int{1, 2, 3, 4}, 2, 3, []int{}, 2},
+	}
+
+	for _, input := range inputs {
+		t.Run(input.name, func(t *testing.T) {
+			result, pages := Paginate(input.input, input.page, input.perPage)
+			require.Equal(t, input.result, result)
+			require.Equal(t, input.resultPages, pages)
+		})
+	}
+}

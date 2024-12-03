@@ -96,35 +96,29 @@ func (a *App) HandleListSilencesWithPagination(
 		return c.Reply(silenceManager.Name() + " is disabled.")
 	}
 
-	silencesWithAlerts, err := silence_manager.GetSilencesWithAlerts(silenceManager)
+	silencesWithAlerts, totalCount, err := silence_manager.GetSilencesWithAlerts(
+		silenceManager,
+		page,
+		constants.SilencesInOneMessage,
+	)
 	if err != nil {
 		return c.Reply(fmt.Sprintf("Error fetching silences: %s\n", err))
-	}
-
-	silencesGrouped := generic.SplitArrayIntoChunks(silencesWithAlerts, constants.SilencesInOneMessage)
-	if len(silencesGrouped) == 0 {
-		silencesGrouped = [][]types.SilenceWithAlerts{{}}
-	}
-
-	chunk := []types.SilenceWithAlerts{}
-	if page < len(silencesGrouped) {
-		chunk = silencesGrouped[page]
 	}
 
 	templateData := render.RenderStruct{
 		Grafana: a.Grafana,
 		Data: types.SilencesListStruct{
-			Silences:      chunk,
+			Silences:      silencesWithAlerts,
 			Start:         page*constants.SilencesInOneMessage + 1,
-			End:           page*constants.SilencesInOneMessage + len(chunk),
-			SilencesCount: len(silencesWithAlerts),
+			End:           page*constants.SilencesInOneMessage + len(silencesWithAlerts),
+			SilencesCount: totalCount,
 		},
 	}
 
 	prefixes := silenceManager.Prefixes()
 
 	menu := GenerateMenuWithPagination(
-		chunk,
+		silencesWithAlerts,
 		func(elt types.SilenceWithAlerts, index int) string {
 			return fmt.Sprintf("❌Unsilence %s", elt.Silence.ID)
 		},
@@ -132,7 +126,7 @@ func (a *App) HandleListSilencesWithPagination(
 		func(elt types.SilenceWithAlerts) string { return elt.Silence.ID },
 		prefixes.PaginatedSilencesList,
 		page,
-		len(silencesGrouped),
+		totalCount,
 	)
 
 	if editPrevious {
