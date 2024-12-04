@@ -63,12 +63,7 @@ func (a *App) HandleRenderPanelChooseDashboard(
 		return c.Reply("No dashboards configured!")
 	}
 
-	dashboardsGrouped := generic.SplitArrayIntoChunks(dashboards, constants.DashboardsInOneMessage)
-
-	chunk := []types.GrafanaDashboardInfo{}
-	if page < len(dashboardsGrouped) {
-		chunk = dashboardsGrouped[page]
-	}
+	chunk, totalPages := generic.Paginate(dashboards, page, constants.DashboardsInOneMessage)
 
 	templateData := render.RenderStruct{
 		Grafana: a.Grafana,
@@ -87,7 +82,7 @@ func (a *App) HandleRenderPanelChooseDashboard(
 		func(elt types.GrafanaDashboardInfo) string { return fmt.Sprintf("%s 0", elt.UID) },
 		constants.GrafanaRenderChooseDashboardPrefix,
 		page,
-		len(dashboardsGrouped),
+		totalPages,
 	)
 
 	if editPrevious {
