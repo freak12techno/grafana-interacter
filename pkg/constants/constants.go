@@ -28,8 +28,8 @@ const (
 	GrafanaUnsilenceCommand             = "grafana_unsilence"
 	AlertmanagerUnsilenceCommand        = "alertmanager_unsilence"
 
-	GrafanaRenderChooseDashboardPrefix = "grafana_render_choose_dashboard_"
-	GrafanaRenderChoosePanelPrefix     = "grafana_render_choose_panel_"
-	GrafanaRenderRenderPanelPrefix     = "grafana_render_render_panel"
+	GrafanaRenderChooseDashboardPrefix = "render_choose_dashboard_"
+	GrafanaRenderChoosePanelPrefix     = "render_choose_panel_"
+	GrafanaRenderRenderPanelPrefix     = "render_render_panel"
 	ClearKeyboardPrefix                = "clear_keyboard_"
 )

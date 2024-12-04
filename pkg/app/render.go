@@ -119,12 +119,11 @@ func (a *App) HandleRenderPanelChoosePanelFromCallback(c tele.Context) error {
 		return c.Reply("This dashboard has no panels!")
 	}
 
-	panelsGrouped := generic.SplitArrayIntoChunks(dashboard.Dashboard.Panels, constants.PanelsInOneMessage)
+	panels := generic.Filter(dashboard.Dashboard.Panels, func(panel types.GrafanaPanel) bool {
+		return panel.Type != "row"
+	})
 
-	chunk := []types.GrafanaPanel{}
-	if page < len(panelsGrouped) {
-		chunk = panelsGrouped[page]
-	}
+	chunk, totalPages := generic.Paginate(panels, page, constants.PanelsInOneMessage)
 
 	templateData := render.RenderStruct{
 		Grafana: a.Grafana,
@@ -133,7 +132,7 @@ func (a *App) HandleRenderPanelChoosePanelFromCallback(c tele.Context) error {
 			Panels:      chunk,
 			Start:       page*constants.PanelsInOneMessage + 1,
 			End:         page*constants.PanelsInOneMessage + len(chunk),
-			PanelsCount: len(dashboard.Dashboard.Panels),
+			PanelsCount: len(panels),
 		},
 	}
 
@@ -144,7 +143,7 @@ func (a *App) HandleRenderPanelChoosePanelFromCallback(c tele.Context) error {
 		func(elt types.GrafanaPanel) string { return fmt.Sprintf("%s %d", dashboard.Dashboard.UID, elt.ID) },
 		constants.GrafanaRenderChoosePanelPrefix,
 		page,
-		len(panelsGrouped),
+		totalPages,
 		func(page int) string { return fmt.Sprintf("%s %d", dashboard.Dashboard.UID, page-1) },
 		func(page int) string { return fmt.Sprintf("%s %d", dashboard.Dashboard.UID, page+1) },
 	)

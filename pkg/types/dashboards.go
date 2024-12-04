@@ -44,4 +44,5 @@ type GrafanaDashboardMeta struct {
 type GrafanaPanel struct {
 	ID    int    `json:"id"`
 	Title string `json:"title"`
+	Type  string `json:"type"`
 }
