@@ -77,7 +77,7 @@ func TestSplitArrayIntoChunks(t *testing.T) {
 func TestPaginate(t *testing.T) {
 	t.Parallel()
 
-	var inputs = []struct {
+	inputs := []struct {
 		name        string
 		input       []int
 		page        int
@@ -94,6 +94,8 @@ func TestPaginate(t *testing.T) {
 
 	for _, input := range inputs {
 		t.Run(input.name, func(t *testing.T) {
+			t.Parallel()
+
 			result, pages := Paginate(input.input, input.page, input.perPage)
 			require.Equal(t, input.result, result)
 			require.Equal(t, input.resultPages, pages)
