@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+	"main/pkg/utils/generic"
 	"main/pkg/utils/normalize"
 	"strings"
 	"time"
@@ -29,6 +30,32 @@ type GrafanaAlertRule struct {
 	State  string         `json:"state"`
 	Name   string         `json:"name"`
 	Alerts []GrafanaAlert `json:"alerts"`
+}
+
+func (g GrafanaAlertRule) SerializeAlertsCount() string {
+	firing := generic.Filter(g.Alerts, func(a GrafanaAlert) bool {
+		return a.State == "firing"
+	})
+
+	pending := generic.Filter(g.Alerts, func(a GrafanaAlert) bool {
+		return a.State == "pending"
+	})
+
+	array := []string{}
+
+	if len(firing) > 0 {
+		array = append(array, fmt.Sprintf("%d firing", len(firing)))
+	}
+
+	if len(pending) > 0 {
+		array = append(array, fmt.Sprintf("%d pending", len(pending)))
+	}
+
+	if len(array) == 0 {
+		return ""
+	}
+
+	return " (" + strings.Join(array, ", ") + ")"
 }
 
 type GrafanaAlert struct {
