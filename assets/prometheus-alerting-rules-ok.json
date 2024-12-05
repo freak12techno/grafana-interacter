@@ -108,8 +108,51 @@
                   "description": "Tendermint node is not running the latest binary (host cosmos-testnet): github version 21.0.0, local version: v21.0.0-rc1)",
                   "summary": "Tendermint node is not running the latest binary"
                 },
-                "state": "firing",
+                "state": "pending",
                 "activeAt": "2024-11-08T17:02:08.401046123Z",
+                "value": "0e+00"
+              }
+            ],
+            "health": "ok",
+            "evaluationTime": 0.000486372,
+            "lastEvaluation": "2024-11-08T22:07:23.40239289+01:00",
+            "type": "alerting"
+          },
+          {
+            "state": "ok",
+            "name": "CosmosNodeNotLatestBinary2",
+            "query": "cosmos_node_exporter_is_latest == 0 and on (instance, host) cosmos_node_exporter_upgrade_coming == 0",
+            "duration": 60,
+            "keepFiringFor": 0,
+            "labels": {
+              "severity": "warning"
+            },
+            "annotations": {
+              "description": "Tendermint node is not running the latest binary (host {{ $labels.host }}): github version {{ $labels.remote_version }}, local version: {{ $labels.local_version }})",
+              "summary": "Tendermint node is not running the latest binary"
+            },
+            "alerts": [
+              {
+                "labels": {
+                  "alertname": "CosmosNodeNotLatestBinary",
+                  "datacenter": "ip-projects",
+                  "host": "neutron-monitoring",
+                  "hosting": "ip-projects",
+                  "instance": "1.2.3.4:9500",
+                  "job": "cosmos-node-exporter",
+                  "local_version": "4.2.4",
+                  "network": "neutron",
+                  "node": "neutron-monitoring",
+                  "remote_version": "5.0.0",
+                  "severity": "warning",
+                  "type": "monitoring"
+                },
+                "annotations": {
+                  "description": "Tendermint node is not running the latest binary (host neutron-monitoring): github version 5.0.0, local version: 4.2.4)",
+                  "summary": "Tendermint node is not running the latest binary"
+                },
+                "state": "ok",
+                "activeAt": "2024-10-30T15:13:38.401046123Z",
                 "value": "0e+00"
               }
             ],
