@@ -29,15 +29,21 @@ type SilenceManager interface {
 	GetMutesDurations() []string
 }
 
-func GetSilencesWithAlerts(manager SilenceManager) ([]types.SilenceWithAlerts, error) {
-	silences, err := manager.GetSilences()
+func GetSilencesWithAlerts(
+	manager SilenceManager,
+	page int,
+	perPage int,
+) ([]types.SilenceWithAlerts, int, int, error) {
+	allSilences, err := manager.GetSilences()
 	if err != nil {
-		return []types.SilenceWithAlerts{}, err
+		return []types.SilenceWithAlerts{}, 0, 0, err
 	}
 
-	silences = generic.Filter(silences, func(s types.Silence) bool {
+	allSilences = generic.Filter(allSilences, func(s types.Silence) bool {
 		return s.Status.State == "active"
 	})
+
+	silences, totalPages := generic.Paginate(allSilences, page, perPage)
 
 	silencesWithAlerts := make([]types.SilenceWithAlerts, len(silences))
 
@@ -71,8 +77,8 @@ func GetSilencesWithAlerts(manager SilenceManager) ([]types.SilenceWithAlerts, e
 	wg.Wait()
 
 	if len(errs) > 0 {
-		return []types.SilenceWithAlerts{}, fmt.Errorf("Error getting alerts for silence on %d silences!", len(errs))
+		return []types.SilenceWithAlerts{}, 0, 0, fmt.Errorf("Error getting alerts for silence on %d silences!", len(errs))
 	}
 
-	return silencesWithAlerts, nil
+	return silencesWithAlerts, totalPages, len(allSilences), nil
 }

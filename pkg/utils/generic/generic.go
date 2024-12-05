@@ -1,5 +1,7 @@
 package generic
 
+import "math"
+
 func Filter[T any](slice []T, f func(T) bool) []T {
 	var n []T
 	for _, e := range slice {
@@ -59,4 +61,20 @@ func SplitArrayIntoChunks[T any](slice []T, chunkSize int) [][]T {
 	}
 
 	return chunks
+}
+
+func Paginate[T any](input []T, page, perPage int) ([]T, int) {
+	lowerBound := page * perPage
+	upperBound := (page + 1) * perPage
+	totalPages := math.Ceil(float64(len(input)) / float64(perPage))
+
+	if len(input) < lowerBound {
+		lowerBound = len(input)
+	}
+
+	if len(input) < upperBound {
+		upperBound = len(input)
+	}
+
+	return input[lowerBound:upperBound], int(totalPages)
 }

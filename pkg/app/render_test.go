@@ -701,7 +701,7 @@ func TestAppRenderChoosePanelOk(t *testing.T) {
 	httpmock.RegisterMatcherResponder(
 		"POST",
 		"https://api.telegram.org/botxxx:yyy/editMessageText",
-		types.TelegramResponseHasText("Dashboard: Alertmanager\nChoose a panel to render (6 - 10 of 18):"),
+		types.TelegramResponseHasText("Dashboard: Alertmanager\nChoose a panel to render (6 - 10 of 11):"),
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
 	)
 
