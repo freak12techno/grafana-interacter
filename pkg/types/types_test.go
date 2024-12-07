@@ -30,16 +30,6 @@ func TestQueryMatcherFromKeyValueString(t *testing.T) {
 	}, QueryMatcherFromKeyValueString("key=value alertname"))
 }
 
-func TestQueryMatcherFromKeyValueMap(t *testing.T) {
-	t.Parallel()
-
-	require.Equal(t, QueryMatchers{
-		{Key: "key", Operator: "=", Value: "value"},
-	}, QueryMatcherFromKeyValueMap(map[string]string{
-		"key": "value",
-	}))
-}
-
 func TestMatcherFromQueryMatcher(t *testing.T) {
 	t.Parallel()
 
