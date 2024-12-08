@@ -1,14 +1,11 @@
 package app
 
 import (
-	"errors"
 	"fmt"
 	"main/pkg/types"
 	"main/pkg/types/render"
-	"main/pkg/utils"
 	"strconv"
 	"strings"
-	"time"
 
 	tele "gopkg.in/telebot.v3"
 )
@@ -67,28 +64,6 @@ func (a *App) ClearKeyboard(c tele.Context) error {
 	}
 
 	return nil
-}
-
-func (a *App) GenerateSilenceForAlert(
-	c tele.Context,
-	groups types.GrafanaAlertGroups,
-	alertHashToMute string,
-	durationRaw string,
-) (*types.Silence, error) {
-	duration, err := time.ParseDuration(durationRaw)
-	if err != nil {
-		return nil, fmt.Errorf("Invalid duration provided!")
-	}
-
-	groups = groups.FilterFiringOrPendingAlertGroups(true)
-	labels, found := groups.FindLabelsByHash(alertHashToMute)
-	if !found {
-		return nil, errors.New("Alert was not found!")
-	}
-
-	matchers := types.QueryMatcherFromKeyValueMap(labels)
-	silenceInfo, _ := utils.ParseSilenceWithDuration("callback", matchers, c.Sender().FirstName, duration)
-	return silenceInfo, nil
 }
 
 func (a *App) GetAllAlertingRules() (types.GrafanaAlertGroups, error) {

@@ -77,22 +77,6 @@ func QueryMatcherFromKeyValueString(source string) QueryMatchers {
 	return matchers
 }
 
-func QueryMatcherFromKeyValueMap(source map[string]string) QueryMatchers {
-	matchers := make([]QueryMatcher, len(source))
-	index := 0
-
-	for key, value := range source {
-		matchers[index] = QueryMatcher{
-			Key:      key,
-			Operator: "=",
-			Value:    value,
-		}
-		index++
-	}
-
-	return matchers
-}
-
 type QueryMatchers []QueryMatcher
 
 func (q QueryMatchers) Sort() {

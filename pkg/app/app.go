@@ -2,6 +2,7 @@ package app
 
 import (
 	"main/pkg/alert_source"
+	"main/pkg/cache"
 	"main/pkg/clients"
 	configPkg "main/pkg/config"
 	"main/pkg/constants"
@@ -31,6 +32,7 @@ type App struct {
 	Logger          *zerolog.Logger
 	Bot             *tele.Bot
 	Version         string
+	Cache           *cache.Cache
 
 	AlertSourcesWithSilenceManager []AlertSourceWithSilenceManager
 
@@ -81,6 +83,7 @@ func NewApp(config *configPkg.Config, version string) *App {
 		AlertSourcesWithSilenceManager: alertSourcesWithSilenceManagers,
 		Bot:                            bot,
 		Version:                        version,
+		Cache:                          cache.NewCache(),
 		StopChannel:                    make(chan bool),
 	}
 }
