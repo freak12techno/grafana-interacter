@@ -9,6 +9,7 @@ import (
 	"main/pkg/types/render"
 	"main/pkg/utils"
 	"strings"
+	"time"
 
 	tele "gopkg.in/telebot.v3"
 )
@@ -48,18 +49,12 @@ func (a *App) HandlePrepareNewSilenceFromCallback(
 		callback := c.Callback()
 		a.RemoveKeyboardItemByCallback(c, callback)
 
-		groups, err := alertSource.GetAlertingRules()
-		if err != nil {
-			return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
-		}
-
-		groups = groups.FilterFiringOrPendingAlertGroups(true)
-		labels, found := groups.FindLabelsByHash(callback.Data)
+		labels, found := a.Cache.Get(callback.Data)
 		if !found {
 			return c.Reply("Alert was not found!")
 		}
 
-		matchers := types.QueryMatcherFromKeyValueMap(labels)
+		matchers := types.QueryMatcherFromKeyValueString(labels)
 		menu := &tele.ReplyMarkup{ResizeKeyboard: true}
 		mutesDurations := silenceManager.GetMutesDurations()
 		rows := make([]tele.Row, len(mutesDurations))
@@ -102,17 +97,21 @@ func (a *App) HandleCallbackNewSilence(
 			return c.Reply("Invalid callback provided!")
 		}
 
-		alertHashToMute := dataSplit[1]
+		durationRaw := dataSplit[0]
+		alertLabelsRaw := dataSplit[1]
 
-		groups, err := alertSource.GetAlertingRules()
+		duration, err := time.ParseDuration(durationRaw)
 		if err != nil {
-			return c.Reply(fmt.Sprintf("Error querying alerts: %s", err))
+			return c.Reply("Invalid duration provided!")
 		}
 
-		silenceInfo, err := a.GenerateSilenceForAlert(c, groups, alertHashToMute, dataSplit[0])
-		if err != nil {
-			return c.Reply(err.Error())
+		labels, found := a.Cache.Get(alertLabelsRaw)
+		if !found {
+			return c.Reply("Alert was not found!")
 		}
+
+		matchers := types.QueryMatcherFromKeyValueString(labels)
+		silenceInfo, _ := utils.ParseSilenceWithDuration("callback", matchers, c.Sender().FirstName, duration)
 
 		return a.HandleNewSilenceGeneric(c, silenceManager, silenceInfo)
 	}

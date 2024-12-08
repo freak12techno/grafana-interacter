@@ -2,6 +2,7 @@ package app
 
 import (
 	"errors"
+	"fmt"
 	"main/assets"
 	configPkg "main/pkg/config"
 	"main/pkg/constants"
@@ -313,64 +314,6 @@ func TestAppCreateSilenceOk(t *testing.T) {
 }
 
 //nolint:paralleltest // disabled
-func TestAppPrepareSilenceViaCallbackErrorGettingSilenceAlerts(t *testing.T) {
-	httpmock.Activate()
-	defer httpmock.DeactivateAndReset()
-
-	config := &configPkg.Config{
-		Timezone:     "Etc/GMT",
-		Log:          configPkg.LogConfig{LogLevel: "info"},
-		Telegram:     configPkg.TelegramConfig{Token: "xxx:yyy", Admins: []int64{1, 2}},
-		Grafana:      configPkg.GrafanaConfig{URL: "https://example.com", Silences: null.BoolFrom(true)},
-		Alertmanager: nil,
-		Prometheus:   nil,
-	}
-
-	httpmock.RegisterResponder(
-		"POST",
-		"https://api.telegram.org/botxxx:yyy/getMe",
-		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-bot-ok.json")))
-
-	httpmock.RegisterResponder(
-		"GET",
-		"https://example.com/api/prometheus/grafana/api/v1/rules",
-		httpmock.NewErrorResponder(errors.New("custom error")))
-
-	httpmock.RegisterMatcherResponder(
-		"POST",
-		"https://api.telegram.org/botxxx:yyy/sendMessage",
-		types.TelegramResponseHasText("Error querying alerts: Get \"https://example.com/api/prometheus/grafana/api/v1/rules\": custom error"),
-		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
-	)
-
-	app := NewApp(config, "1.2.3")
-	ctx := app.Bot.NewContext(tele.Update{
-		ID: 1,
-		Message: &tele.Message{
-			Sender: &tele.User{Username: "testuser"},
-			Text:   "/grafana_silence",
-			Chat:   &tele.Chat{ID: 2},
-		},
-		Callback: &tele.Callback{
-			Sender: &tele.User{Username: "testuser"},
-			Unique: "\f" + constants.GrafanaSilencePrefix,
-			Data:   "123",
-			Message: &tele.Message{
-				Sender: &tele.User{Username: "testuser"},
-				Text:   "/grafana_silence",
-				Chat:   &tele.Chat{ID: 2},
-			},
-		},
-	})
-
-	err := app.HandlePrepareNewSilenceFromCallback(
-		app.AlertSourcesWithSilenceManager[0].SilenceManager,
-		app.AlertSourcesWithSilenceManager[0].AlertSource,
-	)(ctx)
-	require.NoError(t, err)
-}
-
-//nolint:paralleltest // disabled
 func TestAppPrepareSilenceViaCallbackAlertNotFound(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
@@ -451,10 +394,8 @@ func TestAppPrepareSilenceViaCallbackOk(t *testing.T) {
 		"https://api.telegram.org/botxxx:yyy/getMe",
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-bot-ok.json")))
 
-	httpmock.RegisterResponder(
-		"GET",
-		"https://example.com/api/prometheus/grafana/api/v1/rules",
-		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("prometheus-alerting-rules-ok.json")))
+	app := NewApp(config, "1.2.3")
+	key := app.Cache.Set("key2=value2 key=value")
 
 	httpmock.RegisterMatcherResponder(
 		"POST",
@@ -465,14 +406,14 @@ func TestAppPrepareSilenceViaCallbackOk(t *testing.T) {
 					{
 						Unique:       "grafana_silence_",
 						Text:         "⌛ Silence for 1h",
-						CallbackData: "\fgrafana_silence_|1h 0dd372ce555502a912ed8331b00ff883",
+						CallbackData: fmt.Sprintf("\fgrafana_silence_|1h %s", key),
 					},
 				},
 				{
 					{
 						Unique:       "grafana_silence_",
 						Text:         "⌛ Silence for 3h",
-						CallbackData: "\fgrafana_silence_|3h 0dd372ce555502a912ed8331b00ff883",
+						CallbackData: fmt.Sprintf("\fgrafana_silence_|3h %s", key),
 					},
 				},
 			},
@@ -480,7 +421,6 @@ func TestAppPrepareSilenceViaCallbackOk(t *testing.T) {
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
 	)
 
-	app := NewApp(config, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -491,7 +431,7 @@ func TestAppPrepareSilenceViaCallbackOk(t *testing.T) {
 		Callback: &tele.Callback{
 			Sender: &tele.User{Username: "testuser"},
 			Unique: "\f" + constants.GrafanaSilencePrefix,
-			Data:   "0dd372ce555502a912ed8331b00ff883",
+			Data:   key,
 			Message: &tele.Message{
 				Sender: &tele.User{Username: "testuser"},
 				Text:   "/grafana_silence",
@@ -548,64 +488,6 @@ func TestAppCreateSilenceViaCallbackInvalidPayload(t *testing.T) {
 			Message: &tele.Message{
 				Sender: &tele.User{Username: "testuser"},
 				Text:   "/grafana_silence 4",
-				Chat:   &tele.Chat{ID: 2},
-			},
-		},
-	})
-
-	err := app.HandleCallbackNewSilence(
-		app.AlertSourcesWithSilenceManager[0].SilenceManager,
-		app.AlertSourcesWithSilenceManager[0].AlertSource,
-	)(ctx)
-	require.NoError(t, err)
-}
-
-//nolint:paralleltest // disabled
-func TestAppCreateSilenceViaCallbackErrorFetchingAlerts(t *testing.T) {
-	httpmock.Activate()
-	defer httpmock.DeactivateAndReset()
-
-	config := &configPkg.Config{
-		Timezone:     "Etc/GMT",
-		Log:          configPkg.LogConfig{LogLevel: "info"},
-		Telegram:     configPkg.TelegramConfig{Token: "xxx:yyy", Admins: []int64{1, 2}},
-		Grafana:      configPkg.GrafanaConfig{URL: "https://example.com", Silences: null.BoolFrom(true)},
-		Alertmanager: nil,
-		Prometheus:   nil,
-	}
-
-	httpmock.RegisterResponder(
-		"POST",
-		"https://api.telegram.org/botxxx:yyy/getMe",
-		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-bot-ok.json")))
-
-	httpmock.RegisterResponder(
-		"GET",
-		"https://example.com/api/prometheus/grafana/api/v1/rules",
-		httpmock.NewErrorResponder(errors.New("custom error")))
-
-	httpmock.RegisterMatcherResponder(
-		"POST",
-		"https://api.telegram.org/botxxx:yyy/sendMessage",
-		types.TelegramResponseHasText("Error querying alerts: Get \"https://example.com/api/prometheus/grafana/api/v1/rules\": custom error"),
-		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
-	)
-
-	app := NewApp(config, "1.2.3")
-	ctx := app.Bot.NewContext(tele.Update{
-		ID: 1,
-		Message: &tele.Message{
-			Sender: &tele.User{Username: "testuser"},
-			Text:   "/grafana_silence 4",
-			Chat:   &tele.Chat{ID: 2},
-		},
-		Callback: &tele.Callback{
-			Sender: &tele.User{Username: "testuser"},
-			Unique: "\f" + constants.GrafanaSilencePrefix,
-			Data:   "invalid 123",
-			Message: &tele.Message{
-				Sender: &tele.User{Username: "testuser"},
-				Text:   "/grafana_silence",
 				Chat:   &tele.Chat{ID: 2},
 			},
 		},
@@ -753,10 +635,8 @@ func TestAppCreateSilenceViaCallbackOk(t *testing.T) {
 		"https://api.telegram.org/botxxx:yyy/getMe",
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-bot-ok.json")))
 
-	httpmock.RegisterResponder(
-		"GET",
-		"https://example.com/api/prometheus/grafana/api/v1/rules",
-		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("prometheus-alerting-rules-ok.json")))
+	app := NewApp(config, "1.2.3")
+	key := app.Cache.Set("key2=value2 key=value")
 
 	httpmock.RegisterResponder(
 		"POST",
@@ -770,7 +650,6 @@ func TestAppCreateSilenceViaCallbackOk(t *testing.T) {
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
 	)
 
-	app := NewApp(config, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -781,7 +660,7 @@ func TestAppCreateSilenceViaCallbackOk(t *testing.T) {
 		Callback: &tele.Callback{
 			Sender: &tele.User{Username: "testuser"},
 			Unique: "\f" + constants.GrafanaSilencePrefix,
-			Data:   "48h 0dd372ce555502a912ed8331b00ff883",
+			Data:   "48h " + key,
 			Message: &tele.Message{
 				Sender: &tele.User{Username: "testuser"},
 				Text:   "/grafana_silence",
