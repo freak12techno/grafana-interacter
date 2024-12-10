@@ -44,32 +44,54 @@ func (a *App) HandlePrepareNewSilenceFromCallback(
 			Str("sender", c.Sender().Username).
 			Str("silence_manager", silenceManager.Name()).
 			Str("alert_source", alertSource.Name()).
+			Str("callback", c.Callback().Data).
 			Msg("Got new prepare silence callback via button")
 
 		callback := c.Callback()
+		callbackSplit := strings.SplitN(callback.Data, " ", 2)
 		a.RemoveKeyboardItemByCallback(c, callback)
 
-		labels, found := a.Cache.Get(callback.Data)
+		labels, found := a.Cache.Get(callbackSplit[0])
 		if !found {
 			return c.Reply("Alert was not found!")
 		}
 
 		matchers := types.QueryMatcherFromKeyValueString(labels)
+		matchers.Sort()
+
 		menu := &tele.ReplyMarkup{ResizeKeyboard: true}
 		mutesDurations := silenceManager.GetMutesDurations()
-		rows := make([]tele.Row, len(mutesDurations))
+		rows := make([]tele.Row, 0)
 
-		for index, mute := range mutesDurations {
-			rows[index] = menu.Row(menu.Data(
+		if len(matchers) > 1 {
+			for _, matcher := range matchers {
+				matchersWithoutKey := matchers.WithoutKey(matcher.Key)
+				cacheKey := a.Cache.Set(matchersWithoutKey.GetHash(), matchersWithoutKey.ToQueryString())
+
+				rows = append(rows, menu.Row(menu.Data(
+					fmt.Sprintf("❌ Remove %s", matcher.Serialize()),
+					silenceManager.Prefixes().PrepareSilence,
+					cacheKey+" 1", // to update the message instead of editing
+				)))
+			}
+		}
+
+		for _, mute := range mutesDurations {
+			rows = append(rows, menu.Row(menu.Data(
 				fmt.Sprintf("⌛ Silence for %s", mute),
 				silenceManager.Prefixes().Silence,
-				mute+" "+callback.Data,
-			))
+				mute+" "+callbackSplit[0],
+			)))
 		}
 
 		menu.Inline(rows...)
 
-		matchers.Sort()
+		if len(callbackSplit) > 1 {
+			return a.EditRender(c, "silence_prepare_create", render.RenderStruct{
+				Grafana: a.Grafana,
+				Data:    matchers,
+			}, menu)
+		}
 
 		return a.ReplyRender(c, "silence_prepare_create", render.RenderStruct{
 			Grafana: a.Grafana,

@@ -395,13 +395,32 @@ func TestAppPrepareSilenceViaCallbackOk(t *testing.T) {
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-bot-ok.json")))
 
 	app := NewApp(config, "1.2.3")
-	key := app.Cache.Set("key2=value2 key=value")
+
+	queryMatchers := types.QueryMatcherFromKeyValueString("key2=value2 key1=value1")
+	key := app.Cache.Set(queryMatchers.GetHash(), queryMatchers.ToQueryString())
+
+	queryMatchersWithoutFirst := queryMatchers.WithoutKey("key1")
+	queryMatchersWithoutSecond := queryMatchers.WithoutKey("key2")
 
 	httpmock.RegisterMatcherResponder(
 		"POST",
 		"https://api.telegram.org/botxxx:yyy/sendMessage",
 		types.TelegramResponseHasBytesAndMarkup(assets.GetBytesOrPanic("responses/silence-prepare-ok.html"), types.TelegramInlineKeyboardResponse{
 			InlineKeyboard: [][]types.TelegramInlineKeyboard{
+				{
+					{
+						Unique:       "grafana_prepare_silence_",
+						Text:         "❌ Remove key1 = value1",
+						CallbackData: fmt.Sprintf("\fgrafana_prepare_silence_|%s 1", queryMatchersWithoutFirst.GetHash()),
+					},
+				},
+				{
+					{
+						Unique:       "grafana_prepare_silence_",
+						Text:         "❌ Remove key2 = value2",
+						CallbackData: fmt.Sprintf("\fgrafana_prepare_silence_|%s 1", queryMatchersWithoutSecond.GetHash()),
+					},
+				},
 				{
 					{
 						Unique:       "grafana_silence_",
@@ -432,6 +451,101 @@ func TestAppPrepareSilenceViaCallbackOk(t *testing.T) {
 			Sender: &tele.User{Username: "testuser"},
 			Unique: "\f" + constants.GrafanaSilencePrefix,
 			Data:   key,
+			Message: &tele.Message{
+				Sender: &tele.User{Username: "testuser"},
+				Text:   "/grafana_silence",
+				Chat:   &tele.Chat{ID: 2},
+			},
+		},
+	})
+
+	err := app.HandlePrepareNewSilenceFromCallback(
+		app.AlertSourcesWithSilenceManager[0].SilenceManager,
+		app.AlertSourcesWithSilenceManager[0].AlertSource,
+	)(ctx)
+	require.NoError(t, err)
+}
+
+//nolint:paralleltest // disabled
+func TestAppPrepareSilenceViaCallbackOkWithEditKeyboard(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	config := &configPkg.Config{
+		Timezone: "Etc/GMT",
+		Log:      configPkg.LogConfig{LogLevel: "info"},
+		Telegram: configPkg.TelegramConfig{Token: "xxx:yyy", Admins: []int64{1, 2}},
+		Grafana: configPkg.GrafanaConfig{
+			URL:            "https://example.com",
+			Silences:       null.BoolFrom(true),
+			MutesDurations: []string{"1h", "3h"},
+		},
+		Alertmanager: nil,
+		Prometheus:   nil,
+	}
+
+	httpmock.RegisterResponder(
+		"POST",
+		"https://api.telegram.org/botxxx:yyy/getMe",
+		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-bot-ok.json")))
+
+	app := NewApp(config, "1.2.3")
+
+	queryMatchers := types.QueryMatcherFromKeyValueString("key2=value2 key1=value1")
+	key := app.Cache.Set(queryMatchers.GetHash(), queryMatchers.ToQueryString())
+
+	queryMatchersWithoutFirst := queryMatchers.WithoutKey("key1")
+	queryMatchersWithoutSecond := queryMatchers.WithoutKey("key2")
+
+	httpmock.RegisterMatcherResponder(
+		"POST",
+		"https://api.telegram.org/botxxx:yyy/editMessageText",
+		types.TelegramResponseHasBytesAndMarkup(assets.GetBytesOrPanic("responses/silence-prepare-ok.html"), types.TelegramInlineKeyboardResponse{
+			InlineKeyboard: [][]types.TelegramInlineKeyboard{
+				{
+					{
+						Unique:       "grafana_prepare_silence_",
+						Text:         "❌ Remove key1 = value1",
+						CallbackData: fmt.Sprintf("\fgrafana_prepare_silence_|%s 1", queryMatchersWithoutFirst.GetHash()),
+					},
+				},
+				{
+					{
+						Unique:       "grafana_prepare_silence_",
+						Text:         "❌ Remove key2 = value2",
+						CallbackData: fmt.Sprintf("\fgrafana_prepare_silence_|%s 1", queryMatchersWithoutSecond.GetHash()),
+					},
+				},
+				{
+					{
+						Unique:       "grafana_silence_",
+						Text:         "⌛ Silence for 1h",
+						CallbackData: fmt.Sprintf("\fgrafana_silence_|1h %s", key),
+					},
+				},
+				{
+					{
+						Unique:       "grafana_silence_",
+						Text:         "⌛ Silence for 3h",
+						CallbackData: fmt.Sprintf("\fgrafana_silence_|3h %s", key),
+					},
+				},
+			},
+		}),
+		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
+	)
+
+	ctx := app.Bot.NewContext(tele.Update{
+		ID: 1,
+		Message: &tele.Message{
+			Sender: &tele.User{Username: "testuser"},
+			Text:   "/grafana_silence",
+			Chat:   &tele.Chat{ID: 2},
+		},
+		Callback: &tele.Callback{
+			Sender: &tele.User{Username: "testuser"},
+			Unique: "\f" + constants.GrafanaSilencePrefix,
+			Data:   key + " 1",
 			Message: &tele.Message{
 				Sender: &tele.User{Username: "testuser"},
 				Text:   "/grafana_silence",
@@ -636,7 +750,8 @@ func TestAppCreateSilenceViaCallbackOk(t *testing.T) {
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-bot-ok.json")))
 
 	app := NewApp(config, "1.2.3")
-	key := app.Cache.Set("key2=value2 key=value")
+	queryMatchers := types.QueryMatcherFromKeyValueString("key2=value2 key1=value1")
+	key := app.Cache.Set(queryMatchers.GetHash(), queryMatchers.ToQueryString())
 
 	httpmock.RegisterResponder(
 		"POST",

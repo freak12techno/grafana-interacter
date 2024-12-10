@@ -93,7 +93,7 @@ func TestParseSilenceFromCommand(t *testing.T) {
 func TestParseSilenceWithDuration(t *testing.T) {
 	t.Parallel()
 
-	matchers := []types.QueryMatcher{{Key: "key", Operator: "unknown", Value: "value"}}
+	matchers := types.QueryMatchers{{Key: "key", Operator: "unknown", Value: "value"}}
 	silence, valid1 := ParseSilenceWithDuration("/silence", matchers, "sender", 2*time.Hour)
 	require.Nil(t, silence)
 	require.Equal(t, "Got unexpected operator: unknown", valid1)
