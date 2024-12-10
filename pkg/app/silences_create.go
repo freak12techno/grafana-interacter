@@ -112,7 +112,7 @@ func (a *App) HandleCallbackNewSilence(
 			Msg("Got new create silence callback via button")
 
 		callback := c.Callback()
-		a.RemoveKeyboardItemByCallback(c, callback)
+		_ = a.ClearKeyboard(c)
 
 		dataSplit := strings.SplitN(callback.Data, " ", 2)
 		if len(dataSplit) != 2 {
