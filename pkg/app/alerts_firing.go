@@ -104,7 +104,7 @@ func (a *App) HandleListFiringAlertsWithPagination(
 		func(elt types.FiringAlert, index int) string { return fmt.Sprintf("🔇Silence alert #%d", index+1) },
 		silenceManager.Prefixes().PrepareSilence,
 		func(elt types.FiringAlert) string {
-			key := a.Cache.Set(elt.Alert.SerializeLabels())
+			key := a.Cache.Set(elt.Alert.GetHash(), elt.Alert.SerializeLabels())
 			return key
 		},
 		alertSource.Prefixes().PaginatedFiringAlerts,

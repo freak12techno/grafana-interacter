@@ -17,8 +17,8 @@ func TestQueryMatcherFromKeyValueString(t *testing.T) {
 	t.Parallel()
 
 	require.Equal(t, QueryMatchers{
-		{Key: "key", Operator: "=", Value: "value"},
-	}, QueryMatcherFromKeyValueString("key=value"))
+		{Key: "key1", Operator: "=", Value: "value1"},
+	}, QueryMatcherFromKeyValueString("key1=value1"))
 
 	require.Equal(t, QueryMatchers{
 		{Key: "key", Operator: "=", Value: "value"},
@@ -38,26 +38,26 @@ func TestMatcherFromQueryMatcher(t *testing.T) {
 		IsRegex: false,
 		Name:    "key",
 		Value:   "value",
-	}, MatcherFromQueryMatcher(QueryMatcher{Key: "key", Operator: "=", Value: "value"}))
+	}, MatcherFromQueryMatcher(&QueryMatcher{Key: "key", Operator: "=", Value: "value"}))
 
 	require.Equal(t, &SilenceMatcher{
 		IsEqual: true,
 		IsRegex: true,
 		Name:    "key",
 		Value:   "value",
-	}, MatcherFromQueryMatcher(QueryMatcher{Key: "key", Operator: "=~", Value: "value"}))
+	}, MatcherFromQueryMatcher(&QueryMatcher{Key: "key", Operator: "=~", Value: "value"}))
 
 	require.Equal(t, &SilenceMatcher{
 		IsEqual: false,
 		IsRegex: true,
 		Name:    "key",
 		Value:   "value",
-	}, MatcherFromQueryMatcher(QueryMatcher{Key: "key", Operator: "!~", Value: "value"}))
+	}, MatcherFromQueryMatcher(&QueryMatcher{Key: "key", Operator: "!~", Value: "value"}))
 
 	require.Equal(t, &SilenceMatcher{
 		IsEqual: false,
 		IsRegex: false,
 		Name:    "key",
 		Value:   "value",
-	}, MatcherFromQueryMatcher(QueryMatcher{Key: "key", Operator: "!=", Value: "value"}))
+	}, MatcherFromQueryMatcher(&QueryMatcher{Key: "key", Operator: "!=", Value: "value"}))
 }

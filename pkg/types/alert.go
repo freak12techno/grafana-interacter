@@ -1,6 +1,8 @@
 package types
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"main/pkg/utils/generic"
 	"main/pkg/utils/normalize"
@@ -61,6 +63,11 @@ type GrafanaAlert struct {
 	State    string            `json:"state"`
 	Value    string            `json:"value"`
 	ActiveAt time.Time         `json:"activeAt"`
+}
+
+func (a GrafanaAlert) GetHash() string {
+	hash := md5.Sum([]byte(a.SerializeLabels()))
+	return hex.EncodeToString(hash[:])[0:8]
 }
 
 func (a GrafanaAlert) SerializeLabels() string {

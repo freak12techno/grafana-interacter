@@ -103,7 +103,7 @@ func ParseSilenceFromCommand(query string, sender string) (*types.Silence, strin
 
 func ParseSilenceWithDuration(
 	cmd string,
-	matchers []types.QueryMatcher,
+	matchers types.QueryMatchers,
 	sender string,
 	duration time.Duration,
 ) (*types.Silence, string) {
