@@ -52,6 +52,24 @@ func (a *App) ClearKeyboard(c tele.Context) error {
 		return nil
 	}
 
+	for _, row := range callback.Message.ReplyMarkup.InlineKeyboard {
+		for _, item := range row {
+			split1 := strings.SplitN(item.Data, "|", 2)
+			if len(split1) != 2 {
+				continue
+			}
+
+			split2 := strings.SplitN(split1[1], " ", 2)
+			if len(split2) < 1 {
+				continue
+			}
+
+			a.Cache.Delete(split2[0])
+		}
+	}
+
+	fmt.Printf("cache: %+v\n", a.Cache)
+
 	if _, err := a.Bot.EditReplyMarkup(
 		callback.Message,
 		nil,

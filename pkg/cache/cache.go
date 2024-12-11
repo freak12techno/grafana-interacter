@@ -19,3 +19,7 @@ func (c *Cache) Set(key, value string) string {
 	c.cache[key] = value
 	return key
 }
+
+func (c *Cache) Delete(key string) {
+	delete(c.cache, key)
+}
