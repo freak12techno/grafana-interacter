@@ -91,6 +91,10 @@ func (a *App) HandleListFiringAlertsWithPagination(
 		return c.Reply(alertSource.Name() + " is disabled.")
 	}
 
+	if editPrevious {
+		a.ClearAllKeyboardCache(c)
+	}
+
 	alerts, err := alertSource.GetAlertingRules()
 	if err != nil {
 		return c.Reply(fmt.Sprintf("Error fetching alerts: %s!\n", err))

@@ -10,6 +10,31 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
+func (a *App) ClearAllKeyboardCache(c tele.Context) {
+	callback := c.Callback()
+	if callback == nil || callback.Message == nil || callback.Message.ReplyMarkup == nil {
+		return
+	}
+
+	for _, row := range callback.Message.ReplyMarkup.InlineKeyboard {
+		for _, item := range row {
+			// all item.Data are formatted as "\f<callback>|param1 param2", and the cache item
+			// is always "param1"
+			split := strings.SplitN(item.Data, "|", 2)
+			if len(split) != 2 {
+				continue
+			}
+
+			split2 := strings.SplitN(split[1], " ", 2)
+			if len(split2) < 1 {
+				continue
+			}
+
+			a.Cache.Delete(split2[0])
+		}
+	}
+}
+
 func (a *App) RemoveKeyboardItemByCallback(c tele.Context, callback *tele.Callback) {
 	if callback.Message == nil || callback.Message.ReplyMarkup == nil {
 		return
@@ -27,6 +52,8 @@ func (a *App) RemoveKeyboardItemByCallback(c tele.Context, callback *tele.Callba
 					callback.Message.ReplyMarkup.InlineKeyboard[rowIndex][:itemIndex],
 					callback.Message.ReplyMarkup.InlineKeyboard[rowIndex][itemIndex+1:]...,
 				)
+
+				a.Cache.Delete(split[1])
 			}
 		}
 	}
@@ -48,27 +75,6 @@ func (a *App) ClearKeyboard(c tele.Context) error {
 		Msg("Got new clear keyboard query")
 
 	callback := c.Callback()
-	if callback.Message == nil || callback.Message.ReplyMarkup == nil {
-		return nil
-	}
-
-	for _, row := range callback.Message.ReplyMarkup.InlineKeyboard {
-		for _, item := range row {
-			split1 := strings.SplitN(item.Data, "|", 2)
-			if len(split1) != 2 {
-				continue
-			}
-
-			split2 := strings.SplitN(split1[1], " ", 2)
-			if len(split2) < 1 {
-				continue
-			}
-
-			a.Cache.Delete(split2[0])
-		}
-	}
-
-	fmt.Printf("cache: %+v\n", a.Cache)
 
 	if _, err := a.Bot.EditReplyMarkup(
 		callback.Message,
