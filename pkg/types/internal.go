@@ -93,3 +93,8 @@ type SingleAlertStruct struct {
 func (s SingleAlertStruct) GetAlertFiringFor(alert GrafanaAlert) time.Duration {
 	return s.RenderTime.Sub(alert.ActiveAt)
 }
+
+type SilencePrepareStruct struct {
+	Matchers    QueryMatchers
+	AlertsCount int
+}

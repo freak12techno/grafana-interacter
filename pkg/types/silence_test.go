@@ -34,14 +34,11 @@ func TestFindSilence(t *testing.T) {
 func TestSilenceGetFilterQueryString(t *testing.T) {
 	t.Parallel()
 
-	silence := Silence{
-		ID: "silence",
-		Matchers: SilenceMatchers{
-			{IsEqual: true, IsRegex: false, Name: "key", Value: "value"},
-		},
+	matchers := SilenceMatchers{
+		{IsEqual: true, IsRegex: false, Name: "key", Value: "value"},
 	}
 
-	qs := silence.GetFilterQueryString()
+	qs := matchers.GetFilterQueryString()
 	require.Equal(t, "filter=key%3D%22value%22", qs)
 }
 

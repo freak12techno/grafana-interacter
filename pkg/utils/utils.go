@@ -110,7 +110,7 @@ func ParseSilenceWithDuration(
 	silence := &types.Silence{
 		StartsAt:  time.Now(),
 		EndsAt:    time.Now().Add(duration),
-		Matchers:  []types.SilenceMatcher{},
+		Matchers:  types.SilenceMatchers{},
 		CreatedBy: sender,
 		Comment: fmt.Sprintf(
 			"Muted using grafana-interacter for %s by %s",
@@ -125,7 +125,7 @@ func ParseSilenceWithDuration(
 			continue
 		}
 
-		matcherParsed := types.SilenceMatcher{
+		matcherParsed := &types.SilenceMatcher{
 			Name:  matcher.Key,
 			Value: matcher.Value,
 		}

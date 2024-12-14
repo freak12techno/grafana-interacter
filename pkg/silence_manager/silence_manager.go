@@ -21,7 +21,7 @@ type SilenceManager interface {
 	GetSilences() (types.Silences, error)
 	GetSilence(silenceID string) (types.Silence, error)
 	CreateSilence(silence types.Silence) (types.SilenceCreateResponse, error)
-	GetSilenceMatchingAlerts(silence types.Silence) ([]types.AlertmanagerAlert, error)
+	GetMatchingAlerts(matchers types.SilenceMatchers) ([]types.AlertmanagerAlert, error)
 	DeleteSilence(silenceID string) error
 	Prefixes() Prefixes
 	Name() string
@@ -56,7 +56,7 @@ func GetSilencesWithAlerts(
 		go func(index int, silence types.Silence) {
 			defer wg.Done()
 
-			alerts, alertsErr := manager.GetSilenceMatchingAlerts(silence)
+			alerts, alertsErr := manager.GetMatchingAlerts(silence.Matchers)
 			if alertsErr != nil {
 				mutex.Lock()
 				errs = append(errs, alertsErr)

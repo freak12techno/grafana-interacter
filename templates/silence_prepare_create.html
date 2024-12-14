@@ -1,6 +1,8 @@
 <strong>Going to mute an alert with the following matchers:</strong>
-{{- range $matcherId, $matcher := .Data }}
+{{- range $matcherId, $matcher := .Data.Matchers }}
   {{ $matcher.Serialize }}
 {{- end }}
+
+Alerts that would match that silence: {{ .Data.AlertsCount }}
 
 Please choose for how long to mute this alert:

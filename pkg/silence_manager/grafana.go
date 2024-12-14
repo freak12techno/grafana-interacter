@@ -90,10 +90,10 @@ func (g *Grafana) DeleteSilence(silenceID string) error {
 	return g.Client.Delete(url, g.GetAuth())
 }
 
-func (g *Grafana) GetSilenceMatchingAlerts(silence types.Silence) ([]types.AlertmanagerAlert, error) {
+func (g *Grafana) GetMatchingAlerts(matchers types.SilenceMatchers) ([]types.AlertmanagerAlert, error) {
 	relativeUrl := fmt.Sprintf(
 		"/api/alertmanager/grafana/api/v2/alerts?%s&silenced=true&inhibited=true&active=true",
-		silence.GetFilterQueryString(),
+		matchers.GetFilterQueryString(),
 	)
 	url := g.RelativeLink(relativeUrl)
 	var res []types.AlertmanagerAlert

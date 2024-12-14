@@ -63,10 +63,10 @@ func (g *Alertmanager) CreateSilence(silence types.Silence) (types.SilenceCreate
 	return res, err
 }
 
-func (g *Alertmanager) GetSilenceMatchingAlerts(silence types.Silence) ([]types.AlertmanagerAlert, error) {
+func (g *Alertmanager) GetMatchingAlerts(matchers types.SilenceMatchers) ([]types.AlertmanagerAlert, error) {
 	relativeUrl := fmt.Sprintf(
 		"/api/v2/alerts?%s&silenced=true&inhibited=true&active=true",
-		silence.GetFilterQueryString(),
+		matchers.GetFilterQueryString(),
 	)
 	url := g.RelativeLink(relativeUrl)
 	var res []types.AlertmanagerAlert
