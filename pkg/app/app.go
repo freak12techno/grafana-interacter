@@ -83,7 +83,7 @@ func NewApp(config *configPkg.Config, version string) *App {
 		AlertSourcesWithSilenceManager: alertSourcesWithSilenceManagers,
 		Bot:                            bot,
 		Version:                        version,
-		Cache:                          cache.NewCache(),
+		Cache:                          cache.NewCache(logger),
 		StopChannel:                    make(chan bool),
 	}
 }

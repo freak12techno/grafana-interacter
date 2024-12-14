@@ -49,11 +49,15 @@ func (a *App) HandlePrepareNewSilenceFromCallback(
 
 		callback := c.Callback()
 		callbackSplit := strings.SplitN(callback.Data, " ", 2)
-		a.RemoveKeyboardItemByCallback(c, callback)
 
 		labels, found := a.Cache.Get(callbackSplit[0])
 		if !found {
 			return c.Reply("Alert was not found!")
+		}
+
+		if len(callbackSplit) > 1 {
+			a.ClearAllKeyboardCache(c)
+			a.Cache.Set(callbackSplit[0], labels)
 		}
 
 		matchers := types.QueryMatcherFromKeyValueString(labels)
@@ -109,6 +113,7 @@ func (a *App) HandleCallbackNewSilence(
 			Str("sender", c.Sender().Username).
 			Str("silence_manager", silenceManager.Name()).
 			Str("alert_source", alertSource.Name()).
+			Str("callback", c.Callback().Data).
 			Msg("Got new create silence callback via button")
 
 		callback := c.Callback()
@@ -120,17 +125,20 @@ func (a *App) HandleCallbackNewSilence(
 		}
 
 		durationRaw := dataSplit[0]
-		alertLabelsRaw := dataSplit[1]
+		alertLabelsHash := dataSplit[1]
 
 		duration, err := time.ParseDuration(durationRaw)
 		if err != nil {
 			return c.Reply("Invalid duration provided!")
 		}
 
-		labels, found := a.Cache.Get(alertLabelsRaw)
+		labels, found := a.Cache.Get(alertLabelsHash)
 		if !found {
 			return c.Reply("Alert was not found!")
 		}
+
+		a.ClearAllKeyboardCache(c)
+		a.Cache.Delete(alertLabelsHash)
 
 		matchers := types.QueryMatcherFromKeyValueString(labels)
 		silenceInfo, _ := utils.ParseSilenceWithDuration("callback", matchers, c.Sender().FirstName, duration)

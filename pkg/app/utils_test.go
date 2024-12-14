@@ -389,3 +389,82 @@ func TestAppClearKeyboardOk(t *testing.T) {
 	err := app.ClearKeyboard(ctx)
 	require.NoError(t, err)
 }
+
+//nolint:paralleltest // disabled
+func TestAppClearAllKeyboardCacheOk(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	config := &configPkg.Config{
+		Timezone:     "Etc/GMT",
+		Log:          configPkg.LogConfig{LogLevel: "info"},
+		Telegram:     configPkg.TelegramConfig{Token: "xxx:yyy", Admins: []int64{1, 2}},
+		Grafana:      configPkg.GrafanaConfig{URL: "https://example.com", User: "admin", Password: "admin"},
+		Alertmanager: nil,
+		Prometheus:   nil,
+	}
+
+	httpmock.RegisterResponder(
+		"POST",
+		"https://api.telegram.org/botxxx:yyy/getMe",
+		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-bot-ok.json")))
+
+	httpmock.RegisterResponder(
+		"POST",
+		"https://api.telegram.org/botxxx:yyy/editMessageReplyMarkup",
+		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")))
+
+	app := NewApp(config, "1.2.3")
+	ctx := app.Bot.NewContext(tele.Update{
+		ID: 1,
+		Message: &tele.Message{
+			Sender: &tele.User{Username: "testuser"},
+			Text:   "/grafana_silence 4",
+			Chat:   &tele.Chat{ID: 2},
+		},
+		Callback: &tele.Callback{
+			Sender: &tele.User{Username: "testuser"},
+			Unique: "\f" + constants.GrafanaSilencePrefix,
+			Data:   "48h 123",
+			Message: &tele.Message{
+				Sender: &tele.User{Username: "testuser"},
+				Text:   "/grafana_silence",
+				Chat:   &tele.Chat{ID: 2},
+				ReplyMarkup: &tele.ReplyMarkup{InlineKeyboard: [][]tele.InlineButton{
+					{
+						{
+							Text:   "CacheItem1",
+							Unique: "\f" + constants.GrafanaSilencePrefix,
+							Data:   constants.GrafanaSilencePrefix + "|123", // should be removed
+						},
+						{
+							Text:   "CacheItem2",
+							Unique: "\f" + constants.GrafanaSilencePrefix,
+							Data:   constants.GrafanaSilencePrefix + "|", // invalid, not removed
+						},
+						{
+							Text:   "CacheItem3",
+							Unique: "\f" + constants.GrafanaSilencePrefix,
+							Data:   "", // invalid, not removed
+						},
+						{
+							Text:   "CacheItem1",
+							Unique: "\f" + constants.GrafanaSilencePrefix,
+							Data:   constants.GrafanaSilencePrefix + "|456", // not in cache, not removed
+						},
+					},
+				}},
+			},
+		},
+	})
+
+	app.Cache.Set("123", "123")
+	app.Cache.Set("789", "789")
+	require.Equal(t, 2, app.Cache.Length())
+
+	app.ClearAllKeyboardCache(ctx)
+	require.Equal(t, 1, app.Cache.Length())
+	item, found := app.Cache.Get("789")
+	require.True(t, found)
+	require.Equal(t, "789", item)
+}
