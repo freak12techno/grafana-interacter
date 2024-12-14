@@ -38,3 +38,7 @@ func (c *Cache) Delete(key string) {
 		Int("len", len(c.cache)).
 		Msg("Cache delete item")
 }
+
+func (c *Cache) Length() int {
+	return len(c.cache)
+}

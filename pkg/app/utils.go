@@ -26,10 +26,6 @@ func (a *App) ClearAllKeyboardCache(c tele.Context) {
 			}
 
 			split2 := strings.SplitN(split[1], " ", 2)
-			if len(split2) < 1 {
-				continue
-			}
-
 			a.Cache.Delete(split2[0])
 		}
 	}
