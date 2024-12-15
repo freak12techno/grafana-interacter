@@ -24,7 +24,7 @@ func (s Silences) FindByNameOrMatchers(source string) (*Silence, bool) {
 
 	for index, queryMatcher := range queryMatchers {
 		silenceMatcher := MatcherFromQueryMatcher(queryMatcher)
-		silenceMatchers[index] = *silenceMatcher
+		silenceMatchers[index] = silenceMatcher
 	}
 
 	silenceFound, found := generic.Find(s, func(s Silence) bool {
@@ -44,15 +44,7 @@ type Silence struct {
 	Status    SilenceStatus   `json:"status,omitempty"`
 }
 
-func (s Silence) GetFilterQueryString() string {
-	filtersParts := generic.Map(s.Matchers, func(m SilenceMatcher) string {
-		return "filter=" + url.QueryEscape(m.SerializeQueryString())
-	})
-
-	return strings.Join(filtersParts, "&")
-}
-
-type SilenceMatchers []SilenceMatcher
+type SilenceMatchers []*SilenceMatcher
 
 type SilenceMatcher struct {
 	IsEqual bool   `json:"isEqual"`
@@ -98,8 +90,8 @@ func (matchers SilenceMatchers) Equals(otherMatchers SilenceMatchers) bool {
 	}
 
 	for _, matcher := range matchers {
-		_, found := generic.Find(otherMatchers, func(m SilenceMatcher) bool {
-			return m.Equals(&matcher)
+		_, found := generic.Find(otherMatchers, func(m *SilenceMatcher) bool {
+			return m.Equals(matcher)
 		})
 
 		if !found {
@@ -108,6 +100,14 @@ func (matchers SilenceMatchers) Equals(otherMatchers SilenceMatchers) bool {
 	}
 
 	return true
+}
+
+func (matchers SilenceMatchers) GetFilterQueryString() string {
+	filtersParts := generic.Map(matchers, func(m *SilenceMatcher) string {
+		return "filter=" + url.QueryEscape(m.SerializeQueryString())
+	})
+
+	return strings.Join(filtersParts, "&")
 }
 
 type SilenceWithAlerts struct {

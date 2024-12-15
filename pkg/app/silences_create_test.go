@@ -372,6 +372,72 @@ func TestAppPrepareSilenceViaCallbackAlertNotFound(t *testing.T) {
 }
 
 //nolint:paralleltest // disabled
+func TestAppPrepareSilenceViaCallbackFailedToFetchMatchingAlerts(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	config := &configPkg.Config{
+		Timezone: "Etc/GMT",
+		Log:      configPkg.LogConfig{LogLevel: "info"},
+		Telegram: configPkg.TelegramConfig{Token: "xxx:yyy", Admins: []int64{1, 2}},
+		Grafana: configPkg.GrafanaConfig{
+			URL:            "https://example.com",
+			Silences:       null.BoolFrom(true),
+			MutesDurations: []string{"1h", "3h"},
+		},
+		Alertmanager: nil,
+		Prometheus:   nil,
+	}
+
+	httpmock.RegisterResponder(
+		"POST",
+		"https://api.telegram.org/botxxx:yyy/getMe",
+		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-bot-ok.json")))
+
+	httpmock.RegisterResponder(
+		"GET",
+		"https://example.com/api/alertmanager/grafana/api/v2/alerts?filter=key1%3D%22value1%22&filter=key2%3D%22value2%22&silenced=true&inhibited=true&active=true",
+		httpmock.NewErrorResponder(errors.New("custom error")))
+
+	app := NewApp(config, "1.2.3")
+
+	queryMatchers := types.QueryMatcherFromKeyValueString("key2=value2 key1=value1")
+	key := app.Cache.Set(queryMatchers.GetHash(), queryMatchers.ToQueryString())
+
+	httpmock.RegisterMatcherResponder(
+		"POST",
+		"https://api.telegram.org/botxxx:yyy/sendMessage",
+		types.TelegramResponseHasText("Could not fetch alerts matching this silence: Get \"https://example.com/api/alertmanager/grafana/api/v2/alerts?filter=key1%3D%22value1%22&filter=key2%3D%22value2%22&silenced=true&inhibited=true&active=true\": custom error"),
+		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
+	)
+
+	ctx := app.Bot.NewContext(tele.Update{
+		ID: 1,
+		Message: &tele.Message{
+			Sender: &tele.User{Username: "testuser"},
+			Text:   "/grafana_silence",
+			Chat:   &tele.Chat{ID: 2},
+		},
+		Callback: &tele.Callback{
+			Sender: &tele.User{Username: "testuser"},
+			Unique: "\f" + constants.GrafanaSilencePrefix,
+			Data:   key,
+			Message: &tele.Message{
+				Sender: &tele.User{Username: "testuser"},
+				Text:   "/grafana_silence",
+				Chat:   &tele.Chat{ID: 2},
+			},
+		},
+	})
+
+	err := app.HandlePrepareNewSilenceFromCallback(
+		app.AlertSourcesWithSilenceManager[0].SilenceManager,
+		app.AlertSourcesWithSilenceManager[0].AlertSource,
+	)(ctx)
+	require.NoError(t, err)
+}
+
+//nolint:paralleltest // disabled
 func TestAppPrepareSilenceViaCallbackOk(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
@@ -393,6 +459,11 @@ func TestAppPrepareSilenceViaCallbackOk(t *testing.T) {
 		"POST",
 		"https://api.telegram.org/botxxx:yyy/getMe",
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-bot-ok.json")))
+
+	httpmock.RegisterResponder(
+		"GET",
+		"https://example.com/api/alertmanager/grafana/api/v2/alerts?filter=key1%3D%22value1%22&filter=key2%3D%22value2%22&silenced=true&inhibited=true&active=true",
+		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("alertmanager-alerts.json")))
 
 	app := NewApp(config, "1.2.3")
 
@@ -488,6 +559,11 @@ func TestAppPrepareSilenceViaCallbackOkWithEditKeyboard(t *testing.T) {
 		"POST",
 		"https://api.telegram.org/botxxx:yyy/getMe",
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-bot-ok.json")))
+
+	httpmock.RegisterResponder(
+		"GET",
+		"https://example.com/api/alertmanager/grafana/api/v2/alerts?filter=key1%3D%22value1%22&filter=key2%3D%22value2%22&silenced=true&inhibited=true&active=true",
+		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("alertmanager-alerts.json")))
 
 	app := NewApp(config, "1.2.3")
 

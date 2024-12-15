@@ -191,10 +191,8 @@ func TestAlertmanagerListSilenceAlertsFailed(t *testing.T) {
 		"https://example.com/api/v2/alerts?filter=key%3D%22value%22&silenced=true&inhibited=true&active=true",
 		httpmock.NewErrorResponder(errors.New("custom error")))
 
-	alerts, err := client.GetSilenceMatchingAlerts(types.Silence{
-		Matchers: types.SilenceMatchers{
-			{IsEqual: true, IsRegex: false, Name: "key", Value: "value"},
-		},
+	alerts, err := client.GetMatchingAlerts(types.SilenceMatchers{
+		{IsEqual: true, IsRegex: false, Name: "key", Value: "value"},
 	})
 	require.Error(t, err)
 	require.ErrorContains(t, err, "custom error")
@@ -215,10 +213,8 @@ func TestAlertmanagerListSilenceAlertsOk(t *testing.T) {
 		"https://example.com/api/v2/alerts?filter=key%3D%22value%22&silenced=true&inhibited=true&active=true",
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("alertmanager-alerts.json")))
 
-	alerts, err := client.GetSilenceMatchingAlerts(types.Silence{
-		Matchers: types.SilenceMatchers{
-			{IsEqual: true, IsRegex: false, Name: "key", Value: "value"},
-		},
+	alerts, err := client.GetMatchingAlerts(types.SilenceMatchers{
+		{IsEqual: true, IsRegex: false, Name: "key", Value: "value"},
 	})
 	require.NoError(t, err)
 	require.NotEmpty(t, alerts)

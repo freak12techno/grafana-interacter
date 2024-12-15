@@ -47,7 +47,7 @@ func (m *StubSilenceManager) CreateSilence(silence types.Silence) (types.Silence
 	return types.SilenceCreateResponse{SilenceID: silence.ID}, nil
 }
 
-func (m *StubSilenceManager) GetSilenceMatchingAlerts(silence types.Silence) ([]types.AlertmanagerAlert, error) {
+func (m *StubSilenceManager) GetMatchingAlerts(matchers types.SilenceMatchers) ([]types.AlertmanagerAlert, error) {
 	if m.GetSilenceMatchingAlertsError != nil {
 		return nil, m.GetSilenceMatchingAlertsError
 	}

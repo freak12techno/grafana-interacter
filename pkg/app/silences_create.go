@@ -8,6 +8,7 @@ import (
 	"main/pkg/types"
 	"main/pkg/types/render"
 	"main/pkg/utils"
+	"main/pkg/utils/generic"
 	"strings"
 	"time"
 
@@ -63,6 +64,13 @@ func (a *App) HandlePrepareNewSilenceFromCallback(
 		matchers := types.QueryMatcherFromKeyValueString(labels)
 		matchers.Sort()
 
+		var silenceMatchers types.SilenceMatchers = generic.Map(matchers, types.MatcherFromQueryMatcher)
+
+		alerts, err := silenceManager.GetMatchingAlerts(silenceMatchers)
+		if err != nil {
+			return c.Reply(fmt.Sprintf("Could not fetch alerts matching this silence: %s", err))
+		}
+
 		menu := &tele.ReplyMarkup{ResizeKeyboard: true}
 		mutesDurations := silenceManager.GetMutesDurations()
 		rows := make([]tele.Row, 0)
@@ -90,16 +98,21 @@ func (a *App) HandlePrepareNewSilenceFromCallback(
 
 		menu.Inline(rows...)
 
+		response := types.SilencePrepareStruct{
+			Matchers:    matchers,
+			AlertsCount: len(alerts),
+		}
+
 		if len(callbackSplit) > 1 {
 			return a.EditRender(c, "silence_prepare_create", render.RenderStruct{
 				Grafana: a.Grafana,
-				Data:    matchers,
+				Data:    response,
 			}, menu)
 		}
 
 		return a.ReplyRender(c, "silence_prepare_create", render.RenderStruct{
 			Grafana: a.Grafana,
-			Data:    matchers,
+			Data:    response,
 		}, menu)
 	}
 }
@@ -162,7 +175,7 @@ func (a *App) HandleNewSilenceGeneric(
 		return c.Reply(fmt.Sprintf("Error getting created silence: %s", silenceErr))
 	}
 
-	alerts, alertsErr := silenceManager.GetSilenceMatchingAlerts(silence)
+	alerts, alertsErr := silenceManager.GetMatchingAlerts(silence.Matchers)
 	if alertsErr != nil {
 		return c.Reply(fmt.Sprintf("Error getting alerts for silence: %s", alertsErr))
 	}
