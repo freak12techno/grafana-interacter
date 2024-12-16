@@ -92,7 +92,7 @@ func (a *App) HandlePrepareNewSilenceFromCallback(
 			rows = append(rows, menu.Row(menu.Data(
 				fmt.Sprintf("⌛ Silence for %s", mute),
 				silenceManager.Prefixes().Silence,
-				mute+" "+callbackSplit[0],
+				callbackSplit[0]+" "+mute,
 			)))
 		}
 
@@ -137,8 +137,8 @@ func (a *App) HandleCallbackNewSilence(
 			return c.Reply("Invalid callback provided!")
 		}
 
-		durationRaw := dataSplit[0]
-		alertLabelsHash := dataSplit[1]
+		alertLabelsHash := dataSplit[0]
+		durationRaw := dataSplit[1]
 
 		duration, err := time.ParseDuration(durationRaw)
 		if err != nil {
