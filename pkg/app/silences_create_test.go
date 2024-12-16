@@ -497,14 +497,14 @@ func TestAppPrepareSilenceViaCallbackOk(t *testing.T) {
 					{
 						Unique:       "grafana_silence_",
 						Text:         "⌛ Silence for 1h",
-						CallbackData: fmt.Sprintf("\fgrafana_silence_|1h %s", key),
+						CallbackData: fmt.Sprintf("\fgrafana_silence_|%s 1h", key),
 					},
 				},
 				{
 					{
 						Unique:       "grafana_silence_",
 						Text:         "⌛ Silence for 3h",
-						CallbackData: fmt.Sprintf("\fgrafana_silence_|3h %s", key),
+						CallbackData: fmt.Sprintf("\fgrafana_silence_|%s 3h", key),
 					},
 				},
 			},
@@ -597,14 +597,14 @@ func TestAppPrepareSilenceViaCallbackOkWithEditKeyboard(t *testing.T) {
 					{
 						Unique:       "grafana_silence_",
 						Text:         "⌛ Silence for 1h",
-						CallbackData: fmt.Sprintf("\fgrafana_silence_|1h %s", key),
+						CallbackData: fmt.Sprintf("\fgrafana_silence_|%s 1h", key),
 					},
 				},
 				{
 					{
 						Unique:       "grafana_silence_",
 						Text:         "⌛ Silence for 3h",
-						CallbackData: fmt.Sprintf("\fgrafana_silence_|3h %s", key),
+						CallbackData: fmt.Sprintf("\fgrafana_silence_|%s 3h", key),
 					},
 				},
 			},
@@ -791,7 +791,7 @@ func TestAppCreateSilenceViaCallbackAlertNotFound(t *testing.T) {
 		Callback: &tele.Callback{
 			Sender: &tele.User{Username: "testuser"},
 			Unique: "\f" + constants.GrafanaSilencePrefix,
-			Data:   "48h 123",
+			Data:   "123 48h",
 			Message: &tele.Message{
 				Sender: &tele.User{Username: "testuser"},
 				Text:   "/grafana_silence",
@@ -852,7 +852,7 @@ func TestAppCreateSilenceViaCallbackOk(t *testing.T) {
 		Callback: &tele.Callback{
 			Sender: &tele.User{Username: "testuser"},
 			Unique: "\f" + constants.GrafanaSilencePrefix,
-			Data:   "48h " + key,
+			Data:   key + " 48h",
 			Message: &tele.Message{
 				Sender: &tele.User{Username: "testuser"},
 				Text:   "/grafana_silence",
