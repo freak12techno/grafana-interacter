@@ -1,13 +1,22 @@
 # Timezone. Used when displaying dates (like in silences and alerts).
 # Defaults to "Etc/GMT" (so GMT+0)
 timezone: "Europe/Moscow"
+# So, Telegram has its own limitations - every button has a "data" field, which we use
+# to pass some data to next callbacks, and it's limited to 64 bytes
+# (see https://core.telegram.org/bots/api#inlinekeyboardbutton). We use cache on our side
+# to be able to fit into these limits. This cache may work as in-memory only cache,
+# or be persistent to file. This param specifies the path to this cache file; if it's not present,
+# the cache will be not persistent if the app is restarted, so you might face issues
+# if you start an app, do some queries, restart the app then try to press the buttons
+# that were generated before restarting the app.
+cache-path: "cache.json"
 # Logging configuration.
 log:
   # Log level. Defaults to "info"
   level: info
  # Output logs as JSON. Useful if you are using logging aggregation solutions such as ELK. Defaults to false.
   json: false
-# Telegram bot token, you can create a Telegam bot with @BotFather bot on Telegram
+# Telegram bot token, you can create a Telegram bot with @BotFather bot on Telegram
 telegram:
   token: xxx:yyy
   # List of Telegram user IDs who can interact with the bot.
