@@ -6,6 +6,7 @@ import (
 	"main/pkg/clients"
 	configPkg "main/pkg/config"
 	"main/pkg/constants"
+	"main/pkg/fs"
 	loggerPkg "main/pkg/logger"
 	"main/pkg/silence_manager"
 	"main/pkg/templates"
@@ -39,7 +40,7 @@ type App struct {
 	StopChannel chan bool
 }
 
-func NewApp(config *configPkg.Config, version string) *App {
+func NewApp(config *configPkg.Config, filesystem fs.FS, version string) *App {
 	timezone, _ := time.LoadLocation(config.Timezone)
 
 	logger := loggerPkg.GetLogger(config.Log)
@@ -83,12 +84,14 @@ func NewApp(config *configPkg.Config, version string) *App {
 		AlertSourcesWithSilenceManager: alertSourcesWithSilenceManagers,
 		Bot:                            bot,
 		Version:                        version,
-		Cache:                          cache.NewCache(logger, config.CachePath),
+		Cache:                          cache.NewCache(logger, filesystem, config.CachePath),
 		StopChannel:                    make(chan bool),
 	}
 }
 
 func (a *App) Start() {
+	a.Cache.Load()
+
 	// Commands
 	a.Bot.Handle("/start", a.HandleHelp)
 	a.Bot.Handle("/help", a.HandleHelp)

@@ -5,3 +5,4 @@ dist/
 grafana-interacter
 **/.DS_Store
 cover.out
+cache.json

@@ -18,7 +18,7 @@ func ExecuteMain(configPath string) {
 		logger.GetDefaultLogger().Panic().Err(err).Msg("Error validating config")
 	}
 
-	newApp := app.NewApp(config, version)
+	newApp := app.NewApp(config, filesystem, version)
 	newApp.Start()
 }
 
