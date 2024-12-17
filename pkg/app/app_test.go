@@ -4,6 +4,7 @@ import (
 	"errors"
 	"main/assets"
 	configPkg "main/pkg/config"
+	"main/pkg/fs"
 	"strings"
 	"sync"
 	"testing"
@@ -34,7 +35,7 @@ func TestAppCannotFetchBot(t *testing.T) {
 		Prometheus:   nil,
 	}
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	app.Start()
 }
 
@@ -57,7 +58,7 @@ func TestAppStartsOkay(t *testing.T) {
 		"https://api.telegram.org/botxxx:yyy/getMe",
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-bot-ok.json")))
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	var wg sync.WaitGroup
 	wg.Add(1)
 
@@ -104,7 +105,7 @@ func TestAppBotSendMultilineFail(t *testing.T) {
 		"https://api.telegram.org/botxxx:yyy/sendMessage",
 		httpmock.NewErrorResponder(errors.New("custom error")))
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -145,7 +146,7 @@ func TestAppBotSendMultilineOk(t *testing.T) {
 		"https://api.telegram.org/botxxx:yyy/sendMessage",
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")))
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{

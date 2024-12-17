@@ -10,6 +10,7 @@ import (
 type Config struct {
 	Timezone     string              `default:"Etc/GMT"   yaml:"timezone"`
 	Log          LogConfig           `yaml:"log"`
+	CachePath    string              `yaml:"cache-path"`
 	Telegram     TelegramConfig      `yaml:"telegram"`
 	Grafana      GrafanaConfig       `yaml:"grafana"`
 	Alertmanager *AlertmanagerConfig `yaml:"alertmanager"`

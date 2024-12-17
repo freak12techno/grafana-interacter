@@ -5,6 +5,7 @@ import (
 	"main/assets"
 	configPkg "main/pkg/config"
 	"main/pkg/constants"
+	"main/pkg/fs"
 	"main/pkg/types"
 	"testing"
 
@@ -43,7 +44,7 @@ func TestAppDeleteSilenceSilenceManagerDisabled(t *testing.T) {
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
 	)
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -86,7 +87,7 @@ func TestAppDeleteSilenceInvalidInvocation(t *testing.T) {
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
 	)
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -134,7 +135,7 @@ func TestAppDeleteSilenceFetchSilencesFailed(t *testing.T) {
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
 	)
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -182,7 +183,7 @@ func TestAppDeleteSilenceSilenceNotFound(t *testing.T) {
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
 	)
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -230,7 +231,7 @@ func TestAppDeleteSilenceSilenceExpired(t *testing.T) {
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
 	)
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -283,7 +284,7 @@ func TestAppDeleteSilenceErrorDeletingSilence(t *testing.T) {
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
 	)
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -336,7 +337,7 @@ func TestAppDeleteSilenceOk(t *testing.T) {
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
 	)
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -384,7 +385,7 @@ func TestAppDeleteSilenceCallbackOk(t *testing.T) {
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
 	)
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -442,7 +443,7 @@ func TestAppDeleteSilenceCallbackOkWithDeleteKeyboard(t *testing.T) {
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
 	)
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{

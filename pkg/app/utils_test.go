@@ -5,6 +5,7 @@ import (
 	"main/assets"
 	configPkg "main/pkg/config"
 	"main/pkg/constants"
+	"main/pkg/fs"
 	"main/pkg/types"
 	"main/pkg/types/render"
 	"testing"
@@ -40,7 +41,7 @@ func TestAppReplyRenderFailedToRender(t *testing.T) {
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
 	)
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -78,7 +79,7 @@ func TestAppReplyRenderFailedToSend(t *testing.T) {
 		"https://api.telegram.org/botxxx:yyy/sendMessage",
 		httpmock.NewErrorResponder(errors.New("custom error")))
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -117,7 +118,7 @@ func TestAppEditRenderFailedToRender(t *testing.T) {
 		"https://api.telegram.org/botxxx:yyy/sendMessage",
 		httpmock.NewErrorResponder(errors.New("custom error")))
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -156,7 +157,7 @@ func TestAppEditRenderFailedToSend(t *testing.T) {
 		"https://api.telegram.org/botxxx:yyy/editMessageText",
 		httpmock.NewErrorResponder(errors.New("custom error")))
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -227,7 +228,7 @@ func TestAppRemoveKeyboardItemFailedToDelete(t *testing.T) {
 		httpmock.NewErrorResponder(errors.New("custom error")),
 	)
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -289,7 +290,7 @@ func TestAppClearKeyboardFailedToDelete(t *testing.T) {
 		httpmock.NewErrorResponder(errors.New("custom error")),
 	)
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -352,7 +353,7 @@ func TestAppClearKeyboardOk(t *testing.T) {
 		"https://api.telegram.org/botxxx:yyy/editMessageReplyMarkup",
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")))
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -414,7 +415,7 @@ func TestAppClearAllKeyboardCacheOk(t *testing.T) {
 		"https://api.telegram.org/botxxx:yyy/editMessageReplyMarkup",
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")))
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{

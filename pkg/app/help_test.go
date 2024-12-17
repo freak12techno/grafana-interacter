@@ -3,6 +3,7 @@ package app
 import (
 	"main/assets"
 	configPkg "main/pkg/config"
+	"main/pkg/fs"
 	"testing"
 
 	"github.com/jarcoal/httpmock"
@@ -35,7 +36,7 @@ func TestAppHelpOk(t *testing.T) {
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
 	)
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{

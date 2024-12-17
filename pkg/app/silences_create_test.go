@@ -6,6 +6,7 @@ import (
 	"main/assets"
 	configPkg "main/pkg/config"
 	"main/pkg/constants"
+	"main/pkg/fs"
 	"main/pkg/types"
 	"testing"
 
@@ -41,7 +42,7 @@ func TestAppCreateSilenceSilenceManagerDisabled(t *testing.T) {
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
 	)
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -81,7 +82,7 @@ func TestAppCreateSilenceInvalidInvocation(t *testing.T) {
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
 	)
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -126,7 +127,7 @@ func TestAppCreateSilenceErrorCreatingSilence(t *testing.T) {
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
 	)
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -176,7 +177,7 @@ func TestAppCreateSilenceErrorGettingSilence(t *testing.T) {
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
 	)
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -231,7 +232,7 @@ func TestAppCreateSilenceErrorGettingSilenceAlerts(t *testing.T) {
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
 	)
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -299,7 +300,7 @@ func TestAppCreateSilenceOk(t *testing.T) {
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
 	)
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -344,7 +345,7 @@ func TestAppPrepareSilenceViaCallbackAlertNotFound(t *testing.T) {
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
 	)
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -399,7 +400,7 @@ func TestAppPrepareSilenceViaCallbackFailedToFetchMatchingAlerts(t *testing.T) {
 		"https://example.com/api/alertmanager/grafana/api/v2/alerts?filter=key1%3D%22value1%22&filter=key2%3D%22value2%22&silenced=true&inhibited=true&active=true",
 		httpmock.NewErrorResponder(errors.New("custom error")))
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 
 	queryMatchers := types.QueryMatcherFromKeyValueString("key2=value2 key1=value1")
 	key := app.Cache.Set(queryMatchers.GetHash(), queryMatchers.ToQueryString())
@@ -465,7 +466,7 @@ func TestAppPrepareSilenceViaCallbackOk(t *testing.T) {
 		"https://example.com/api/alertmanager/grafana/api/v2/alerts?filter=key1%3D%22value1%22&filter=key2%3D%22value2%22&silenced=true&inhibited=true&active=true",
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("alertmanager-alerts.json")))
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 
 	queryMatchers := types.QueryMatcherFromKeyValueString("key2=value2 key1=value1")
 	key := app.Cache.Set(queryMatchers.GetHash(), queryMatchers.ToQueryString())
@@ -496,14 +497,14 @@ func TestAppPrepareSilenceViaCallbackOk(t *testing.T) {
 					{
 						Unique:       "grafana_silence_",
 						Text:         "⌛ Silence for 1h",
-						CallbackData: fmt.Sprintf("\fgrafana_silence_|1h %s", key),
+						CallbackData: fmt.Sprintf("\fgrafana_silence_|%s 1h", key),
 					},
 				},
 				{
 					{
 						Unique:       "grafana_silence_",
 						Text:         "⌛ Silence for 3h",
-						CallbackData: fmt.Sprintf("\fgrafana_silence_|3h %s", key),
+						CallbackData: fmt.Sprintf("\fgrafana_silence_|%s 3h", key),
 					},
 				},
 			},
@@ -565,7 +566,7 @@ func TestAppPrepareSilenceViaCallbackOkWithEditKeyboard(t *testing.T) {
 		"https://example.com/api/alertmanager/grafana/api/v2/alerts?filter=key1%3D%22value1%22&filter=key2%3D%22value2%22&silenced=true&inhibited=true&active=true",
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("alertmanager-alerts.json")))
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 
 	queryMatchers := types.QueryMatcherFromKeyValueString("key2=value2 key1=value1")
 	key := app.Cache.Set(queryMatchers.GetHash(), queryMatchers.ToQueryString())
@@ -596,14 +597,14 @@ func TestAppPrepareSilenceViaCallbackOkWithEditKeyboard(t *testing.T) {
 					{
 						Unique:       "grafana_silence_",
 						Text:         "⌛ Silence for 1h",
-						CallbackData: fmt.Sprintf("\fgrafana_silence_|1h %s", key),
+						CallbackData: fmt.Sprintf("\fgrafana_silence_|%s 1h", key),
 					},
 				},
 				{
 					{
 						Unique:       "grafana_silence_",
 						Text:         "⌛ Silence for 3h",
-						CallbackData: fmt.Sprintf("\fgrafana_silence_|3h %s", key),
+						CallbackData: fmt.Sprintf("\fgrafana_silence_|%s 3h", key),
 					},
 				},
 			},
@@ -663,7 +664,7 @@ func TestAppCreateSilenceViaCallbackInvalidPayload(t *testing.T) {
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
 	)
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -721,7 +722,7 @@ func TestAppCreateSilenceViaCallbackInvalidDuration(t *testing.T) {
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
 	)
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -779,7 +780,7 @@ func TestAppCreateSilenceViaCallbackAlertNotFound(t *testing.T) {
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-send-message-ok.json")),
 	)
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	ctx := app.Bot.NewContext(tele.Update{
 		ID: 1,
 		Message: &tele.Message{
@@ -790,7 +791,7 @@ func TestAppCreateSilenceViaCallbackAlertNotFound(t *testing.T) {
 		Callback: &tele.Callback{
 			Sender: &tele.User{Username: "testuser"},
 			Unique: "\f" + constants.GrafanaSilencePrefix,
-			Data:   "48h 123",
+			Data:   "123 48h",
 			Message: &tele.Message{
 				Sender: &tele.User{Username: "testuser"},
 				Text:   "/grafana_silence",
@@ -825,7 +826,7 @@ func TestAppCreateSilenceViaCallbackOk(t *testing.T) {
 		"https://api.telegram.org/botxxx:yyy/getMe",
 		httpmock.NewBytesResponder(200, assets.GetBytesOrPanic("telegram-bot-ok.json")))
 
-	app := NewApp(config, "1.2.3")
+	app := NewApp(config, &fs.TestFS{}, "1.2.3")
 	queryMatchers := types.QueryMatcherFromKeyValueString("key2=value2 key1=value1")
 	key := app.Cache.Set(queryMatchers.GetHash(), queryMatchers.ToQueryString())
 
@@ -851,7 +852,7 @@ func TestAppCreateSilenceViaCallbackOk(t *testing.T) {
 		Callback: &tele.Callback{
 			Sender: &tele.User{Username: "testuser"},
 			Unique: "\f" + constants.GrafanaSilencePrefix,
-			Data:   "48h " + key,
+			Data:   key + " 48h",
 			Message: &tele.Message{
 				Sender: &tele.User{Username: "testuser"},
 				Text:   "/grafana_silence",
